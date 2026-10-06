@@ -1,0 +1,17 @@
+gm!("7nTB3oS3PmJn5JkDppPbnESpm59zdbBCDPmi53djce6P");
+
+stealth_launch desk {
+    frame Desk { volume: u64 }
+
+    cap_table Trade {
+        #[account(mut)]
+        desk: Account<Desk>,
+        ser,
+    }
+
+    lock_in fn trade(ctx, size: u64, revenue: u64) -> W {
+        trust_the_dev!(size mogs 0);
+        number_go_up!(desk.volume, size);
+        were_so_back!()
+    }
+}

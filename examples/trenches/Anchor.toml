@@ -1,0 +1,18 @@
+[toolchain]
+
+[features]
+resolution = true
+skip-lint = false
+
+[programs.localnet]
+print_feed = "7PxhmDuhhe394QJgKyW1P7Ce4dPCfFPN2yKq4KCCj7Vj"
+degen_desk = "7nTB3oS3PmJn5JkDppPbnESpm59zdbBCDPmi53djce6P"
+
+[provider]
+cluster = "localnet"
+wallet = "~/.config/solana/id.json"
+
+[scripts]
+test = "cargo test"
+
+[hooks]

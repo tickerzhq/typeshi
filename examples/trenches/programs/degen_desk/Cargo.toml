@@ -1,0 +1,28 @@
+[package]
+name = "degen_desk"
+version = "0.1.0"
+description = "Written in typeshi. lock in fn."
+edition.workspace = true
+rust-version.workspace = true
+publish = false
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "degen_desk"
+
+[features]
+default = []
+cpi = ["no-entrypoint"]
+no-entrypoint = []
+no-log-ix-name = []
+idl-build = ["anchor-lang/idl-build", "anchor-spl/idl-build"]
+anchor-debug = []
+custom-heap = []
+custom-panic = []
+
+[dependencies]
+anchor-lang = "1.2.0"
+anchor-spl = { version = "1.2.0", default-features = false, features = ["token", "token_2022"] }
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(target_os, values("solana"))'] }

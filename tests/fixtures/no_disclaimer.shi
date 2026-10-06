@@ -1,0 +1,19 @@
+gm!("7PxhmDuhhe394QJgKyW1P7Ce4dPCfFPN2yKq4KCCj7Vj");
+
+stealth_launch shill {
+    frame Vault { tvl: u64 }
+
+    cap_table Promote {
+        #[account(mut)]
+        vault: Account<Vault>,
+        ser,
+        kol,
+        system_program,
+    }
+
+    lock_in fn promote(ctx, fee: u64) -> W {
+        kol_promo!(fee);
+        mark_to_market!(vault.tvl = 0);
+        were_so_back!()
+    }
+}

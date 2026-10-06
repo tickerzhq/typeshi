@@ -1,0 +1,27 @@
+[package]
+name = "typeshi"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.85"
+description = "lock in fn. A slang layer over Rust that compiles to real Solana programs (Anchor). Made by Tickerz."
+license = "MIT"
+repository = "https://github.com/tickerzhq/typeshi"
+homepage = "https://github.com/tickerzhq/typeshi"
+readme = "README.md"
+keywords = ["solana", "anchor", "transpiler", "esolang", "joke"]
+categories = ["development-tools", "compilers", "command-line-utilities"]
+autoexamples = false
+include = ["src/**/*.rs", "tests/**/*.rs", "tests/fixtures/**", "hooks/commit-msg", "README.md", "LICENSE", "Cargo.toml"]
+
+[lib]
+name = "typeshi"
+path = "src/lib.rs"
+
+[[bin]]
+name = "typeshi"
+path = "src/main.rs"
+
+[dependencies]
+proc-macro2 = { version = "1", features = ["span-locations"] }
+syn = { version = "2", default-features = false, features = ["full", "parsing", "printing"] }
+prettyplease = "0.2"

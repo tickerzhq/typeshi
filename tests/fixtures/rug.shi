@@ -1,0 +1,16 @@
+gm!("7PxhmDuhhe394QJgKyW1P7Ce4dPCfFPN2yKq4KCCj7Vj");
+
+stealth_launch memecoin {
+    frame Pool { lp: u64 }
+
+    cap_table Exit {
+        #[account(mut)]
+        pool: Account<Pool>,
+        ser,
+    }
+
+    lock_in fn exit(ctx) -> W {
+        rug!(pool);
+        were_so_back!()
+    }
+}

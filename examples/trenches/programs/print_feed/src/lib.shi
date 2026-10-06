@@ -1,0 +1,143 @@
+// print_feed.shi: a tiny Tickerz print feed, written in typeshi.
+// everything gets a ticker. nobody can edit it.
+
+gm!("7PxhmDuhhe394QJgKyW1P7Ce4dPCfFPN2yKq4KCCj7Vj");
+
+stealth_launch print_feed {
+    /// eight bytes of ticker, e.g. b"CPI\0\0\0\0\0".
+    type_shi Ticker = [u8; 8];
+
+    /// the biggest value a print can carry: 1,000,000 bps (10,000%).
+    #[on_god]
+    const MAX_PRINT: Bps = 1_000_000;
+
+    /// one feed per ticker. counts its prints, farms aura.
+    frame Feed {
+        ticker: Ticker,
+        cabal: Pubkey,
+        prints: u64,
+        aura: u64,
+    }
+
+    /// one print. written once, at init. nobody can edit it.
+    #[on_god]
+    frame PrintRecord {
+        feed: Pubkey,
+        seq: u64,
+        value: Bps,
+        printed_by: Pubkey,
+        printed_at: i64,
+    }
+
+    /// leaked to every indexer watching. probably nothing.
+    alpha_leak Printed {
+        ticker: Ticker,
+        seq: u64,
+        value: Bps,
+        pretty: String,
+    }
+
+    #[instruction(ticker: Ticker)]
+    cap_table ListTicker {
+        #[account(rent_free, payer = exit_liquidity, space = 8 + Feed::INIT_SPACE,
+                  seeds = [b"feed", ticker.as_ref()], bump)]
+        feed: Account<Feed>,
+        exit_liquidity,
+        system_program,
+    }
+
+    cap_table Print {
+        #[account(mut, has_one = cabal, seeds = [b"feed", feed.ticker.as_ref()], bump)]
+        feed: Account<Feed>,
+        #[account(rent_free, payer = exit_liquidity, space = 8 + PrintRecord::INIT_SPACE,
+                  seeds = [b"print", feed.key().as_ref(), &feed.prints.to_le_bytes()], bump)]
+        print: Account<PrintRecord>,
+        cabal,
+        exit_liquidity,
+        system_program,
+    }
+
+    cap_table Gm {
+        feed: Account<Feed>,
+    }
+
+    /// list a ticker. whoever lists it is the cabal.
+    lock_in fn list_ticker(ctx, ticker: Ticker) -> W {
+        trust_me_bro!(ticker[0] != 0, "a ticker needs a name. skill issue.");
+        mark_to_market!(feed.ticker = ticker);
+        mark_to_market!(feed.cabal = per_my_last_email!(exit_liquidity).key());
+        probably_nothing!("gm. new ticker listed.");
+        were_so_back!()
+    }
+
+    /// print a value. it lives on-chain forever.
+    #[tokenmaxx]
+    lock_in fn print(ctx, value: Bps) -> W {
+        trust_me_bro!(value mogs 0, "a print of zero is not a print.");
+        funds_are_safu!(value <= MAX_PRINT);
+        let seq = per_my_last_email!(feed.prints);
+        let feed_key = per_my_last_email!(feed).key();
+        mark_to_market!(print.feed = feed_key);
+        mark_to_market!(print.seq = seq);
+        mark_to_market!(print.value = value);
+        mark_to_market!(print.printed_by = per_my_last_email!(cabal).key());
+        mark_to_market!(print.printed_at = Clock::get()?.unix_timestamp);
+        number_go_up!(feed.prints);
+        aura_farm!(feed.aura, 10);
+        probably_nothing!("print #{} locked in", seq); // #[tokenmaxx] strips this log. CU is CU.
+        probably_nothing!(Printed {
+            ticker: per_my_last_email!(feed.ticker),
+            seq,
+            value,
+            pretty: looksmaxx!(value),
+        });
+        were_so_back!()
+    }
+
+    /// say gm. it only reads, so it's an `ape fn`, not a `lock_in fn`.
+    ape fn gm(ctx) -> W {
+        let prints = per_my_last_email!(feed.prints);
+        bull prints mogs 0 {
+            probably_nothing!("gm. {} prints. nobody can edit them. wen moon? {}", looksmaxx!(prints), wen_moon());
+        } bear {
+            airdrop!();
+        }
+        were_so_back!()
+    }
+
+    /// there is no edit instruction. this fn exists to tell you why.
+    few_understand fn edit(_print: &PrintRecord, _value: Bps) -> W {
+        L("nobody can edit it. skill issue.")
+    }
+
+    #[cfg(test)]
+    mod tests {
+        use super::*;
+
+        fn a_print() -> PrintRecord {
+            PrintRecord { feed: Pubkey::default(), seq: 0, value: 425, printed_by: Pubkey::default(), printed_at: 0 }
+        }
+
+        #[test]
+        fn nobody_can_edit_it() {
+            assert!(edit(&a_print(), 9_000).is_err());
+        }
+
+        #[test]
+        fn looksmaxxed() {
+            assert_eq!(looksmaxx!(425u64), "425");
+            assert_eq!(looksmaxx!(1_234_567u64), "1.23M");
+        }
+
+        #[test]
+        fn wen_moon_is_soon() {
+            assert_eq!(wen_moon(), "soon\u{2122}");
+        }
+
+        #[test]
+        fn error_codes_are_tradition() {
+            assert_eq!(u32::from(Cope::SkillIssue), 1);
+            assert_eq!(u32::from(Cope::WifeChangingMoneyNotFound), 6);
+        }
+    }
+}

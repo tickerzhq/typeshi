@@ -1,0 +1,17 @@
+gm!("7PxhmDuhhe394QJgKyW1P7Ce4dPCfFPN2yKq4KCCj7Vj");
+
+stealth_launch release {
+    frame Version { n: u64 }
+
+    cap_table Ship {
+        #[account(mut)]
+        version: Account<Version>,
+        ser,
+    }
+
+    lock_in fn ship(ctx) -> W {
+        deploy_on_friday!();
+        insider_trading!(version.n);
+        were_so_back!()
+    }
+}

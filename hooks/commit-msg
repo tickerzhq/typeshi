@@ -1,0 +1,10 @@
+#!/bin/sh
+# typeshi commit-msg hook. install: cp hooks/commit-msg .git/hooks/commit-msg && chmod +x .git/hooks/commit-msg
+# every commit message starts with gm, wagmi, or it's so over. this is a professional codebase.
+first=$(head -n 1 "$1")
+case "$first" in
+  gm*|wagmi*|"it's so over"*|"its so over"*) exit 0 ;;
+esac
+echo "commit rejected: start the message with gm, wagmi, or it's so over." >&2
+echo "this is a professional codebase." >&2
+exit 1

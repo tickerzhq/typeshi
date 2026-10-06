@@ -1,0 +1,202 @@
+// degen_desk.shi: every typeshi keyword in one program, so the compiler checks all of them.
+// it is a toy. do not run a desk on it. obviously.
+
+gm!("7nTB3oS3PmJn5JkDppPbnESpm59zdbBCDPmi53djce6P");
+
+// the panic handler. build with `--features custom-panic` to turn it on.
+this_is_fine!();
+
+stealth_launch degen_desk {
+    cope {
+        DeskClosed = "desk is closed. touch grass.",
+    }
+
+    /// 2.5% carry, as is tradition.
+    deadass FEE_BPS: Bps = 250;
+
+    frame Desk {
+        cabal: Pubkey,
+        frens: [Pubkey; 4],
+        locked: bool,
+        version: u8,
+        opens_at: i64,
+        closes_at: i64,
+        last_price: u64,
+        ath: u64,
+        floor: u64,
+    }
+
+    frame Bag {
+        owner: Pubkey,
+        points: u64,
+    }
+
+    cap_table OpenDesk {
+        #[account(rent_free, payer = exit_liquidity, space = 8 + Desk::INIT_SPACE, seeds = [b"desk"], bump)]
+        desk: Account<Desk>,
+        exit_liquidity,
+        system_program,
+    }
+
+    cap_table Trade {
+        #[account(mut, has_one = cabal)]
+        desk: Account<Desk>,
+        cabal,
+        ser,
+        kol,
+        system_program,
+    }
+
+    cap_table Brrr {
+        #[account(has_one = cabal)]
+        desk: Account<Desk>,
+        #[account(mut)]
+        mint: Account<anchor_spl::token::Mint>,
+        #[account(mut)]
+        bag: Account<anchor_spl::token::TokenAccount>,
+        #[account(mut)]
+        vc: Account<anchor_spl::token::TokenAccount>,
+        cabal,
+        token_program,
+    }
+
+    cap_table Grow {
+        #[account(mut, has_one = cabal, graduate = 8 + Desk::INIT_SPACE + 64)]
+        desk: Account<Desk>,
+        cabal,
+        exit_liquidity,
+        system_program,
+    }
+
+    cap_table FireEveryone {
+        #[account(mut, has_one = cabal)]
+        desk: Account<Desk>,
+        #[account(mut)]
+        bag_a: Account<Bag>,
+        #[account(mut)]
+        bag_b: Account<Bag>,
+        #[account(mut)]
+        cabal,
+    }
+
+    cap_table Liquidate {
+        #[account(has_one = cabal)]
+        desk: Account<Desk>,
+        #[account(mut)]
+        bag: Account<Bag>,
+        #[account(mut)]
+        cabal,
+    }
+
+    cap_table Retire {
+        #[account(mut, has_one = cabal, golden_parachute = cabal)]
+        desk: Account<Desk>,
+        #[account(mut)]
+        cabal,
+    }
+
+    cap_table CheckBags {
+        desk: Account<Desk>,
+        anon,
+    }
+
+    lock_in fn open_desk(ctx, opens_at: i64, closes_at: i64) -> W {
+        margin_call!(closes_at <= opens_at, "the desk closes before it opens. skill issue.");
+        let me = per_my_last_email!(exit_liquidity).key();
+        mark_to_market!(desk.cabal = me);
+        mark_to_market!(desk.frens = [me; 4]);
+        mark_to_market!(desk.locked = diamond_hands);
+        mark_to_market!(desk.opens_at = opens_at);
+        mark_to_market!(desk.closes_at = closes_at);
+        mark_to_market!(desk.floor = 1);
+        audit!(by = "vibes");
+        were_so_back!()
+    }
+
+    // not financial advice
+    lock_in fn trade(ctx, price: u64, size: u64, revenue: u64) -> W {
+        wen!(per_my_last_email!(desk.opens_at));
+        touch_grass!(per_my_last_email!(desk.closes_at), Cope::DeskClosed);
+        fren!(per_my_last_email!(ser).key() in per_my_last_email!(desk.frens));
+        trust_the_dev!(size mogs 0);
+        let fee = bps!(size, FEE_BPS);
+        let quote = bonding_curve!(size, price, 1);
+        funds_are_safu!(bags!(ser) >= fee);
+        kol_promo!(fee);
+        bundled! {
+            mark_to_market!(desk.last_price = price);
+            sell_the_bottom!(price, per_my_last_email!(desk.floor), {
+                probably_nothing!("sold the bottom at {}. as is tradition.", price);
+            });
+            buy_the_top!(price, per_my_last_email!(desk.ath), {
+                mark_to_market!(desk.ath = price);
+            });
+        }
+        probably_nothing!("quote: {}", looksmaxx!(quote));
+        were_so_back!()
+    }
+
+    // not financial advice
+    #[vc_backed]
+    lock_in fn brrr(ctx, amount: u64) -> W {
+        printer_go_brrr!(mint => bag, amount, cabal);
+        vc_unlock!(mint => vc, cabal);
+        lp_burned!(bag => mint, amount / 2, cabal);
+        mint_revoked!(mint, cabal);
+        freeze_revoked!(mint, cabal);
+        were_so_back!()
+    }
+
+    lock_in fn grow(ctx) -> W {
+        hodl!(per_my_last_email!(desk.opens_at));
+        ascend!(desk.version);
+        were_so_back!()
+    }
+
+    // not financial advice
+    lock_in fn fire_everyone(ctx) -> W {
+        let new_boss = per_my_last_email!(cabal).key();
+        hostile_takeover!(desk.cabal => new_boss);
+        layoffs!(bag_a, bag_b => cabal);
+        were_so_back!()
+    }
+
+    // not financial advice
+    lock_in fn liquidate(ctx) -> W {
+        liquidated!(bag => cabal);
+        were_so_back!()
+    }
+
+    /// closes the desk. golden_parachute sends the rent back to the cabal.
+    lock_in fn retire(ctx) -> W {
+        mew!();
+        were_so_back!()
+    }
+
+    ape fn check_bags(ctx) -> ebitda {
+        bull per_my_last_email!(desk.locked) == paper_hands {
+            fired!("paper hands on the desk");
+        }
+        let carry: u64 = bullish!(fee_on(bags!(anon)));
+        probably_nothing!("carry: {}", carry);
+        airdrop!();
+        were_so_back!()
+    }
+
+    few_understand fn fee_on(amount: u64) -> W<u64> {
+        let fee = bps!(amount, FEE_BPS);
+        bull fee mogs 1_000_000_000_000 {
+            rekt!("rugged by a 19 year old");
+        }
+        let checked = seethe!(u64::try_from(fee), "fee math is cope.");
+        were_so_back!(checked)
+    }
+
+    few_understand fn closed() -> W {
+        its_so_over!(Cope::DeskClosed)
+    }
+
+    few_understand fn not_today() -> W {
+        L(Cope::DeskClosed)
+    }
+}
