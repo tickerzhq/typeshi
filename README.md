@@ -100,6 +100,37 @@ soon™
 
 Every line above is real output, trimmed of cargo's compile noise. The failing files are in [`tests/fixtures/`](tests/fixtures). Exit code 0 is wagmi. Exit code 1 is ngmi.
 
+## `rug!()` is a compile error
+
+Add one line to the example's `list_ticker` (line 70 of [`examples/trenches/programs/print_feed/src/lib.shi`](examples/trenches/programs/print_feed/src/lib.shi)):
+
+```rust
+    lock_in fn list_ticker(ctx, ticker: Ticker) -> W {
+        trust_me_bro!(ticker[0] != 0, "a ticker needs a name. skill issue.");
+        mark_to_market!(feed.ticker = ticker);
+        mark_to_market!(feed.cabal = per_my_last_email!(exit_liquidity).key());
+        probably_nothing!("gm. new ticker listed.");
+        rug!(feed);
+        were_so_back!()
+    }
+```
+
+```text
+$ typeshi build
+your build is vesting. 6-month cliff. come back later.
+(jk. building anyway.)
+error: not on our watch, anon
+  --> programs/print_feed/src/lib.shi:70:9
+   |
+70 |         rug!(feed);
+   |         ^^^^ `rug!` is a banned move
+
+skill issue.
+ngmi
+```
+
+No Rust is written and nothing reaches `anchor build`. Exit code 1. Real output from `typeshi build` in `examples/trenches`, with the other program's warnings trimmed.
+
 ## The example: a Tickerz print feed
 
 ```rust
