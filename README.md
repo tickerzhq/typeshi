@@ -129,7 +129,7 @@ skill issue.
 ngmi
 ```
 
-No Rust is written and nothing reaches `anchor build`. Exit code 1. Real output from `typeshi build` in `examples/trenches`, with the other program's warnings trimmed.
+The build stops there, before `anchor build`. Exit code 1. Real output from `typeshi build` in `examples/trenches`, with the other program's warnings trimmed.
 
 ## The example: a Tickerz print feed
 
