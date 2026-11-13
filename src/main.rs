@@ -32,7 +32,7 @@ build flags:
   --arch <v>               SBPF version for cargo build-sbf (the example's LiteSVM test wants v1)
 
 exit codes: 0 = wagmi, 1 = ngmi.
-made by Tickerz. tickerz.com. everything gets a ticker. nobody can edit it.
+made by Tickerz. tickerz.com. everything gets a ticker.
 ";
 
 struct Flags {

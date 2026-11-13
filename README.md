@@ -410,7 +410,7 @@ typeshi is a source-to-source compiler, not a proc macro. It reads `.shi` as Rus
 
 Inspired by the tradition of joke languages like cursed, ArnoldC and LOLCODE. This one is for the trenches and runs on Solana.
 
-Made by [Tickerz](https://tickerz.com). Everything gets a ticker. Nobody can edit it.
+Made by [Tickerz](https://tickerz.com). Everything gets a ticker.
 
 ## License
 

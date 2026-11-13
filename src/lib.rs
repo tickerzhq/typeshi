@@ -5,7 +5,6 @@
 //! A slang layer over Rust that compiles to real Solana programs. You write
 //! `.shi`, `typeshi build` turns it into plain Anchor Rust, and `anchor build`
 //! does the rest. Made by Tickerz (tickerz.com): everything gets a ticker.
-//! Nobody can edit it.
 //!
 //! ```
 //! let src = r#"
