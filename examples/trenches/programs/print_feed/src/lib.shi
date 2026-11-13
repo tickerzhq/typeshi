@@ -1,5 +1,5 @@
 // print_feed.shi: a tiny Tickerz print feed, written in typeshi.
-// everything gets a ticker. nobody can edit it.
+// everything gets a ticker.
 
 gm!("7PxhmDuhhe394QJgKyW1P7Ce4dPCfFPN2yKq4KCCj7Vj");
 
