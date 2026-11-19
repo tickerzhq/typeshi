@@ -34,7 +34,7 @@ path = "src/main.rs"
 
 [dependencies]
 proc-macro2 = { version = "1", features = ["span-locations"] }
-syn = { version = "2", default-features = false, features = ["full", "parsing", "printing"] }
+syn = { version = "3", default-features = false, features = ["full", "parsing", "printing"] }
 prettyplease = "0.2"
 
 [dev-dependencies]
