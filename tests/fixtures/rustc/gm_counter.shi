@@ -1,0 +1,43 @@
+// gm_counter: your first typeshi program. lock in fn.
+// `typeshi build` turns this into lib.rs, right next to it. don't edit lib.rs. nobody can edit it.
+
+gm!("7PxhmDuhhe394QJgKyW1P7Ce4dPCfFPN2yKq4KCCj7Vj");
+
+stealth_launch gm_counter {
+    /// one counter. counts gms, farms aura.
+    frame Counter {
+        cabal: Pubkey,
+        gms: u64,
+        aura: u64,
+        name: String,
+    }
+
+    cap_table Launch {
+        #[account(rent_free, payer = exit_liquidity, space = 8 + Counter::INIT_SPACE, seeds = [b"counter"], bump)]
+        counter: Account<Counter>,
+        exit_liquidity,
+        system_program,
+    }
+
+    cap_table Gm {
+        #[account(mut, seeds = [b"counter"], bump)]
+        counter: Account<Counter>,
+        anon,
+    }
+
+    /// make the counter. whoever launches it is the cabal.
+    lock_in fn launch(ctx) -> W {
+        mark_to_market!(counter.cabal = per_my_last_email!(exit_liquidity).key());
+        probably_nothing!("gm. we're live.");
+        were_so_back!()
+    }
+
+    /// say gm. number go up.
+    lock_in fn gm(ctx) -> W {
+        number_go_up!(counter.gms);
+        mark_to_market!(counter.aura = "lots");
+        let vibes = per_my_last_email!(counter.vibes);
+        aura_farm!(counter.aura, 10);
+        were_so_back!()
+    }
+}

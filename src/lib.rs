@@ -28,9 +28,13 @@
 
 pub mod banter;
 pub mod diag;
+pub mod remap;
+pub mod scaffold;
+pub mod sourcemap;
 pub mod transpile;
 
 pub use diag::{Diag, Level};
+pub use sourcemap::{Pos, SourceMap};
 pub use transpile::{transpile, Options, Output, BANNED, FIXED_ERRORS};
 
 /// wen moon?

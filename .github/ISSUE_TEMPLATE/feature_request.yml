@@ -1,0 +1,16 @@
+name: feature
+description: a keyword, a banned move, a command, a better joke
+labels: [enhancement]
+body:
+  - type: textarea
+    id: idea
+    attributes:
+      label: the idea
+      description: what it should do. for a keyword, what Rust it should turn into
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: why
+      description: the problem it solves, or why it's funny

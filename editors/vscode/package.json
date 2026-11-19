@@ -1,0 +1,72 @@
+{
+  "name": "typeshi",
+  "displayName": "typeshi",
+  "description": "Syntax highlighting for typeshi (.shi), the slang layer over Rust that compiles to Solana programs. lock in fn.",
+  "version": "0.1.0",
+  "publisher": "tickerz",
+  "license": "MIT",
+  "homepage": "https://github.com/tickerzhq/typeshi",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tickerzhq/typeshi",
+    "directory": "editors/vscode"
+  },
+  "engines": {
+    "vscode": "^1.75.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "keywords": [
+    "typeshi",
+    "solana",
+    "anchor",
+    "rust"
+  ],
+  "contributes": {
+    "languages": [
+      {
+        "id": "typeshi",
+        "aliases": [
+          "typeshi",
+          "shi"
+        ],
+        "extensions": [
+          ".shi"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "typeshi",
+        "scopeName": "source.typeshi",
+        "path": "./syntaxes/typeshi.tmLanguage.json"
+      }
+    ],
+    "problemMatchers": [
+      {
+        "name": "typeshi",
+        "owner": "typeshi",
+        "source": "typeshi",
+        "fileLocation": [
+          "relative",
+          "${workspaceFolder}"
+        ],
+        "pattern": [
+          {
+            "regexp": "^(error|warning)(?:\\[\\w+\\])?: (.*)$",
+            "severity": 1,
+            "message": 2
+          },
+          {
+            "regexp": "^\\s*--> (.+\\.shi):(\\d+):(\\d+)$",
+            "file": 1,
+            "line": 2,
+            "column": 3
+          }
+        ]
+      }
+    ]
+  }
+}

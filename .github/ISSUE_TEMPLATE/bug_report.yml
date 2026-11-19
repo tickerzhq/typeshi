@@ -1,0 +1,31 @@
+name: bug
+description: typeshi did something wrong
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: what happened
+      description: the command you ran and what it printed
+      render: text
+    validations:
+      required: true
+  - type: textarea
+    id: shi
+    attributes:
+      label: the .shi
+      description: the smallest .shi that shows it
+      render: rust
+  - type: textarea
+    id: expected
+    attributes:
+      label: what you expected
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: version
+      description: "`typeshi --version`, your OS, and `anchor --version` if it's a build problem"
+    validations:
+      required: true

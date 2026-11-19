@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: security issue
+    url: https://github.com/tickerzhq/typeshi/blob/main/SECURITY.md
+    about: please email desk@tickerz.com instead of opening an issue
