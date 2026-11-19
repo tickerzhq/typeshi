@@ -3,12 +3,14 @@
 use std::collections::BTreeMap;
 use std::env;
 use std::fs;
-use std::io::{BufRead, BufReader, IsTerminal, Write};
+use std::io::{BufRead, BufReader, IsTerminal, Read, Write};
 use std::path::{Path, PathBuf};
-use std::process::{Command, Stdio};
+use std::process::{Command, ExitStatus, Stdio};
+use std::thread::{self, JoinHandle};
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use typeshi::banter;
+use typeshi::remap::{Generated, Remap};
 
 const WAGMI: i32 = 0;
 const NGMI: i32 = 1;
@@ -17,11 +19,17 @@ const HELP: &str = "\
 typeshi: lock in fn.
 
 usage:
+  typeshi new <name>       a new project: a program, a LiteSVM test, Anchor.toml
   typeshi build [dir]      turn every .shi into Anchor Rust, then `anchor build`
   typeshi test [dir]       build, then `cargo test`, then a verdict
+  typeshi check [dir]      typeshi's own checks only. no anchor, no writes. fast, for CI
   typeshi expand <file>    print the Rust a .shi file turns into
   typeshi fud [dir]        a roast of your code (also: typeshi --fud)
   typeshi wen moon         answers the question
+
+check flags:
+  --json                   one JSON diagnostic per line on stdout, for editors and CI
+  --locked                 also fail if a generated .rs is missing or stale
 
 build flags:
   --emit-only              write the .rs files and stop
@@ -43,6 +51,8 @@ struct Flags {
     leverage: Option<u64>,
     fud: bool,
     arch: Option<String>,
+    json: bool,
+    locked: bool,
 }
 
 struct Out {
@@ -97,6 +107,8 @@ fn run() -> i32 {
         leverage: None,
         fud: false,
         arch: None,
+        json: false,
+        locked: false,
     };
     let mut pos: Vec<String> = vec![];
     let mut args = env::args().skip(1);
@@ -117,6 +129,8 @@ fn run() -> i32 {
                 }
             },
             "--fud" => flags.fud = true,
+            "--json" => flags.json = true,
+            "--locked" => flags.locked = true,
             "--leverage" => match args.next().as_deref().and_then(banter::parse_leverage) {
                 Some(n) => flags.leverage = Some(n),
                 None => {
@@ -160,12 +174,20 @@ fn run() -> i32 {
         "build" => {
             out.header("typeshi build");
             let mut st = State::load(&dir);
-            let ok = build(&out, &dir, &flags, &mut st);
+            let (ok, _) = build(&out, &dir, &flags, &mut st);
             let code = after_build(&out, &dir, ok, &mut st);
             st.save(&dir);
             code
         }
         "test" => cmd_test(&out, &dir, &flags),
+        "check" => cmd_check(&out, &dir, &flags),
+        "new" => match pos.get(1) {
+            Some(name) => cmd_new(&out, name),
+            None => {
+                eprintln!("error: new what, ser? `typeshi new gm_counter`");
+                NGMI
+            }
+        },
         "expand" => match pos.get(1) {
             Some(f) => cmd_expand(&out, Path::new(f), &flags),
             None => {
@@ -298,24 +320,35 @@ fn on_path(bin: &str) -> bool {
         .unwrap_or(false)
 }
 
-/// Transpile every .shi under `dir`. Returns (ok, program names, any tests).
-fn transpile_all(out: &Out, dir: &Path, flags: &Flags) -> (bool, Vec<String>, bool) {
+struct Transpiled {
+    ok: bool,
+    programs: Vec<String>,
+    tests: bool,
+    generated: Vec<Generated>,
+}
+
+/// Transpile every .shi under `dir` and write the .rs next to each.
+fn transpile_all(out: &Out, dir: &Path, flags: &Flags) -> Transpiled {
     let mut files = vec![];
     find_shi(dir, &mut files);
+    let mut t = Transpiled {
+        ok: true,
+        programs: vec![],
+        tests: false,
+        generated: vec![],
+    };
     if files.is_empty() {
         eprintln!("error: no .shi files under {}. nothing to lock in.", dir.display());
-        return (false, vec![], false);
+        t.ok = false;
+        return t;
     }
-    let mut ok = true;
-    let mut programs = vec![];
-    let mut tests = false;
-    let color = out.color && std::io::stderr().is_terminal() || out.aura;
+    let color = stderr_color(out);
     for f in files {
         let src = match fs::read_to_string(&f) {
             Ok(s) => s,
             Err(e) => {
                 eprintln!("error: can't read {}: {e}", f.display());
-                ok = false;
+                t.ok = false;
                 continue;
             }
         };
@@ -333,16 +366,14 @@ fn transpile_all(out: &Out, dir: &Path, flags: &Flags) -> (bool, Vec<String>, bo
                 for d in &o.diags {
                     eprint!("{}", d.render(&shown, &src, color));
                 }
-                tests |= o.has_tests;
-                if let Some(p) = o.program.clone() {
-                    programs.push(p);
-                }
+                t.tests |= o.has_tests;
+                t.programs.extend(o.program.clone());
                 let target = f.with_extension("rs");
                 let unchanged = fs::read_to_string(&target).map(|s| s == o.rust).unwrap_or(false);
                 if !unchanged {
                     if let Err(e) = fs::write(&target, &o.rust) {
                         eprintln!("error: can't write {}: {e}", target.display());
-                        ok = false;
+                        t.ok = false;
                         continue;
                     }
                 }
@@ -350,19 +381,26 @@ fn transpile_all(out: &Out, dir: &Path, flags: &Flags) -> (bool, Vec<String>, bo
                     "locked in: {shown} -> {}",
                     target.strip_prefix(dir).unwrap_or(&target).display()
                 ));
+                t.generated.push(Generated {
+                    rs: target,
+                    shi: shown,
+                    src,
+                    map: o.map,
+                });
             }
             Err(diags) => {
-                ok = false;
+                t.ok = false;
                 for d in &diags {
                     eprint!("{}", d.render(&shown, &src, color));
                 }
             }
         }
     }
-    (ok, programs, tests)
+    t
 }
 
-fn build(out: &Out, dir: &Path, flags: &Flags, st: &mut State) -> bool {
+/// Build, and hand back the generated files so test failures can be mapped too.
+fn build(out: &Out, dir: &Path, flags: &Flags, st: &mut State) -> (bool, Vec<Generated>) {
     if st.get("builds") == 0 && st.get("fails_total") == 0 {
         out.say(banter::VESTING);
         out.say(banter::VESTING_ANYWAY);
@@ -373,26 +411,26 @@ fn build(out: &Out, dir: &Path, flags: &Flags, st: &mut State) -> bool {
                 "error: max leverage is {}x. this isn't a casino. (it is.)",
                 banter::MAX_LEVERAGE
             );
-            return false;
+            return (false, vec![]);
         }
         out.say(&format!("compiling {n}x faster."));
         let (_, nanos) = now();
         if banter::liquidated(n, nanos) {
             eprintln!("liquidated. (no files were harmed. the build just didn't happen.)");
-            return false;
+            return (false, vec![]);
         }
     }
-    let (ok, programs, tests) = transpile_all(out, dir, flags);
-    if !tests && !has_rust_tests(dir) {
+    let t = transpile_all(out, dir, flags);
+    if !t.tests && !has_rust_tests(dir) {
         let w = typeshi::Diag::warning("no tests found. the trenches are proud of you.", 0, 0, 1, "");
         eprint!("{}", w.render("", "", out.color));
     }
-    st.set("last_programs", programs.len() as u64);
-    if !ok {
-        return false;
+    st.set("last_programs", t.programs.len() as u64);
+    if !t.ok {
+        return (false, t.generated);
     }
     if flags.emit_only {
-        return true;
+        return (true, t.generated);
     }
     let mut cmd = if dir.join("Anchor.toml").is_file() && on_path("anchor") {
         let mut c = Command::new("anchor");
@@ -422,7 +460,7 @@ fn build(out: &Out, dir: &Path, flags: &Flags, st: &mut State) -> bool {
         }
     } else {
         out.say("no Anchor.toml or Cargo.toml here. transpiled only.");
-        return true;
+        return (true, t.generated);
     };
     if flags.gigamaxx {
         cmd.env("CARGO_PROFILE_RELEASE_OPT_LEVEL", "3")
@@ -432,13 +470,58 @@ fn build(out: &Out, dir: &Path, flags: &Flags, st: &mut State) -> bool {
             .env("CARGO_PROFILE_RELEASE_OVERFLOW_CHECKS", "true");
     }
     cmd.current_dir(dir);
-    match cmd.status() {
+    let ok = match run_mapped(cmd, out, dir, &t.generated) {
         Ok(s) => s.success(),
         Err(e) => {
             eprintln!("error: couldn't run the build: {e}");
             false
         }
+    };
+    (ok, t.generated)
+}
+
+fn stderr_color(out: &Out) -> bool {
+    out.color && std::io::stderr().is_terminal() || out.aura
+}
+
+/// Run a compiler with its stderr passed through [`Remap`], so errors in generated
+/// .rs files also point at the .shi they came from.
+fn run_mapped(mut cmd: Command, out: &Out, dir: &Path, generated: &[Generated]) -> std::io::Result<ExitStatus> {
+    let color = stderr_color(out);
+    if color {
+        cmd.env("CARGO_TERM_COLOR", "always");
     }
+    cmd.stderr(Stdio::piped());
+    let mut child = cmd.spawn()?;
+    let pump = pump_stderr(child.stderr.take(), Remap::new(dir, generated.to_vec(), color));
+    let status = child.wait();
+    let _ = pump.join();
+    status
+}
+
+fn pump_stderr<R: Read + Send + 'static>(stream: Option<R>, mut remap: Remap) -> JoinHandle<()> {
+    thread::spawn(move || {
+        let Some(stream) = stream else { return };
+        let mut reader = BufReader::new(stream);
+        let mut buf = vec![];
+        let err = std::io::stderr();
+        loop {
+            buf.clear();
+            match reader.read_until(b'\n', &mut buf) {
+                Ok(0) | Err(_) => break,
+                Ok(_) => {}
+            }
+            let line = String::from_utf8_lossy(&buf);
+            let mut lock = err.lock();
+            for l in remap.line(line.trim_end_matches(['\n', '\r'])) {
+                let _ = writeln!(lock, "{l}");
+            }
+        }
+        let mut lock = err.lock();
+        for l in remap.finish() {
+            let _ = writeln!(lock, "{l}");
+        }
+    })
 }
 
 fn after_build(out: &Out, dir: &Path, ok: bool, st: &mut State) -> i32 {
@@ -469,7 +552,7 @@ fn after_build(out: &Out, dir: &Path, ok: bool, st: &mut State) -> i32 {
 fn cmd_test(out: &Out, dir: &Path, flags: &Flags) -> i32 {
     out.header("typeshi test");
     let mut st = State::load(dir);
-    let built = build(out, dir, flags, &mut st);
+    let (built, generated) = build(out, dir, flags, &mut st);
     if !built {
         let code = after_build(out, dir, false, &mut st);
         st.save(dir);
@@ -477,18 +560,23 @@ fn cmd_test(out: &Out, dir: &Path, flags: &Flags) -> i32 {
     }
     st.set("builds", st.get("builds") + 1);
     st.set("fail_streak", 0);
-    let mut child = match Command::new("cargo")
-        .args(["test", "--", "--nocapture"])
+    let color = stderr_color(out);
+    let mut cmd = Command::new("cargo");
+    cmd.args(["test", "--", "--nocapture"])
         .current_dir(dir)
         .stdout(Stdio::piped())
-        .spawn()
-    {
+        .stderr(Stdio::piped());
+    if color {
+        cmd.env("CARGO_TERM_COLOR", "always");
+    }
+    let mut child = match cmd.spawn() {
         Ok(c) => c,
         Err(e) => {
             eprintln!("error: couldn't run cargo test: {e}");
             return NGMI;
         }
     };
+    let pump = pump_stderr(child.stderr.take(), Remap::new(dir, generated, color));
     let (mut passed, mut failed) = (0u64, 0u64);
     let mut cu: Option<u64> = None;
     if let Some(so) = child.stdout.take() {
@@ -519,6 +607,7 @@ fn cmd_test(out: &Out, dir: &Path, flags: &Flags) -> i32 {
         }
     }
     let status = child.wait().map(|s| s.success()).unwrap_or(false);
+    let _ = pump.join();
     let first = st.get("test_runs") == 0;
     st.set("test_runs", st.get("test_runs") + 1);
     if let Some(c) = cu {
@@ -565,6 +654,186 @@ fn parse_cu(line: &str) -> Option<u64> {
 }
 
 // ---------------------------------------------------------------------------
+// check, new
+
+fn cmd_check(out: &Out, dir: &Path, flags: &Flags) -> i32 {
+    let color = stderr_color(out);
+    let (mut errors, mut warnings) = (0usize, 0usize);
+    let mut report = |file: &str, src: &str, d: &typeshi::Diag| {
+        if d.is_error() {
+            errors += 1;
+        } else {
+            warnings += 1;
+        }
+        if flags.json {
+            println!("{}", d.to_json(file));
+        } else {
+            eprint!("{}", d.render(file, src, color));
+        }
+    };
+    let mut files = vec![];
+    find_shi(dir, &mut files);
+    if files.is_empty() {
+        let msg = format!("no .shi files under {}. nothing to check.", dir.display());
+        report("", "", &typeshi::Diag::error(msg, 0, 0, 1, ""));
+    }
+    let mut tests = false;
+    for f in &files {
+        let shown = f.strip_prefix(dir).unwrap_or(f).display().to_string();
+        let src = match fs::read_to_string(f) {
+            Ok(s) => s,
+            Err(e) => {
+                report(
+                    &shown,
+                    "",
+                    &typeshi::Diag::error(format!("can't read it: {e}"), 0, 0, 1, ""),
+                );
+                continue;
+            }
+        };
+        let opts = typeshi::Options {
+            strip_logs: flags.gigamaxx,
+            source_name: f
+                .file_name()
+                .map(|n| n.to_string_lossy().to_string())
+                .unwrap_or_default(),
+        };
+        match typeshi::transpile(&src, &opts) {
+            Ok(o) => {
+                tests |= o.has_tests;
+                for d in &o.diags {
+                    report(&shown, &src, d);
+                }
+                if flags.locked {
+                    let target = f.with_extension("rs");
+                    let rs = target.strip_prefix(dir).unwrap_or(&target).display().to_string();
+                    let stale = match fs::read_to_string(&target) {
+                        Ok(s) if s == o.rust => None,
+                        Ok(_) => Some(typeshi::Diag::error(
+                            format!("`{rs}` is stale. run `typeshi build --emit-only` and commit it."),
+                            0,
+                            0,
+                            1,
+                            "or someone edited it. nobody can edit it.",
+                        )),
+                        Err(_) => Some(typeshi::Diag::error(
+                            format!("`{rs}` is missing. run `typeshi build --emit-only` and commit it."),
+                            0,
+                            0,
+                            1,
+                            "--locked wants the generated rust checked in",
+                        )),
+                    };
+                    if let Some(d) = stale {
+                        report(&rs, "", &d);
+                    }
+                }
+            }
+            Err(diags) => {
+                for d in &diags {
+                    report(&shown, &src, d);
+                }
+            }
+        }
+    }
+    if !files.is_empty() && !tests && !has_rust_tests(dir) {
+        report(
+            "",
+            "",
+            &typeshi::Diag::warning("no tests found. the trenches are proud of you.", 0, 0, 1, ""),
+        );
+    }
+    if flags.json {
+        return if errors == 0 { WAGMI } else { NGMI };
+    }
+    let n = |k: usize, what: &str| {
+        if k == 1 {
+            format!("1 {what}")
+        } else {
+            format!("{k} {what}s")
+        }
+    };
+    out.say(&format!(
+        "checked {}. {}, {}.",
+        n(files.len(), "file"),
+        n(errors, "error"),
+        n(warnings, "warning")
+    ));
+    if errors > 0 {
+        eprintln!("{}", out.paint("1;31", banter::escalation(1)));
+    }
+    out.verdict(errors == 0)
+}
+
+fn cmd_new(out: &Out, name: &str) -> i32 {
+    use typeshi::scaffold;
+    if let Some(why) = scaffold::check_name(name) {
+        eprintln!("error: {why}");
+        return NGMI;
+    }
+    let root = Path::new(name);
+    let taken = root.exists() && fs::read_dir(root).map(|mut d| d.next().is_some()).unwrap_or(true);
+    if taken {
+        eprintln!("error: `{name}` already exists and isn't empty. not rugging your files.");
+        return NGMI;
+    }
+    let id = scaffold::new_program_id();
+    for (rel, body) in scaffold::files(name, &id) {
+        let p = root.join(&rel);
+        let written = p
+            .parent()
+            .map(fs::create_dir_all)
+            .unwrap_or(Ok(()))
+            .and_then(|_| fs::write(&p, body));
+        if let Err(e) = written {
+            eprintln!("error: can't write {}: {e}", p.display());
+            return NGMI;
+        }
+    }
+    // write lib.rs now, so the Rust you're getting is right there to read
+    let program = scaffold::program_name(name);
+    let shi = root.join("programs").join(&program).join("src").join("lib.shi");
+    let src = fs::read_to_string(&shi).unwrap_or_default();
+    match typeshi::transpile(&src, &typeshi::Options::default()) {
+        Ok(o) => {
+            if let Err(e) = fs::write(shi.with_extension("rs"), o.rust) {
+                eprintln!("error: can't write lib.rs: {e}");
+                return NGMI;
+            }
+        }
+        Err(diags) => {
+            for d in &diags {
+                eprint!("{}", d.render(&shi.display().to_string(), &src, stderr_color(out)));
+            }
+            eprintln!("error: the template doesn't compile. that one's on us. open an issue.");
+            return NGMI;
+        }
+    }
+    out.header("typeshi new");
+    out.say(&format!("stealth launched {name}/"));
+    let made = [
+        (format!("programs/{program}/src/lib.shi"), "your program"),
+        (
+            format!("programs/{program}/src/lib.rs"),
+            "the rust it turns into. nobody can edit it",
+        ),
+        (format!("programs/{program}/tests/{program}.rs"), "a LiteSVM test"),
+    ];
+    let w = made.iter().map(|(p, _)| p.len()).max().unwrap_or(0);
+    for (p, what) in &made {
+        out.say(&format!("  {p:<w$}  {what}"));
+    }
+    out.say("next:");
+    out.say(&format!("  cd {name}"));
+    out.say("  typeshi check            typeshi's checks. needs nothing else");
+    out.say("  typeshi test --arch v1   build and test. needs the Solana CLI and Anchor 1.2");
+    out.say(&format!(
+        "program id {id} is fine for localnet. to deploy, put the address from `anchor keys list` in gm!() and Anchor.toml."
+    ));
+    out.verdict(true)
+}
+
+// ---------------------------------------------------------------------------
 // expand, fud
 
 fn cmd_expand(out: &Out, file: &Path, flags: &Flags) -> i32 {
@@ -584,7 +853,7 @@ fn cmd_expand(out: &Out, file: &Path, flags: &Flags) -> i32 {
         source_name: name,
     };
     let shown = file.display().to_string();
-    let color = out.color && std::io::stderr().is_terminal() || out.aura;
+    let color = stderr_color(out);
     match typeshi::transpile(&src, &opts) {
         Ok(o) => {
             for d in &o.diags {

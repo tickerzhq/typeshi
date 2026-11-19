@@ -1,0 +1,297 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "typeshi",
+  "scopeName": "source.typeshi",
+  "fileTypes": [
+    "shi"
+  ],
+  "patterns": [
+    {
+      "include": "#comments"
+    },
+    {
+      "include": "#attributes"
+    },
+    {
+      "include": "#strings"
+    },
+    {
+      "include": "#chars"
+    },
+    {
+      "include": "#lifetimes"
+    },
+    {
+      "include": "#macros"
+    },
+    {
+      "include": "#declarations"
+    },
+    {
+      "include": "#keywords"
+    },
+    {
+      "include": "#numbers"
+    },
+    {
+      "include": "#types"
+    },
+    {
+      "include": "#functions"
+    }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.documentation.typeshi",
+          "match": "//[/!].*$"
+        },
+        {
+          "name": "comment.line.double-slash.typeshi",
+          "match": "//.*$"
+        },
+        {
+          "name": "comment.block.typeshi",
+          "begin": "/\\*",
+          "end": "\\*/"
+        }
+      ]
+    },
+    "attributes": {
+      "name": "meta.attribute.typeshi",
+      "begin": "#!?\\[",
+      "end": "\\]",
+      "beginCaptures": {
+        "0": {
+          "name": "punctuation.definition.attribute.typeshi"
+        }
+      },
+      "endCaptures": {
+        "0": {
+          "name": "punctuation.definition.attribute.typeshi"
+        }
+      },
+      "patterns": [
+        {
+          "name": "keyword.other.attribute.typeshi",
+          "match": "\\b(on_god|tokenmaxx|vc_backed)\\b"
+        },
+        {
+          "name": "keyword.other.constraint.typeshi",
+          "match": "\\b(rent_free|golden_parachute|graduate)\\b"
+        },
+        {
+          "name": "variable.language.typeshi",
+          "match": "\\b(ser|exit_liquidity|cabal|anon|kol)\\b"
+        },
+        {
+          "include": "#strings"
+        },
+        {
+          "include": "#numbers"
+        },
+        {
+          "name": "entity.other.attribute-name.typeshi",
+          "match": "[A-Za-z_][A-Za-z0-9_]*"
+        }
+      ]
+    },
+    "strings": {
+      "patterns": [
+        {
+          "name": "string.quoted.double.raw.typeshi",
+          "begin": "b?r(#*)\"",
+          "end": "\"\\1"
+        },
+        {
+          "name": "string.quoted.double.typeshi",
+          "begin": "b?\"",
+          "end": "\"",
+          "patterns": [
+            {
+              "name": "constant.character.escape.typeshi",
+              "match": "\\\\(?:[nrt0\\\\'\\\"]|x[0-9A-Fa-f]{2}|u\\{[0-9A-Fa-f_]{1,6}\\}|\\n)"
+            }
+          ]
+        }
+      ]
+    },
+    "chars": {
+      "name": "string.quoted.single.char.typeshi",
+      "match": "b?'(?:[^'\\\\]|\\\\(?:[nrt0\\\\'\\\"]|x[0-9A-Fa-f]{2}|u\\{[0-9A-Fa-f_]{1,6}\\}))'"
+    },
+    "lifetimes": {
+      "match": "(')([A-Za-z_][A-Za-z0-9_]*)(?!')",
+      "captures": {
+        "1": {
+          "name": "punctuation.definition.lifetime.typeshi"
+        },
+        "2": {
+          "name": "storage.modifier.lifetime.typeshi"
+        }
+      }
+    },
+    "macros": {
+      "patterns": [
+        {
+          "name": "invalid.illegal.banned-move.typeshi",
+          "match": "\\b(deploy_on_friday|insider_trading|exit_scam|honeypot|dev_sold|ponzi|rug)!"
+        },
+        {
+          "name": "support.function.macro.confession.typeshi",
+          "match": "\\b(sell_the_bottom|trust_the_dev|buy_the_top|vc_unlock|kol_promo|airdrop|bullish|audit)!"
+        },
+        {
+          "name": "support.function.macro.typeshi",
+          "match": "\\b(per_my_last_email|probably_nothing|hostile_takeover|printer_go_brrr|funds_are_safu|mark_to_market|freeze_revoked|bonding_curve|this_is_fine|were_so_back|trust_me_bro|number_go_up|mint_revoked|its_so_over|margin_call|touch_grass|liquidated|aura_farm|looksmaxx|full_send|lp_burned|bundled|layoffs|seethe|ascend|fired|rekt|hodl|fren|bags|wen|bps|mew|gm)!"
+        },
+        {
+          "name": "entity.name.function.macro.typeshi",
+          "match": "\\b[A-Za-z_][A-Za-z0-9_]*!"
+        }
+      ]
+    },
+    "declarations": {
+      "patterns": [
+        {
+          "match": "\\b(stealth_launch)\\s+([A-Za-z_][A-Za-z0-9_]*)",
+          "captures": {
+            "1": {
+              "name": "keyword.declaration.program.typeshi"
+            },
+            "2": {
+              "name": "entity.name.namespace.typeshi"
+            }
+          }
+        },
+        {
+          "match": "\\b(frame|term_sheet|cap_table|alpha_leak)\\s+([A-Za-z_][A-Za-z0-9_]*)",
+          "captures": {
+            "1": {
+              "name": "keyword.declaration.struct.typeshi"
+            },
+            "2": {
+              "name": "entity.name.type.typeshi"
+            }
+          }
+        },
+        {
+          "match": "\\b(type_shi|deadass)\\s+([A-Za-z_][A-Za-z0-9_]*)",
+          "captures": {
+            "1": {
+              "name": "keyword.declaration.typeshi"
+            },
+            "2": {
+              "name": "entity.name.type.typeshi"
+            }
+          }
+        },
+        {
+          "match": "\\b(lock_in|ape|few_understand)\\s+(fn)\\s+([A-Za-z_][A-Za-z0-9_]*)",
+          "captures": {
+            "1": {
+              "name": "storage.modifier.typeshi"
+            },
+            "2": {
+              "name": "keyword.other.fn.typeshi"
+            },
+            "3": {
+              "name": "entity.name.function.typeshi"
+            }
+          }
+        },
+        {
+          "match": "\\b(fn)\\s+([A-Za-z_][A-Za-z0-9_]*)",
+          "captures": {
+            "1": {
+              "name": "keyword.other.fn.typeshi"
+            },
+            "2": {
+              "name": "entity.name.function.typeshi"
+            }
+          }
+        },
+        {
+          "match": "\\b(struct|enum|trait|type|mod|union)\\s+([A-Za-z_][A-Za-z0-9_]*)",
+          "captures": {
+            "1": {
+              "name": "keyword.declaration.typeshi"
+            },
+            "2": {
+              "name": "entity.name.type.typeshi"
+            }
+          }
+        },
+        {
+          "name": "keyword.declaration.typeshi",
+          "match": "\\bcope\\b"
+        }
+      ]
+    },
+    "keywords": {
+      "patterns": [
+        {
+          "name": "keyword.control.typeshi",
+          "match": "\\b(bull|bear|if|else|match|for|while|loop|return|break|continue|in|await)\\b"
+        },
+        {
+          "name": "keyword.operator.word.typeshi",
+          "match": "\\b(mogs|as)\\b"
+        },
+        {
+          "name": "keyword.other.typeshi",
+          "match": "\\bcuz\\b"
+        },
+        {
+          "name": "constant.language.boolean.typeshi",
+          "match": "\\b(diamond_hands|paper_hands|true|false)\\b"
+        },
+        {
+          "name": "support.type.result.typeshi",
+          "match": "\\b(W|ebitda|Bps)\\b"
+        },
+        {
+          "name": "support.function.typeshi",
+          "match": "\\b(L|wen_moon)(?=\\s*\\()"
+        },
+        {
+          "name": "variable.language.typeshi",
+          "match": "\\b(ctx|ser|exit_liquidity|cabal|anon|kol|self|Self|super|crate)\\b"
+        },
+        {
+          "name": "storage.modifier.typeshi",
+          "match": "\\b(pub|mut|const|static|unsafe|async|move|ref|dyn|extern|impl|where|let|use)\\b"
+        },
+        {
+          "name": "keyword.operator.typeshi",
+          "match": "=>|->|::|[-+*/%^!&|<>=]=?|&&|\\|\\|"
+        }
+      ]
+    },
+    "numbers": {
+      "patterns": [
+        {
+          "name": "constant.numeric.hex.typeshi",
+          "match": "\\b0x[0-9A-Fa-f_]+(?:[iu](?:8|16|32|64|128|size))?\\b"
+        },
+        {
+          "name": "constant.numeric.typeshi",
+          "match": "\\b\\d[\\d_]*(?:\\.\\d[\\d_]*)?(?:[eE][+-]?\\d+)?(?:[iu](?:8|16|32|64|128|size)|f32|f64)?\\b"
+        }
+      ]
+    },
+    "types": {
+      "name": "entity.name.type.typeshi",
+      "match": "\\b[A-Z][A-Za-z0-9_]*\\b"
+    },
+    "functions": {
+      "match": "\\b([A-Za-z_][A-Za-z0-9_]*)\\s*(?=\\()",
+      "captures": {
+        "1": {
+          "name": "entity.name.function.call.typeshi"
+        }
+      }
+    }
+  }
+}

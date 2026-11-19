@@ -5,6 +5,7 @@
 //! `prettyplease`. The output is ordinary Rust that `anchor build` compiles.
 
 use crate::diag::Diag;
+use crate::sourcemap::{self, Chunk, SourceMap, Tok};
 use proc_macro2::{Delimiter, Group, Spacing, Span, TokenStream, TokenTree};
 use std::collections::{BTreeSet, HashMap, HashSet};
 
@@ -108,6 +109,8 @@ pub struct Output {
     pub has_tests: bool,
     /// Every fn and its length in lines (the `fud` command roasts the longest).
     pub fns: Vec<(String, usize)>,
+    /// Generated line and column back to the `.shi`, for rustc and anchor errors.
+    pub map: SourceMap,
 }
 
 pub fn transpile(src: &str, opts: &Options) -> Result<Output, Vec<Diag>> {
@@ -126,16 +129,21 @@ pub fn transpile(src: &str, opts: &Options) -> Result<Output, Vec<Diag>> {
     };
     let toks: Vec<TokenTree> = ts.into_iter().collect();
     let mut cx = Cx::new(src, opts);
+    cx.anchor = toks.first().map(|t| t.span());
     let out = cx.run(&toks);
     let has_errors = cx.diags.iter().any(|d| d.is_error());
     match out {
-        Some(rust) if !has_errors => Ok(Output {
-            rust,
-            diags: cx.diags,
-            program: cx.program,
-            has_tests: src.contains("#[test]"),
-            fns: cx.fn_lengths,
-        }),
+        Some(rust) if !has_errors => {
+            let map = SourceMap::build(&rust, cx.program.as_deref(), &cx.chunks);
+            Ok(Output {
+                rust,
+                diags: cx.diags,
+                program: cx.program,
+                has_tests: src.contains("#[test]"),
+                fns: cx.fn_lengths,
+                map,
+            })
+        }
         _ => Err(cx.diags),
     }
 }
@@ -468,6 +476,56 @@ fn split_items(t: &[TokenTree]) -> Vec<RawItem> {
     items
 }
 
+/// Every item as one token list (attributes included).
+pub(crate) fn top_items(t: &[TokenTree]) -> Vec<Vec<TokenTree>> {
+    split_items(t)
+        .into_iter()
+        .map(|it| it.attrs.into_iter().flatten().chain(it.body).collect())
+        .collect()
+}
+
+/// (keyword, name) of an item: ("struct", "Feed"), ("fn", "print"), ("macro", "declare_id").
+/// The source map uses it to find a generated item in the printed output.
+pub(crate) fn item_key(t: &[TokenTree]) -> (String, String) {
+    let mut i = 0;
+    while is_punct(t.get(i), '#') {
+        let j = if is_punct(t.get(i + 1), '!') { i + 2 } else { i + 1 };
+        if group_of(t.get(j), Delimiter::Bracket).is_none() {
+            break;
+        }
+        i = j + 1;
+    }
+    if is_ident(t.get(i), "pub") {
+        i += 1;
+        if group_of(t.get(i), Delimiter::Parenthesis).is_some() {
+            i += 1;
+        }
+    }
+    while ["unsafe", "async", "default", "extern", "auto"]
+        .iter()
+        .any(|q| is_ident(t.get(i), q))
+        || matches!(t.get(i), Some(TokenTree::Literal(_)))
+    {
+        i += 1;
+    }
+    if is_ident(t.get(i), "const") && is_ident(t.get(i + 1), "fn") {
+        i += 1;
+    }
+    let kw = ident_str(t.get(i)).unwrap_or_default();
+    if is_punct(t.get(i + 1), '!') {
+        return ("macro".into(), kw);
+    }
+    if kw == "impl" {
+        let names: Vec<String> = t[i + 1..]
+            .iter()
+            .take_while(|x| group_of(Some(x), Delimiter::Brace).is_none())
+            .filter_map(|x| ident_str(Some(x)))
+            .collect();
+        return (kw, names.join(" "));
+    }
+    (kw, ident_str(t.get(i + 1)).unwrap_or_default())
+}
+
 // ---------------------------------------------------------------------------
 // the transpiler
 
@@ -495,6 +553,10 @@ struct Cx<'a> {
     aliases: HashMap<String, Vec<TokenTree>>,
     program: Option<String>,
     fn_lengths: Vec<(String, usize)>,
+    /// hint tokens per generated item, for the source map
+    chunks: Vec<Chunk>,
+    /// any span from the `.shi`, to tell its tokens from template tokens
+    anchor: Option<Span>,
 }
 
 impl<'a> Cx<'a> {
@@ -514,6 +576,8 @@ impl<'a> Cx<'a> {
             aliases: HashMap::new(),
             program: None,
             fn_lengths: vec![],
+            chunks: vec![],
+            anchor: None,
         };
         for (v, m) in FIXED_ERRORS {
             cx.errors.push((v.to_string(), m.to_string()));
@@ -530,6 +594,27 @@ impl<'a> Cx<'a> {
     fn warn_at(&mut self, span: Span, width: usize, msg: impl Into<String>, label: impl Into<String>) {
         let (l, c) = loc(span);
         self.diags.push(Diag::warning(msg, l, c, width, label));
+    }
+
+    /// Source-map hints: the flat `.shi` tokens of `t`, template tokens left out.
+    fn hint(&self, t: &[TokenTree], out: &mut Vec<Tok>) {
+        sourcemap::flatten(t, self.anchor, out);
+    }
+
+    /// A source-map hint for generated text that stands in for the token at `span`.
+    fn hint_at(&self, text: &str, span: Span, out: &mut Vec<Tok>) {
+        sourcemap::tok_at(self.anchor, text, span, out);
+    }
+
+    fn chunk(&mut self, in_program: bool, kw: &str, name: &str, toks: Vec<Tok>, at: Span) {
+        let mut fallback = vec![];
+        self.hint_at(kw, at, &mut fallback);
+        self.chunks.push(Chunk {
+            in_program,
+            key: (kw.to_string(), name.to_string()),
+            toks,
+            fallback: fallback.first().map(|t| t.pos),
+        });
     }
 
     /// Register an error message and return `Cope::Variant`.
@@ -690,6 +775,10 @@ impl<'a> Cx<'a> {
                         );
                     }
                     declare_id = Some(format!("declare_id!({});", to_s(&arg)));
+                    let mut h = vec![];
+                    self.hint_at("declare_id", b[0].span(), &mut h);
+                    self.hint(&b[1..b.len().min(3)], &mut h);
+                    self.chunk(false, "macro", "declare_id", h, b[0].span());
                 }
                 "this_is_fine" if is_punct(b.get(1), '!') => {
                     panic_handler =
@@ -701,6 +790,7 @@ impl<'a> Cx<'a> {
                             if let Some(m) = info.message().as_str() { anchor_lang::prelude::msg!(m); }\n\
                         }\n"
                         .to_string();
+                    self.chunk(false, "fn", "custom_panic", vec![], b[0].span());
                 }
                 b_kw if MACRO_ITEM_BANNED(b_kw) && is_punct(b.get(1), '!') => {
                     self.banned(b_kw, b[0].span());
@@ -709,21 +799,9 @@ impl<'a> Cx<'a> {
                 "alpha_leak" => crate_items.push_str(&self.gen_frame(it, "event")),
                 "cap_table" => crate_items.push_str(cap_out.get(&idx).map(|s| s.as_str()).unwrap_or("")),
                 "cope" => {}
-                "type_shi" => {
-                    let mut fx = FnCx::item();
-                    let rest = self.rw(&b[1..], &mut fx);
-                    crate_items.push_str(&format!("{} pub type {}\n", to_s(&it.rust_attrs()), to_s(&rest)));
-                }
-                "deadass" => {
-                    let mut fx = FnCx::item();
-                    let rest = self.rw(&b[1..], &mut fx);
-                    crate_items.push_str(&format!("{} pub const {}\n", to_s(&it.rust_attrs()), to_s(&rest)));
-                }
-                "const" if it.has_attr("on_god") => {
-                    let mut fx = FnCx::item();
-                    let rest = self.rw(&b[1..], &mut fx);
-                    crate_items.push_str(&format!("{} pub const {}\n", to_s(&it.rust_attrs()), to_s(&rest)));
-                }
+                "type_shi" => crate_items.push_str(&self.gen_alias(it, "type")),
+                "deadass" => crate_items.push_str(&self.gen_alias(it, "const")),
+                "const" if it.has_attr("on_god") => crate_items.push_str(&self.gen_alias(it, "const")),
                 "lock_in" | "ape" => {
                     if saw_instruction.is_none() {
                         saw_instruction = Some(b[0].span());
@@ -740,9 +818,15 @@ impl<'a> Cx<'a> {
                 _ => {
                     // plain Rust: rewrite slang inside it and pass it through
                     let mut fx = FnCx::item();
-                    let attrs = to_s(&it.rust_attrs());
+                    let attrs = it.rust_attrs();
                     let body = self.rw(&it.body, &mut fx);
-                    crate_items.push_str(&format!("{attrs} {}\n", to_s(&body)));
+                    let mut h = vec![];
+                    self.hint(&attrs, &mut h);
+                    self.hint(&body, &mut h);
+                    let whole: Vec<TokenTree> = attrs.iter().chain(body.iter()).cloned().collect();
+                    let (kw, name) = item_key(&whole);
+                    self.chunk(false, &kw, &name, h, it.first_span());
+                    crate_items.push_str(&format!("{} {}\n", to_s(&attrs), to_s(&body)));
                 }
             }
         }
@@ -869,6 +953,21 @@ impl<'a> Cx<'a> {
         s
     }
 
+    /// `type_shi X = T;` and `deadass X: T = v;` (and `#[on_god] const`): `pub type` / `pub const`.
+    fn gen_alias(&mut self, it: &RawItem, kw: &str) -> String {
+        let b = it.after_vis();
+        let mut fx = FnCx::item();
+        let rest = self.rw(&b[1..], &mut fx);
+        let attrs = it.rust_attrs();
+        let mut h = vec![];
+        self.hint(&attrs, &mut h);
+        self.hint_at(kw, b[0].span(), &mut h);
+        self.hint(&rest, &mut h);
+        let name = ident_str(b.get(1)).unwrap_or_default();
+        self.chunk(false, kw, &name, h, b[0].span());
+        format!("{} pub {kw} {}\n", to_s(&attrs), to_s(&rest))
+    }
+
     // --- frames, events -----------------------------------------------------
 
     fn gen_frame(&mut self, it: &RawItem, kind: &str) -> String {
@@ -880,8 +979,8 @@ impl<'a> Cx<'a> {
                 return String::new();
             }
         };
-        let body = match group_of(b.get(2), Delimiter::Brace) {
-            Some(g) => inner(g),
+        let group = match group_of(b.get(2), Delimiter::Brace) {
+            Some(g) => g.clone(),
             None => {
                 self.err_at(
                     b[1].span(),
@@ -892,9 +991,15 @@ impl<'a> Cx<'a> {
                 return String::new();
             }
         };
+        let item_attrs = it.rust_attrs();
+        let mut h = vec![];
+        self.hint(&item_attrs, &mut h);
+        self.hint_at("struct", b[0].span(), &mut h);
+        self.hint(&b[1..2], &mut h);
+        self.hint_at("{", group.span_open(), &mut h);
         let mut fields = String::new();
         let mut fx = FnCx::item();
-        for f in split_fields(&body) {
+        for f in split_fields(&inner(&group)) {
             let (attrs, rest) = take_attrs(&f);
             let mut rest = strip_vis(&rest);
             if kind == "account" && rest.len() == 3 && is_punct(rest.get(1), ':') {
@@ -904,9 +1009,13 @@ impl<'a> Cx<'a> {
                 }
             }
             let rest = self.rw(&rest, &mut fx);
+            self.hint(&attrs, &mut h);
+            self.hint(&rest, &mut h);
             fields.push_str(&format!("{} pub {},\n", to_s(&attrs), to_s(&rest)));
         }
-        let attrs = to_s(&it.rust_attrs());
+        self.hint_at("}", group.span_close(), &mut h);
+        self.chunk(false, "struct", &name, h, b[0].span());
+        let attrs = to_s(&item_attrs);
         let god = if it.has_attr("on_god") {
             "/// #[on_god]: immutable after init.\n"
         } else {
@@ -934,16 +1043,23 @@ impl<'a> Cx<'a> {
                 return String::new();
             }
         };
-        let body = match group_of(b.get(2), Delimiter::Brace) {
-            Some(g) => inner(g),
+        let group = match group_of(b.get(2), Delimiter::Brace) {
+            Some(g) => g.clone(),
             None => return String::new(),
         };
+        let item_attrs = it.rust_attrs();
+        let mut h = vec![];
+        self.hint(&item_attrs, &mut h);
+        self.hint_at("struct", b[0].span(), &mut h);
+        self.hint(&b[1..2], &mut h);
+        self.hint_at("{", group.span_open(), &mut h);
         let mut writes = false;
         let mut fields = String::new();
         let mut fx = FnCx::item();
-        for f in split_fields(&body) {
+        for f in split_fields(&inner(&group)) {
             let (attrs, rest) = take_attrs(&f);
             let rest = strip_vis(&rest);
+            let mut fh = vec![];
             // rewrite #[account(...)]
             let mut attr_s = String::new();
             let mut field_writes = false;
@@ -957,6 +1073,10 @@ impl<'a> Cx<'a> {
                 let t = inner(g);
                 if is_ident(t.first(), "account") {
                     if let Some(args) = group_of(t.get(1), Delimiter::Parenthesis) {
+                        self.hint(&a[..1], &mut fh);
+                        self.hint_at("[", g.span_open(), &mut fh);
+                        self.hint(&t[..1], &mut fh);
+                        self.hint_at("(", args.span_open(), &mut fh);
                         let mut new_args = vec![];
                         for arg in split_commas(&inner(args)) {
                             let first = ident_str(arg.first()).unwrap_or_default();
@@ -974,20 +1094,38 @@ impl<'a> Cx<'a> {
                                 _ => {}
                             }
                             let s = match first.as_str() {
-                                "rent_free" if arg.len() == 1 => "init".to_string(),
-                                "golden_parachute" => format!("close {}", to_s(&arg[1..])),
-                                "graduate" => format!(
-                                    "realloc {}, realloc::payer = exit_liquidity, realloc::zero = false",
-                                    to_s(&arg[1..])
-                                ),
-                                _ => to_s(&self.rw(&arg, &mut fx)),
+                                "rent_free" if arg.len() == 1 => {
+                                    self.hint_at("init", arg[0].span(), &mut fh);
+                                    "init".to_string()
+                                }
+                                "golden_parachute" => {
+                                    self.hint_at("close", arg[0].span(), &mut fh);
+                                    self.hint(&arg[1..], &mut fh);
+                                    format!("close {}", to_s(&arg[1..]))
+                                }
+                                "graduate" => {
+                                    self.hint_at("realloc", arg[0].span(), &mut fh);
+                                    self.hint(&arg[1..], &mut fh);
+                                    format!(
+                                        "realloc {}, realloc::payer = exit_liquidity, realloc::zero = false",
+                                        to_s(&arg[1..])
+                                    )
+                                }
+                                _ => {
+                                    let r = self.rw(&arg, &mut fx);
+                                    self.hint(&r, &mut fh);
+                                    to_s(&r)
+                                }
                             };
                             new_args.push(s);
                         }
+                        self.hint_at(")", args.span_close(), &mut fh);
+                        self.hint_at("]", g.span_close(), &mut fh);
                         attr_s.push_str(&format!("#[account({})]\n", new_args.join(", ")));
                         continue;
                     }
                 }
+                self.hint(a, &mut fh);
                 attr_s.push_str(&to_s(a));
                 attr_s.push('\n');
             }
@@ -1017,6 +1155,8 @@ impl<'a> Cx<'a> {
                 } else {
                     attr_s.clone()
                 };
+                self.hint(&rest, &mut fh);
+                h.append(&mut fh);
                 fields.push_str(&format!("{a}\npub {short}: {ty},\n"));
                 continue;
             }
@@ -1057,10 +1197,15 @@ impl<'a> Cx<'a> {
                     }
                 }
             }
+            self.hint(&rest[..2], &mut fh);
+            self.hint(&ty_rw, &mut fh);
+            h.append(&mut fh);
             fields.push_str(&format!("{attr_s}pub {field_name}: {ty_s},\n"));
         }
+        self.hint_at("}", group.span_close(), &mut h);
+        self.chunk(false, "struct", &name, h, b[0].span());
         self.cap_tables.insert(name.clone(), writes);
-        let attrs = to_s(&it.rust_attrs());
+        let attrs = to_s(&item_attrs);
         format!("#[derive(Accounts)]\n{attrs}\npub struct {name}<'info> {{\n{fields}}}\n")
     }
 
@@ -1180,16 +1325,32 @@ impl<'a> Cx<'a> {
             strip_logs: self.opts.strip_logs || it.has_attr("tokenmaxx"),
             moves_money: false,
         };
+        let attrs = it.rust_attrs();
+        let mut h = vec![];
+        self.hint(&attrs, &mut h);
+        self.hint(&b[1..3], &mut h);
+        self.hint_at("(", params.span_open(), &mut h);
+        self.hint(&first, &mut h);
         let mut rest_params = vec![ctx_s];
         for p in ps.iter().skip(1) {
-            rest_params.push(to_s(&self.rw(p, &mut fx)));
+            let r = self.rw(p, &mut fx);
+            self.hint(&r, &mut h);
+            rest_params.push(to_s(&r));
         }
+        self.hint_at(")", params.span_close(), &mut h);
         let ret_s = if ret.is_empty() {
             "-> Result<()>".to_string()
         } else {
-            to_s(&self.rw(&ret, &mut fx))
+            let r = self.rw(&ret, &mut fx);
+            self.hint(&r, &mut h);
+            to_s(&r)
         };
-        let mut body_s = to_s(&self.rw(&inner(&body), &mut fx));
+        let body_rw = self.rw(&inner(&body), &mut fx);
+        self.hint_at("{", body.span_open(), &mut h);
+        self.hint(&body_rw, &mut h);
+        self.hint_at("}", body.span_close(), &mut h);
+        self.chunk(true, "fn", &name, h, name_span);
+        let mut body_s = to_s(&body_rw);
         let mut docs = String::new();
         if let Some(args) = it.attr_args("vc_backed") {
             // vesting starts at `since` (unix seconds), or typeshi genesis: 2026-01-01 UTC
@@ -1221,7 +1382,7 @@ impl<'a> Cx<'a> {
         self.lints_for_fn(it, &name, name_span, &params, &body, &fx);
         Some(format!(
             "{}\n{docs}pub fn {name}({}) {ret_s} {{ {body_s} }}\n",
-            to_s(&it.rust_attrs()),
+            to_s(&attrs),
             rest_params.join(", ")
         ))
     }
@@ -1245,9 +1406,23 @@ impl<'a> Cx<'a> {
             strip_logs: self.opts.strip_logs,
             moves_money: false,
         };
-        let params_s = to_s(&self.rw(&inner(&params), &mut fx));
-        let ret_s = to_s(&self.rw(&ret, &mut fx));
-        let body_s = to_s(&self.rw(&inner(&body), &mut fx));
+        let attrs = it.rust_attrs();
+        let params_rw = self.rw(&inner(&params), &mut fx);
+        let ret_rw = self.rw(&ret, &mut fx);
+        let body_rw = self.rw(&inner(&body), &mut fx);
+        let mut h = vec![];
+        self.hint(&attrs, &mut h);
+        self.hint(&it.body[..it.body.len() - it.after_vis().len()], &mut h);
+        self.hint(&b[fn_idx..fn_idx + 2], &mut h);
+        self.hint_at("(", params.span_open(), &mut h);
+        self.hint(&params_rw, &mut h);
+        self.hint_at(")", params.span_close(), &mut h);
+        self.hint(&ret_rw, &mut h);
+        self.hint_at("{", body.span_open(), &mut h);
+        self.hint(&body_rw, &mut h);
+        self.hint_at("}", body.span_close(), &mut h);
+        self.chunk(false, "fn", &name, h, name_span);
+        let (params_s, ret_s, body_s) = (to_s(&params_rw), to_s(&ret_rw), to_s(&body_rw));
         self.lints_for_fn(it, &name, name_span, &params, &body, &fx);
         let vis = if private {
             "#[allow(dead_code)]\n".to_string()
@@ -1258,7 +1433,7 @@ impl<'a> Cx<'a> {
         };
         Some(format!(
             "{}\n{vis} fn {name}({params_s}) {ret_s} {{ {body_s} }}\n",
-            to_s(&it.rust_attrs())
+            to_s(&attrs)
         ))
     }
 
@@ -1297,42 +1472,22 @@ impl<'a> Cx<'a> {
                                     let args = inner(g);
                                     let a = if args.is_empty() { None } else { Some(&args) };
                                     let e = self.err_arg(a, "skill issue", fx);
-                                    out.extend(toks_of(&format!("err!({e})")));
+                                    out.extend(sourcemap::place(toks_of(&format!("err!({e})")), id.span(), &args));
                                     i += 2;
                                     continue;
                                 }
                             }
-                            "W" | "ebitda" => {
-                                if is_punct(t.get(i + 1), '<') {
-                                    out.extend(toks_of("Result"));
-                                } else {
-                                    out.extend(toks_of("Result<()>"));
-                                }
-                                i += 1;
-                                continue;
-                            }
-                            "bull" => {
-                                out.extend(toks_of("if"));
-                                i += 1;
-                                continue;
-                            }
-                            "bear" => {
-                                out.extend(toks_of("else"));
-                                i += 1;
-                                continue;
-                            }
-                            "mogs" => {
-                                out.extend(toks_of(">"));
-                                i += 1;
-                                continue;
-                            }
-                            "diamond_hands" => {
-                                out.extend(toks_of("true"));
-                                i += 1;
-                                continue;
-                            }
-                            "paper_hands" => {
-                                out.extend(toks_of("false"));
+                            "W" | "ebitda" | "bull" | "bear" | "mogs" | "diamond_hands" | "paper_hands" => {
+                                let rust = match s.as_str() {
+                                    "W" | "ebitda" if is_punct(t.get(i + 1), '<') => "Result",
+                                    "W" | "ebitda" => "Result<()>",
+                                    "bull" => "if",
+                                    "bear" => "else",
+                                    "mogs" => ">",
+                                    "diamond_hands" => "true",
+                                    _ => "false",
+                                };
+                                out.extend(sourcemap::place(toks_of(rust), id.span(), &[]));
                                 i += 1;
                                 continue;
                             }
@@ -1810,7 +1965,7 @@ impl<'a> Cx<'a> {
             }
             _ => return None,
         };
-        Some(toks_of(&s))
+        Some(sourcemap::place(toks_of(&s), span, &args_t))
     }
 
     fn edit_lint_macro(&mut self, name: &str, span: Span, target: &[TokenTree], fx: &FnCx) {
