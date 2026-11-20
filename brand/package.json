@@ -1,0 +1,12 @@
+{
+  "name": "typeshi-brand",
+  "private": true,
+  "description": "Draws the social preview and README header from real typeshi output. node make.mjs",
+  "type": "module",
+  "scripts": {
+    "make": "node make.mjs"
+  },
+  "devDependencies": {
+    "playwright": "1.63.0"
+  }
+}

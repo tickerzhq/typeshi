@@ -1,4 +1,9 @@
-# typeshi
+<h1>
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="brand/readme-dark.png">
+    <img src="brand/readme-light.png" width="830" alt="typeshi, lock in fn. Real output of typeshi check: error: not on our watch, anon, at rug.shi line 13, `rug!` is a banned move. ngmi">
+  </picture>
+</h1>
 
 [![ci](https://github.com/tickerzhq/typeshi/actions/workflows/ci.yml/badge.svg)](https://github.com/tickerzhq/typeshi/actions/workflows/ci.yml)
 [![license: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
