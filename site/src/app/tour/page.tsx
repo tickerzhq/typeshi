@@ -10,19 +10,20 @@ export const metadata: Metadata = {
 };
 
 export default function TourPage() {
-  const lessons = (content.tour as Lesson[]).map(({ n, slug, title, body }) => ({
+  const lessons = (content.tour as Lesson[]).map(({ n, slug, chapter, title, body }) => ({
     n,
     slug,
+    chapter,
     title,
-    blurb: body.split("\n\n")[0].replace(/[`*]/g, ""),
+    blurb: body.split("\n\n")[0].replace(/\*\*/g, ""),
   }));
   return (
     <div className={`wrap ${s.page}`}>
       <p className={s.eyebrow}>the tour</p>
       <h1 className={s.h1}>learn typeshi by breaking it.</h1>
       <p className={s.lede}>
-        {lessons.length} short lessons. Each one has a goal, and the real compiler checks it as you type. No install,
-        nothing to sign up for. About fifteen minutes.
+        {lessons.length} short lessons in {new Set(lessons.map((l) => l.chapter)).size} chapters. Each one has a goal,
+        and the real compiler checks it as you type. No install, nothing to sign up for. About half an hour.
       </p>
       <TourIndex lessons={lessons} />
     </div>

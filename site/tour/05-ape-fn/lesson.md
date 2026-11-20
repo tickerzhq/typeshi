@@ -1,3 +1,4 @@
+chapter: basics
 title: ape fn
 check: ok
 rust: pub fn peek(ctx: Context<Peek>)

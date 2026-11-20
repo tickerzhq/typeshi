@@ -1,3 +1,4 @@
+chapter: basics
 title: cap_table
 check: ok
 rust: pub struct Gm<'info>

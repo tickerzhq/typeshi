@@ -1,3 +1,4 @@
+chapter: rules
 title: checks
 check: ok
 rust: require!(

@@ -1,3 +1,4 @@
+chapter: money
 title: not financial advice
 check: ok
 rust: system_program::transfer

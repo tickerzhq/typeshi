@@ -156,6 +156,7 @@ const fud = strList("FUD");
 // --- the tour, from site/tour/NN-slug/{lesson.md,start.shi,solution.shi} ----------
 // lesson.md starts with "key: value" lines (title, check: ok|error, rust: <text>, error: <text>), then ---, then the body.
 // Every lesson must start out failing its check and its solution must pass, through the real compiler.
+// lesson.md keys: chapter, title, check: ok|error|warning, rust: <text> (repeatable), error: <text>, warning: <text>.
 const { readdirSync } = await import("node:fs");
 const { passes } = await import(join(site, "src/lib/check.mjs"));
 const tourDir = join(site, "tour");
@@ -172,14 +173,27 @@ const tour = readdirSync(tourDir)
       if (m[1] === "rust") meta.rust.push(m[2]);
       else meta[m[1]] = m[2];
     }
-    if (!meta.title || !["ok", "error"].includes(meta.check)) throw new Error(`sync: tour/${dir}/lesson.md needs title and check: ok|error`);
-    if (meta.check === "error" && !meta.error) throw new Error(`sync: tour/${dir} checks for an error but names none`);
-    const check = { kind: meta.check, rust: meta.rust, error: meta.error ?? null };
+    if (!meta.title || !meta.chapter || !["ok", "error", "warning"].includes(meta.check)) {
+      throw new Error(`sync: tour/${dir}/lesson.md needs chapter, title and check: ok|error|warning`);
+    }
+    if (meta.check !== "ok" && !meta[meta.check]) throw new Error(`sync: tour/${dir} checks for a ${meta.check} but names none`);
+    const check = { kind: meta.check, rust: meta.rust, error: meta.error ?? null, warning: meta.warning ?? null };
     const start = readFileSync(join(tourDir, dir, "start.shi"), "utf8");
     const solution = readFileSync(join(tourDir, dir, "solution.shi"), "utf8");
     if (passes(compile(start), check)) throw new Error(`sync: tour/${dir} already passes before you do anything`);
     if (!passes(compile(solution), check)) throw new Error(`sync: tour/${dir}'s solution doesn't pass its own check`);
-    return { n: i + 1, slug: dir.slice(3), title: meta.title, body: rest.join("\n---\n").trim(), start, solution, check };
+    const startResult = compile(start);
+    return {
+      n: i + 1,
+      slug: dir.slice(3),
+      chapter: meta.chapter,
+      title: meta.title,
+      body: rest.join("\n---\n").trim(),
+      start,
+      solution,
+      check,
+      startCompiles: startResult.ok,
+    };
   });
 
 // --- cross-links -----------------------------------------------------------------------

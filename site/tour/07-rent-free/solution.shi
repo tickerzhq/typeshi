@@ -1,0 +1,20 @@
+gm!("7PxhmDuhhe394QJgKyW1P7Ce4dPCfFPN2yKq4KCCj7Vj");
+
+stealth_launch hello {
+    frame Counter {
+        cabal: Pubkey,
+        gms: u64,
+    }
+
+    cap_table Launch {
+        #[account(rent_free, payer = exit_liquidity, space = 8 + Counter::INIT_SPACE, seeds = [b"counter"], bump)]
+        counter: Account<Counter>,
+        exit_liquidity,
+        system_program,
+    }
+
+    lock_in fn launch(ctx) -> W {
+        probably_nothing!("gm. we're live.");
+        were_so_back!()
+    }
+}

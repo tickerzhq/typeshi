@@ -1,3 +1,4 @@
+chapter: rules
 title: bull and bear
 check: ok
 rust: } else {

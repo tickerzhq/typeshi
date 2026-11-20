@@ -1,3 +1,4 @@
+chapter: basics
 title: gm
 check: ok
 rust: declare_id!("

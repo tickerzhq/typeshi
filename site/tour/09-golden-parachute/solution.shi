@@ -1,0 +1,20 @@
+gm!("7PxhmDuhhe394QJgKyW1P7Ce4dPCfFPN2yKq4KCCj7Vj");
+
+stealth_launch desk {
+    frame Desk {
+        cabal: Pubkey,
+    }
+
+    cap_table Retire {
+        #[account(mut, has_one = cabal, golden_parachute = cabal)]
+        desk: Account<Desk>,
+        #[account(mut)]
+        cabal,
+    }
+
+    /// closes the desk. the rent goes back to the cabal.
+    lock_in fn retire(ctx) -> W {
+        mew!();
+        were_so_back!()
+    }
+}

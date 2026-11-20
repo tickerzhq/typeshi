@@ -1,3 +1,4 @@
+chapter: rules
 title: cope
 check: ok
 rust: return err!(Cope::DeskClosed)
