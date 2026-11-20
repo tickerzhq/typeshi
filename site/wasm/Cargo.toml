@@ -1,0 +1,25 @@
+[package]
+name = "typeshi-wasm"
+version = "0.1.0"
+edition = "2021"
+publish = false
+description = "The real typeshi compiler, compiled to WebAssembly for the playground."
+license = "MIT"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+typeshi = { path = "../.." }
+wasm-bindgen = "0.2"
+
+[dev-dependencies]
+serde_json = "1"
+
+[profile.release]
+opt-level = "s"
+lto = true
+codegen-units = 1
+panic = "abort"
+
+[workspace]

@@ -1,0 +1,5 @@
+// lesson 1. every program starts with gm.
+gm!();
+
+stealth_launch hello {
+}

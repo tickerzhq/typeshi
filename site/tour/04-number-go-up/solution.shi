@@ -1,0 +1,20 @@
+gm!("7PxhmDuhhe394QJgKyW1P7Ce4dPCfFPN2yKq4KCCj7Vj");
+
+stealth_launch hello {
+    frame Counter {
+        gms: u64,
+        aura: u64,
+    }
+
+    cap_table Gm {
+        #[account(mut)]
+        counter: Account<Counter>,
+        anon,
+    }
+
+    lock_in fn gm(ctx) -> W {
+        number_go_up!(counter.gms);
+        aura_farm!(counter.aura, 10);
+        were_so_back!()
+    }
+}
