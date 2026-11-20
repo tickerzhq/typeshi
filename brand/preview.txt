@@ -1,0 +1,6 @@
+error: not on our watch, anon
+  --> rug.shi:13:9
+   |
+13 |         rug!(pool);
+   |         ^^^^ `rug!` is a banned move
+ngmi
