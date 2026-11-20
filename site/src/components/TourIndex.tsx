@@ -2,10 +2,11 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import Inline from "./Inline";
 import { doneSet } from "./TourLesson";
 import s from "./TourIndex.module.css";
 
-type Item = { n: number; slug: string; title: string; blurb: string };
+type Item = { n: number; slug: string; chapter: string; title: string; blurb: string };
 
 export default function TourIndex({ lessons }: { lessons: Item[] }) {
   const [done, setDone] = useState<Set<string>>(new Set());
@@ -21,19 +22,35 @@ export default function TourIndex({ lessons }: { lessons: Item[] }) {
           {done.size} of {lessons.length} done
         </span>
       </div>
-      <ol className={s.list}>
-        {lessons.map((l) => (
-          <li key={l.slug}>
-            <Link href={`/tour/${l.slug}`} className={s.item} data-done={done.has(l.slug)}>
-              <span className={s.n}>{done.has(l.slug) ? "✓" : String(l.n).padStart(2, "0")}</span>
-              <span className={s.body}>
-                <span className={s.title}>{l.title}</span>
-                <span className={s.blurb}>{l.blurb}</span>
+      {[...new Set(lessons.map((l) => l.chapter))].map((chapter) => {
+        const inChapter = lessons.filter((l) => l.chapter === chapter);
+        const doneHere = inChapter.filter((l) => done.has(l.slug)).length;
+        return (
+          <section key={chapter} className={s.chapter} aria-labelledby={`ch-${chapter.replace(/\s+/g, "-")}`}>
+            <h2 id={`ch-${chapter.replace(/\s+/g, "-")}`} className={s.chapterTitle}>
+              <span>{chapter}</span>
+              <span className={s.chapterCount}>
+                {doneHere}/{inChapter.length}
               </span>
-            </Link>
-          </li>
-        ))}
-      </ol>
+            </h2>
+            <ol className={s.list} start={inChapter[0].n}>
+              {inChapter.map((l) => (
+                <li key={l.slug}>
+                  <Link href={`/tour/${l.slug}`} className={s.item} data-done={done.has(l.slug)}>
+                    <span className={s.n}>{done.has(l.slug) ? "✓" : String(l.n).padStart(2, "0")}</span>
+                    <span className={s.body}>
+                      <span className={s.title}>{l.title}</span>
+                      <span className={s.blurb}>
+                        <Inline text={l.blurb} />
+                      </span>
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ol>
+          </section>
+        );
+      })}
     </>
   );
 }

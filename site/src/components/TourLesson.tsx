@@ -128,7 +128,9 @@ export default function TourLesson({
   const goal =
     lesson.check.kind === "error"
       ? "goal: get the compiler to refuse."
-      : lesson.check.rust.length
+      : lesson.check.kind === "warning"
+        ? "goal: it compiles, and the compiler warns you."
+        : lesson.check.rust.length
         ? "goal: it compiles, and lib.rs shows the change."
         : "goal: it compiles.";
 
@@ -136,7 +138,7 @@ export default function TourLesson({
     <div className={s.layout}>
       <article className={s.text} aria-labelledby="lesson-title">
         <p className={s.count}>
-          <Link href="/tour">tour</Link> · lesson {lesson.n} of {total}
+          <Link href="/tour">tour</Link> · {lesson.chapter} · lesson {lesson.n} of {total}
         </p>
         <h1 id="lesson-title" className={s.title}>
           {lesson.title}

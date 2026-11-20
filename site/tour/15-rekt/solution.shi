@@ -1,0 +1,21 @@
+gm!("7PxhmDuhhe394QJgKyW1P7Ce4dPCfFPN2yKq4KCCj7Vj");
+
+stealth_launch desk {
+    frame Desk {
+        trades: u64,
+    }
+
+    cap_table Trade {
+        #[account(mut)]
+        desk: Account<Desk>,
+        ser,
+    }
+
+    lock_in fn trade(ctx, size: u64) -> W {
+        bull size mogs 1_000_000 {
+            rekt!("too big");
+        }
+        number_go_up!(desk.trades);
+        were_so_back!()
+    }
+}

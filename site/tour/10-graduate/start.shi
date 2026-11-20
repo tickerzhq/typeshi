@@ -1,0 +1,21 @@
+gm!("7PxhmDuhhe394QJgKyW1P7Ce4dPCfFPN2yKq4KCCj7Vj");
+
+stealth_launch desk {
+    frame Desk {
+        cabal: Pubkey,
+        version: u8,
+    }
+
+    cap_table Grow {
+        #[account(mut, has_one = cabal)]
+        desk: Account<Desk>,
+        cabal,
+        exit_liquidity,
+        system_program,
+    }
+
+    lock_in fn grow(ctx) -> W {
+        ascend!(desk.version);
+        were_so_back!()
+    }
+}

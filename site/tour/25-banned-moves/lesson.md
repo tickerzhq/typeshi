@@ -1,3 +1,4 @@
+chapter: the trenches
 title: banned moves
 check: error
 error: is a banned move

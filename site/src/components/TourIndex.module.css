@@ -73,3 +73,24 @@
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
 }
+.chapter + .chapter {
+  margin-top: 36px;
+}
+.chapterTitle {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin: 0 0 10px;
+  font: 600 13px/1 var(--mono);
+  color: var(--wagmi);
+  letter-spacing: 0.02em;
+}
+.chapterCount {
+  color: var(--faint);
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+}
+.blurb code {
+  font-size: 12.5px;
+  color: var(--ink);
+}

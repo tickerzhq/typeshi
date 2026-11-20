@@ -1,0 +1,24 @@
+gm!("7PxhmDuhhe394QJgKyW1P7Ce4dPCfFPN2yKq4KCCj7Vj");
+
+stealth_launch token {
+    frame Desk {
+        cabal: Pubkey,
+    }
+
+    cap_table Brrr {
+        #[account(has_one = cabal)]
+        desk: Account<Desk>,
+        #[account(mut)]
+        mint: Account<anchor_spl::token::Mint>,
+        #[account(mut)]
+        bag: Account<anchor_spl::token::TokenAccount>,
+        cabal,
+        token_program,
+    }
+
+    // not financial advice
+    lock_in fn brrr(ctx, amount: u64) -> W {
+        printer_go_brrr!(mint => bag, amount, cabal);
+        were_so_back!()
+    }
+}

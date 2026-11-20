@@ -1,0 +1,19 @@
+gm!("7PxhmDuhhe394QJgKyW1P7Ce4dPCfFPN2yKq4KCCj7Vj");
+
+stealth_launch desk {
+    frame Desk {
+        small: u32,
+    }
+
+    cap_table Trade {
+        #[account(mut)]
+        desk: Account<Desk>,
+        ser,
+    }
+
+    lock_in fn trade(ctx, size: u64) -> W {
+        let small = size as u32;
+        mark_to_market!(desk.small = small);
+        were_so_back!()
+    }
+}
