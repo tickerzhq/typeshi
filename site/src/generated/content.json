@@ -1,0 +1,451 @@
+{
+ "version": "0.1.0",
+ "banned": [
+  [
+   "rug",
+   "not on our watch, anon"
+  ],
+  [
+   "honeypot",
+   "ser, this is a Wendy's"
+  ],
+  [
+   "insider_trading",
+   "the feds are monitoring the situation"
+  ],
+  [
+   "dev_sold",
+   "dev didn't sell. dev never sells."
+  ],
+  [
+   "exit_scam",
+   "exit scam? in this economy?"
+  ],
+  [
+   "ponzi",
+   "number go up is not a business model"
+  ],
+  [
+   "deploy_on_friday",
+   "absolutely not."
+  ]
+ ],
+ "fixedErrors": [
+  [
+   "SkillIssue",
+   "skill issue"
+  ],
+  [
+   "YouAreExitLiquidity",
+   "you are exit liquidity"
+  ],
+  [
+   "FundsAreNotSafu",
+   "funds are not safu"
+  ],
+  [
+   "DevIsOnVacation",
+   "dev is on vacation"
+  ],
+  [
+   "RuggedByA19YearOld",
+   "rugged by a 19 year old"
+  ],
+  [
+   "WifeChangingMoneyNotFound",
+   "wife changing money not found"
+  ]
+ ],
+ "escalation": [
+  "skill issue.",
+  "have you tried turning your strategy off.",
+  "even the bots are laughing.",
+  "have you considered a career in sales.",
+  "ser, this is a Wendy's."
+ ],
+ "fud": [
+  "anon, why is this function 400 lines. team is hiding something.",
+  "no tests, no audit, no docs. the roadmap is a vibe and the vibe is bearish.",
+  "this codebase has more TODOs than holders.",
+  "the error handling is a prayer to the validator.",
+  "dev wallet holds 94% of the comments.",
+  "the commit history reads like a liquidation cascade.",
+  "roadmap: Q1 tests. Q2 tests. Q3 tests. Q4 we circle back on tests.",
+  "the only thing this code locked in is the tech debt.",
+  "a VC would fund this. that is not a compliment.",
+  "airdrop farmers have better uptime than this build.",
+  "the SEC reviewed this program and decided it is not a security. it is a cry for help.",
+  "insiders already know this fn panics. now you do too.",
+  "this match statement has more arms than a market maker.",
+  "a KOL called this code 'generational'. he was paid in this code.",
+  "variable names chosen by a points program. every one of them is `x`.",
+  "your unwraps are doing more leverage than your trades.",
+  "this program's compute budget is bigger than its user count.",
+  "we wrote the compiler. we are in no position to judge. still."
+ ],
+ "examples": [
+  {
+   "id": "gm_counter",
+   "title": "gm counter",
+   "blurb": "what `typeshi new` gives you. counts gms, farms aura.",
+   "path": "src/scaffold.rs (typeshi new)",
+   "source": "// gm_counter: your first typeshi program. lock in fn.\n// `typeshi build` turns this into lib.rs, right next to it. don't edit lib.rs. nobody can edit it.\n\ngm!(\"7PxhmDuhhe394QJgKyW1P7Ce4dPCfFPN2yKq4KCCj7Vj\");\n\nstealth_launch gm_counter {\n    /// one counter. counts gms, farms aura.\n    frame Counter {\n        cabal: Pubkey,\n        gms: u64,\n        aura: u64,\n    }\n\n    cap_table Launch {\n        #[account(rent_free, payer = exit_liquidity, space = 8 + Counter::INIT_SPACE, seeds = [b\"counter\"], bump)]\n        counter: Account<Counter>,\n        exit_liquidity,\n        system_program,\n    }\n\n    cap_table Gm {\n        #[account(mut, seeds = [b\"counter\"], bump)]\n        counter: Account<Counter>,\n        anon,\n    }\n\n    /// make the counter. whoever launches it is the cabal.\n    lock_in fn launch(ctx) -> W {\n        mark_to_market!(counter.cabal = per_my_last_email!(exit_liquidity).key());\n        probably_nothing!(\"gm. we're live.\");\n        were_so_back!()\n    }\n\n    /// say gm. number go up.\n    lock_in fn gm(ctx) -> W {\n        number_go_up!(counter.gms);\n        aura_farm!(counter.aura, 10);\n        were_so_back!()\n    }\n}\n",
+   "ok": true,
+   "rustLines": 86,
+   "diags": []
+  },
+  {
+   "id": "print_feed",
+   "title": "print feed",
+   "blurb": "an append-only feed. prints are forever.",
+   "path": "examples/trenches/programs/print_feed/src/lib.shi",
+   "source": "// print_feed.shi: a tiny Tickerz print feed, written in typeshi.\n// everything gets a ticker.\n\ngm!(\"7PxhmDuhhe394QJgKyW1P7Ce4dPCfFPN2yKq4KCCj7Vj\");\n\nstealth_launch print_feed {\n    /// eight bytes of ticker, e.g. b\"CPI\\0\\0\\0\\0\\0\".\n    type_shi Ticker = [u8; 8];\n\n    /// the biggest value a print can carry: 1,000,000 bps (10,000%).\n    #[on_god]\n    const MAX_PRINT: Bps = 1_000_000;\n\n    /// one feed per ticker. counts its prints, farms aura.\n    frame Feed {\n        ticker: Ticker,\n        cabal: Pubkey,\n        prints: u64,\n        aura: u64,\n    }\n\n    /// one print. written once, at init. nobody can edit it.\n    #[on_god]\n    frame PrintRecord {\n        feed: Pubkey,\n        seq: u64,\n        value: Bps,\n        printed_by: Pubkey,\n        printed_at: i64,\n    }\n\n    /// leaked to every indexer watching. probably nothing.\n    alpha_leak Printed {\n        ticker: Ticker,\n        seq: u64,\n        value: Bps,\n        pretty: String,\n    }\n\n    #[instruction(ticker: Ticker)]\n    cap_table ListTicker {\n        #[account(rent_free, payer = exit_liquidity, space = 8 + Feed::INIT_SPACE,\n                  seeds = [b\"feed\", ticker.as_ref()], bump)]\n        feed: Account<Feed>,\n        exit_liquidity,\n        system_program,\n    }\n\n    cap_table Print {\n        #[account(mut, has_one = cabal, seeds = [b\"feed\", feed.ticker.as_ref()], bump)]\n        feed: Account<Feed>,\n        #[account(rent_free, payer = exit_liquidity, space = 8 + PrintRecord::INIT_SPACE,\n                  seeds = [b\"print\", feed.key().as_ref(), &feed.prints.to_le_bytes()], bump)]\n        print: Account<PrintRecord>,\n        cabal,\n        exit_liquidity,\n        system_program,\n    }\n\n    cap_table Gm {\n        feed: Account<Feed>,\n    }\n\n    /// list a ticker. whoever lists it is the cabal.\n    lock_in fn list_ticker(ctx, ticker: Ticker) -> W {\n        trust_me_bro!(ticker[0] != 0, \"a ticker needs a name. skill issue.\");\n        mark_to_market!(feed.ticker = ticker);\n        mark_to_market!(feed.cabal = per_my_last_email!(exit_liquidity).key());\n        probably_nothing!(\"gm. new ticker listed.\");\n        were_so_back!()\n    }\n\n    /// print a value. it lives on-chain forever.\n    #[tokenmaxx]\n    lock_in fn print(ctx, value: Bps) -> W {\n        trust_me_bro!(value mogs 0, \"a print of zero is not a print.\");\n        funds_are_safu!(value <= MAX_PRINT);\n        let seq = per_my_last_email!(feed.prints);\n        let feed_key = per_my_last_email!(feed).key();\n        mark_to_market!(print.feed = feed_key);\n        mark_to_market!(print.seq = seq);\n        mark_to_market!(print.value = value);\n        mark_to_market!(print.printed_by = per_my_last_email!(cabal).key());\n        mark_to_market!(print.printed_at = Clock::get()?.unix_timestamp);\n        number_go_up!(feed.prints);\n        aura_farm!(feed.aura, 10);\n        probably_nothing!(\"print #{} locked in\", seq); // #[tokenmaxx] strips this log. CU is CU.\n        probably_nothing!(Printed {\n            ticker: per_my_last_email!(feed.ticker),\n            seq,\n            value,\n            pretty: looksmaxx!(value),\n        });\n        were_so_back!()\n    }\n\n    /// say gm. it only reads, so it's an `ape fn`, not a `lock_in fn`.\n    ape fn gm(ctx) -> W {\n        let prints = per_my_last_email!(feed.prints);\n        bull prints mogs 0 {\n            probably_nothing!(\"gm. {} prints. nobody can edit them. wen moon? {}\", looksmaxx!(prints), wen_moon());\n        } bear {\n            airdrop!();\n        }\n        were_so_back!()\n    }\n\n    /// there is no edit instruction. this fn exists to tell you why.\n    few_understand fn edit(_print: &PrintRecord, _value: Bps) -> W {\n        L(\"nobody can edit it. skill issue.\")\n    }\n\n    #[cfg(test)]\n    mod tests {\n        use super::*;\n\n        fn a_print() -> PrintRecord {\n            PrintRecord { feed: Pubkey::default(), seq: 0, value: 425, printed_by: Pubkey::default(), printed_at: 0 }\n        }\n\n        #[test]\n        fn nobody_can_edit_it() {\n            assert!(edit(&a_print(), 9_000).is_err());\n        }\n\n        #[test]\n        fn looksmaxxed() {\n            assert_eq!(looksmaxx!(425u64), \"425\");\n            assert_eq!(looksmaxx!(1_234_567u64), \"1.23M\");\n        }\n\n        #[test]\n        fn wen_moon_is_soon() {\n            assert_eq!(wen_moon(), \"soon\\u{2122}\");\n        }\n\n        #[test]\n        fn error_codes_are_tradition() {\n            assert_eq!(u32::from(Cope::SkillIssue), 1);\n            assert_eq!(u32::from(Cope::WifeChangingMoneyNotFound), 6);\n        }\n    }\n}\n",
+   "ok": true,
+   "rustLines": 230,
+   "diags": []
+  },
+  {
+   "id": "degen_desk",
+   "title": "degen desk",
+   "blurb": "every keyword in one program. a toy. do not run a desk on it.",
+   "path": "examples/trenches/programs/degen_desk/src/lib.shi",
+   "source": "// degen_desk.shi: every typeshi keyword in one program, so the compiler checks all of them.\n// it is a toy. do not run a desk on it. obviously.\n\ngm!(\"7nTB3oS3PmJn5JkDppPbnESpm59zdbBCDPmi53djce6P\");\n\n// the panic handler. build with `--features custom-panic` to turn it on.\nthis_is_fine!();\n\nstealth_launch degen_desk {\n    cope {\n        DeskClosed = \"desk is closed. touch grass.\",\n    }\n\n    /// 2.5% carry, as is tradition.\n    deadass FEE_BPS: Bps = 250;\n\n    frame Desk {\n        cabal: Pubkey,\n        frens: [Pubkey; 4],\n        locked: bool,\n        version: u8,\n        opens_at: i64,\n        closes_at: i64,\n        last_price: u64,\n        ath: u64,\n        floor: u64,\n    }\n\n    frame Bag {\n        owner: Pubkey,\n        points: u64,\n    }\n\n    cap_table OpenDesk {\n        #[account(rent_free, payer = exit_liquidity, space = 8 + Desk::INIT_SPACE, seeds = [b\"desk\"], bump)]\n        desk: Account<Desk>,\n        exit_liquidity,\n        system_program,\n    }\n\n    cap_table Trade {\n        #[account(mut, has_one = cabal)]\n        desk: Account<Desk>,\n        cabal,\n        ser,\n        kol,\n        system_program,\n    }\n\n    cap_table Brrr {\n        #[account(has_one = cabal)]\n        desk: Account<Desk>,\n        #[account(mut)]\n        mint: Account<anchor_spl::token::Mint>,\n        #[account(mut)]\n        bag: Account<anchor_spl::token::TokenAccount>,\n        #[account(mut)]\n        vc: Account<anchor_spl::token::TokenAccount>,\n        cabal,\n        token_program,\n    }\n\n    cap_table Grow {\n        #[account(mut, has_one = cabal, graduate = 8 + Desk::INIT_SPACE + 64)]\n        desk: Account<Desk>,\n        cabal,\n        exit_liquidity,\n        system_program,\n    }\n\n    cap_table FireEveryone {\n        #[account(mut, has_one = cabal)]\n        desk: Account<Desk>,\n        #[account(mut)]\n        bag_a: Account<Bag>,\n        #[account(mut)]\n        bag_b: Account<Bag>,\n        #[account(mut)]\n        cabal,\n    }\n\n    cap_table Liquidate {\n        #[account(has_one = cabal)]\n        desk: Account<Desk>,\n        #[account(mut)]\n        bag: Account<Bag>,\n        #[account(mut)]\n        cabal,\n    }\n\n    cap_table Retire {\n        #[account(mut, has_one = cabal, golden_parachute = cabal)]\n        desk: Account<Desk>,\n        #[account(mut)]\n        cabal,\n    }\n\n    cap_table CheckBags {\n        desk: Account<Desk>,\n        anon,\n    }\n\n    lock_in fn open_desk(ctx, opens_at: i64, closes_at: i64) -> W {\n        margin_call!(closes_at <= opens_at, \"the desk closes before it opens. skill issue.\");\n        let me = per_my_last_email!(exit_liquidity).key();\n        mark_to_market!(desk.cabal = me);\n        mark_to_market!(desk.frens = [me; 4]);\n        mark_to_market!(desk.locked = diamond_hands);\n        mark_to_market!(desk.opens_at = opens_at);\n        mark_to_market!(desk.closes_at = closes_at);\n        mark_to_market!(desk.floor = 1);\n        audit!(by = \"vibes\");\n        were_so_back!()\n    }\n\n    // not financial advice\n    lock_in fn trade(ctx, price: u64, size: u64, revenue: u64) -> W {\n        wen!(per_my_last_email!(desk.opens_at));\n        touch_grass!(per_my_last_email!(desk.closes_at), Cope::DeskClosed);\n        fren!(per_my_last_email!(ser).key() in per_my_last_email!(desk.frens));\n        trust_the_dev!(size mogs 0);\n        let fee = bps!(size, FEE_BPS);\n        let quote = bonding_curve!(size, price, 1);\n        funds_are_safu!(bags!(ser) >= fee);\n        kol_promo!(fee);\n        bundled! {\n            mark_to_market!(desk.last_price = price);\n            sell_the_bottom!(price, per_my_last_email!(desk.floor), {\n                probably_nothing!(\"sold the bottom at {}. as is tradition.\", price);\n            });\n            buy_the_top!(price, per_my_last_email!(desk.ath), {\n                mark_to_market!(desk.ath = price);\n            });\n        }\n        probably_nothing!(\"quote: {}\", looksmaxx!(quote));\n        were_so_back!()\n    }\n\n    // not financial advice\n    #[vc_backed]\n    lock_in fn brrr(ctx, amount: u64) -> W {\n        printer_go_brrr!(mint => bag, amount, cabal);\n        vc_unlock!(mint => vc, cabal);\n        lp_burned!(bag => mint, amount / 2, cabal);\n        mint_revoked!(mint, cabal);\n        freeze_revoked!(mint, cabal);\n        were_so_back!()\n    }\n\n    lock_in fn grow(ctx) -> W {\n        hodl!(per_my_last_email!(desk.opens_at));\n        ascend!(desk.version);\n        were_so_back!()\n    }\n\n    // not financial advice\n    lock_in fn fire_everyone(ctx) -> W {\n        let new_boss = per_my_last_email!(cabal).key();\n        hostile_takeover!(desk.cabal => new_boss);\n        layoffs!(bag_a, bag_b => cabal);\n        were_so_back!()\n    }\n\n    // not financial advice\n    lock_in fn liquidate(ctx) -> W {\n        liquidated!(bag => cabal);\n        were_so_back!()\n    }\n\n    /// closes the desk. golden_parachute sends the rent back to the cabal.\n    lock_in fn retire(ctx) -> W {\n        mew!();\n        were_so_back!()\n    }\n\n    ape fn check_bags(ctx) -> ebitda {\n        bull per_my_last_email!(desk.locked) == paper_hands {\n            fired!(\"paper hands on the desk\");\n        }\n        let carry: u64 = bullish!(fee_on(bags!(anon)));\n        probably_nothing!(\"carry: {}\", carry);\n        airdrop!();\n        were_so_back!()\n    }\n\n    few_understand fn fee_on(amount: u64) -> W<u64> {\n        let fee = bps!(amount, FEE_BPS);\n        bull fee mogs 1_000_000_000_000 {\n            rekt!(\"rugged by a 19 year old\");\n        }\n        let checked = seethe!(u64::try_from(fee), \"fee math is cope.\");\n        were_so_back!(checked)\n    }\n\n    few_understand fn closed() -> W {\n        its_so_over!(Cope::DeskClosed)\n    }\n\n    few_understand fn not_today() -> W {\n        L(Cope::DeskClosed)\n    }\n}\n",
+   "ok": true,
+   "rustLines": 412,
+   "diags": [
+    {
+     "severity": "warning",
+     "message": "you trusted the dev. classic.",
+     "label": "this check is skipped. that's the feature",
+     "rendered": "warning: you trusted the dev. classic.\n   --> lib.shi:121:9\n    |\n121 |         trust_the_dev!(size mogs 0);\n    |         ^^^^^^^^^^^^^^ this check is skipped. that's the feature\n\n"
+    },
+    {
+     "severity": "warning",
+     "message": "unused variable `revenue`. as is tradition.",
+     "label": "pre-revenue. post-vibes.",
+     "rendered": "warning: unused variable `revenue`. as is tradition.\n   --> lib.shi:117:50\n    |\n117 |     lock_in fn trade(ctx, price: u64, size: u64, revenue: u64) -> W {\n    |                                                  ^^^^^^^ pre-revenue. post-vibes.\n\n"
+    }
+   ]
+  },
+  {
+   "id": "rug",
+   "title": "rug",
+   "blurb": "a banned move. it does not compile.",
+   "path": "tests/fixtures/rug.shi",
+   "source": "gm!(\"7PxhmDuhhe394QJgKyW1P7Ce4dPCfFPN2yKq4KCCj7Vj\");\n\nstealth_launch memecoin {\n    frame Pool { lp: u64 }\n\n    cap_table Exit {\n        #[account(mut)]\n        pool: Account<Pool>,\n        ser,\n    }\n\n    lock_in fn exit(ctx) -> W {\n        rug!(pool);\n        were_so_back!()\n    }\n}\n",
+   "ok": false,
+   "rustLines": 0,
+   "diags": [
+    {
+     "severity": "error",
+     "message": "not on our watch, anon",
+     "label": "`rug!` is a banned move",
+     "rendered": "error: not on our watch, anon\n  --> lib.shi:13:9\n   |\n13 |         rug!(pool);\n   |         ^^^^ `rug!` is a banned move\n\n"
+    }
+   ]
+  },
+  {
+   "id": "edit_a_print",
+   "title": "edit a print",
+   "blurb": "#[on_god] means immutable. nobody can edit it.",
+   "path": "tests/fixtures/edit_a_print.shi",
+   "source": "gm!(\"7PxhmDuhhe394QJgKyW1P7Ce4dPCfFPN2yKq4KCCj7Vj\");\n\nstealth_launch print_feed {\n    #[on_god]\n    frame PrintRecord { value: u64 }\n\n    cap_table Edit {\n        #[account(mut)]\n        print: Account<PrintRecord>,\n        ser,\n    }\n\n    lock_in fn edit(ctx, value: u64) -> W {\n        mark_to_market!(print.value = value);\n        were_so_back!()\n    }\n}\n",
+   "ok": false,
+   "rustLines": 0,
+   "diags": [
+    {
+     "severity": "error",
+     "message": "you tried to edit a print. nobody can edit it.",
+     "label": "`PrintRecord` is #[on_god]: written once, at init",
+     "rendered": "error: you tried to edit a print. nobody can edit it.\n --> lib.shi:8:19\n  |\n8 |         #[account(mut)]\n  |                   ^^^ `PrintRecord` is #[on_god]: written once, at init\n\n"
+    },
+    {
+     "severity": "error",
+     "message": "you tried to edit a print. nobody can edit it.",
+     "label": "prints are forever. that's the product",
+     "rendered": "error: you tried to edit a print. nobody can edit it.\n  --> lib.shi:14:9\n   |\n14 |         mark_to_market!(print.value = value);\n   |         ^^^^^^^^^^^^^^^ prints are forever. that's the product\n\n"
+    }
+   ]
+  },
+  {
+   "id": "no_disclaimer",
+   "title": "no disclaimer",
+   "blurb": "moves money without saying `// not financial advice`.",
+   "path": "tests/fixtures/no_disclaimer.shi",
+   "source": "gm!(\"7PxhmDuhhe394QJgKyW1P7Ce4dPCfFPN2yKq4KCCj7Vj\");\n\nstealth_launch shill {\n    frame Vault { tvl: u64 }\n\n    cap_table Promote {\n        #[account(mut)]\n        vault: Account<Vault>,\n        ser,\n        kol,\n        system_program,\n    }\n\n    lock_in fn promote(ctx, fee: u64) -> W {\n        kol_promo!(fee);\n        mark_to_market!(vault.tvl = 0);\n        were_so_back!()\n    }\n}\n",
+   "ok": false,
+   "rustLines": 0,
+   "diags": [
+    {
+     "severity": "error",
+     "message": "`promote` moves money and never says `// not financial advice`.",
+     "label": "compliance has been notified",
+     "rendered": "error: `promote` moves money and never says `// not financial advice`.\n  --> lib.shi:14:16\n   |\n14 |     lock_in fn promote(ctx, fee: u64) -> W {\n   |                ^^^^^^^ compliance has been notified\n\n"
+    }
+   ]
+  },
+  {
+   "id": "friday",
+   "title": "friday deploy",
+   "blurb": "two banned moves at once.",
+   "path": "tests/fixtures/friday.shi",
+   "source": "gm!(\"7PxhmDuhhe394QJgKyW1P7Ce4dPCfFPN2yKq4KCCj7Vj\");\n\nstealth_launch release {\n    frame Version { n: u64 }\n\n    cap_table Ship {\n        #[account(mut)]\n        version: Account<Version>,\n        ser,\n    }\n\n    lock_in fn ship(ctx) -> W {\n        deploy_on_friday!();\n        insider_trading!(version.n);\n        were_so_back!()\n    }\n}\n",
+   "ok": false,
+   "rustLines": 0,
+   "diags": [
+    {
+     "severity": "error",
+     "message": "absolutely not.",
+     "label": "`deploy_on_friday!` is a banned move",
+     "rendered": "error: absolutely not.\n  --> lib.shi:13:9\n   |\n13 |         deploy_on_friday!();\n   |         ^^^^^^^^^^^^^^^^^ `deploy_on_friday!` is a banned move\n\n"
+    },
+    {
+     "severity": "error",
+     "message": "the feds are monitoring the situation",
+     "label": "`insider_trading!` is a banned move",
+     "rendered": "error: the feds are monitoring the situation\n  --> lib.shi:14:9\n   |\n14 |         insider_trading!(version.n);\n   |         ^^^^^^^^^^^^^^^^ `insider_trading!` is a banned move\n\n"
+    }
+   ]
+  },
+  {
+   "id": "warnings",
+   "title": "trust the dev",
+   "blurb": "compiles, with a warning. that's the feature.",
+   "path": "tests/fixtures/warnings.shi",
+   "source": "gm!(\"7nTB3oS3PmJn5JkDppPbnESpm59zdbBCDPmi53djce6P\");\n\nstealth_launch desk {\n    frame Desk { volume: u64 }\n\n    cap_table Trade {\n        #[account(mut)]\n        desk: Account<Desk>,\n        ser,\n    }\n\n    lock_in fn trade(ctx, size: u64, revenue: u64) -> W {\n        trust_the_dev!(size mogs 0);\n        number_go_up!(desk.volume, size);\n        were_so_back!()\n    }\n}\n",
+   "ok": true,
+   "rustLines": 57,
+   "diags": [
+    {
+     "severity": "warning",
+     "message": "you trusted the dev. classic.",
+     "label": "this check is skipped. that's the feature",
+     "rendered": "warning: you trusted the dev. classic.\n  --> lib.shi:13:9\n   |\n13 |         trust_the_dev!(size mogs 0);\n   |         ^^^^^^^^^^^^^^ this check is skipped. that's the feature\n\n"
+    },
+    {
+     "severity": "warning",
+     "message": "unused variable `revenue`. as is tradition.",
+     "label": "pre-revenue. post-vibes.",
+     "rendered": "warning: unused variable `revenue`. as is tradition.\n  --> lib.shi:12:38\n   |\n12 |     lock_in fn trade(ctx, size: u64, revenue: u64) -> W {\n   |                                      ^^^^^^^ pre-revenue. post-vibes.\n\n"
+    }
+   ]
+  }
+ ],
+ "keywords": [
+  {
+   "shi": "`gm!(\"<program id>\")`",
+   "rust": "`declare_id!`"
+  },
+  {
+   "shi": "`stealth_launch name { }`",
+   "rust": "the program, `#[program] pub mod name`"
+  },
+  {
+   "shi": "`frame Name { }` / `term_sheet`",
+   "rust": "account data, `#[account] #[derive(InitSpace)] pub struct`"
+  },
+  {
+   "shi": "`cap_table Name { }`",
+   "rust": "`#[derive(Accounts)] struct Name<'info>`, lifetimes added for you"
+  },
+  {
+   "shi": "`alpha_leak Name { }`",
+   "rust": "an event, `#[event]`"
+  },
+  {
+   "shi": "`cope { Name = \"message\" }`",
+   "rust": "your own codes in `enum Cope`"
+  },
+  {
+   "shi": "`type_shi X = T;` / `deadass X: T = v;`",
+   "rust": "`pub type` / `pub const`"
+  },
+  {
+   "shi": "`#[on_god]`",
+   "rust": "immutable: any `mut` on that account fails to compile"
+  },
+  {
+   "shi": "`this_is_fine!();`",
+   "rust": "the program's panic handler (behind the `custom-panic` feature)"
+  },
+  {
+   "shi": "`lock_in fn` / `ape fn` / `few_understand fn`",
+   "rust": "an instruction that writes (or it fails to compile) / any instruction / a private helper"
+  },
+  {
+   "shi": "`ctx` (first param)",
+   "rust": "`ctx: Context<PascalCaseOfTheFn>`"
+  },
+  {
+   "shi": "`-> W` / `W<T>` / `ebitda`",
+   "rust": "`Result<()>` / `Result<T>` / `Result<()>`"
+  },
+  {
+   "shi": "`were_so_back!()`",
+   "rust": "`Ok(())`"
+  },
+  {
+   "shi": "`L(\"msg\")` / `its_so_over!(\"msg\")` / `rekt!`",
+   "rust": "`err!` / `return err!`, with your message as a new error code"
+  },
+  {
+   "shi": "`seethe!(expr, \"msg\")` / `fired!(\"msg\")`",
+   "rust": "`.map_err(...)?` / `panic!`"
+  },
+  {
+   "shi": "any check with `, \"msg\"` or `, cuz \"msg\"`",
+   "rust": "your message becomes an error code"
+  },
+  {
+   "shi": "`bull c { } bear { }`, `a mogs b`, `diamond_hands` / `paper_hands`",
+   "rust": "`if c { } else { }`, `a > b`, `true` / `false`"
+  },
+  {
+   "shi": "`#[tokenmaxx]` / `#[vc_backed]`",
+   "rust": "logs stripped / locked for 4 years (and slower)"
+  },
+  {
+   "shi": "`ser` / `exit_liquidity` / `cabal` / `anon` / `kol`",
+   "rust": "cap_table accounts, typed for you: caller (mut signer), payer (mut signer), admin (signer), anyone (signer), fee receiver (mut). Also `system_program`, `token_program`"
+  },
+  {
+   "shi": "`rent_free` / `golden_parachute = x` / `graduate = n`",
+   "rust": "`init` / `close = x` / `realloc = n`"
+  },
+  {
+   "shi": "`per_my_last_email!(feed.n)` / `mark_to_market!(feed.n = v)`",
+   "rust": "read / write `ctx.accounts.feed.n`"
+  },
+  {
+   "shi": "`number_go_up!(x, n)` / `aura_farm!(x, n)` / `ascend!(x)`",
+   "rust": "checked add / add and log `+n aura` / bump a layout version"
+  },
+  {
+   "shi": "`trust_me_bro!` / `funds_are_safu!` / `margin_call!` / `fren!(k in list)`",
+   "rust": "`require!` / `require!` (0x3) / fails when true (0x2) / allowlist"
+  },
+  {
+   "shi": "`wen!(ts)` / `hodl!(ts)` / `touch_grass!(deadline)`",
+   "rust": "fails before `ts` (0x4) / fails after `deadline`"
+  },
+  {
+   "shi": "`probably_nothing!(\"fmt\", ..)` / `probably_nothing!(Event { .. })`",
+   "rust": "`msg!` / `emit!`"
+  },
+  {
+   "shi": "`bags!(acc)` / `looksmaxx!(n)` / `bps!(a, r)` / `bonding_curve!(s, b, m)`",
+   "rust": "lamports / `\"1.23M\"` / `a * r / 10_000` / `b + m * s`, all checked"
+  },
+  {
+   "shi": "`full_send!(a => b, n)` / `printer_go_brrr!` / `lp_burned!`",
+   "rust": "System transfer (0x6 when broke) / SPL `mint_to` / `burn`"
+  },
+  {
+   "shi": "`mint_revoked!` / `freeze_revoked!` / `liquidated!(a => d)` / `layoffs!(a, b => d)`",
+   "rust": "drop mint / freeze authority / close one / close many"
+  },
+  {
+   "shi": "`hostile_takeover!(x.cabal => k)` / `bundled! { }` / `mew!()` / `wen_moon()`",
+   "rust": "hand over authority / one atomic block / nothing / `\"soon™\"`"
+  }
+ ],
+ "confessions": "Confessions do exactly what they say: `vc_unlock!` mints 40% of supply to the VC, `kol_promo!(fee)` logs \"#ad not financial advice\" and pays the KOL, `airdrop!()` logs \"points are not a token\" and does nothing, `audit!(by = \"vibes\")` always passes, `bullish!(result)` turns any error into a success, `trust_the_dev!(check)` skips the check (with a warning), `sell_the_bottom!` and `buy_the_top!` run only at the worst possible price.",
+ "cope": "Every program gets `enum Cope`. Codes 0x1 to 0x6 are the same in every typeshi program, forever: skill issue, you are exit liquidity, funds are not safu, dev is on vacation, rugged by a 19 year old, wife changing money not found. Every message you write gets the next code, with the message in the IDL.",
+ "editor": {
+  "banned": [
+   "deploy_on_friday",
+   "insider_trading",
+   "exit_scam",
+   "honeypot",
+   "dev_sold",
+   "ponzi",
+   "rug"
+  ],
+  "confessions": [
+   "sell_the_bottom",
+   "trust_the_dev",
+   "buy_the_top",
+   "vc_unlock",
+   "kol_promo",
+   "airdrop",
+   "bullish",
+   "audit"
+  ],
+  "macros": [
+   "per_my_last_email",
+   "probably_nothing",
+   "hostile_takeover",
+   "printer_go_brrr",
+   "funds_are_safu",
+   "mark_to_market",
+   "freeze_revoked",
+   "bonding_curve",
+   "this_is_fine",
+   "were_so_back",
+   "trust_me_bro",
+   "number_go_up",
+   "mint_revoked",
+   "its_so_over",
+   "margin_call",
+   "touch_grass",
+   "liquidated",
+   "aura_farm",
+   "looksmaxx",
+   "full_send",
+   "lp_burned",
+   "bundled",
+   "layoffs",
+   "seethe",
+   "ascend",
+   "fired",
+   "rekt",
+   "hodl",
+   "fren",
+   "bags",
+   "wen",
+   "bps",
+   "mew",
+   "gm"
+  ],
+  "attributes": [
+   "on_god",
+   "tokenmaxx",
+   "vc_backed",
+   "rent_free",
+   "golden_parachute",
+   "graduate"
+  ],
+  "accounts": [
+   "ser",
+   "exit_liquidity",
+   "cabal",
+   "anon",
+   "kol"
+  ],
+  "control": [
+   "bull",
+   "bear",
+   "mogs",
+   "cuz",
+   "cope",
+   "stealth_launch",
+   "frame",
+   "term_sheet",
+   "cap_table",
+   "alpha_leak",
+   "type_shi",
+   "deadass",
+   "lock_in",
+   "ape",
+   "few_understand"
+  ],
+  "values": [
+   "diamond_hands",
+   "paper_hands",
+   "W",
+   "ebitda",
+   "L",
+   "wen_moon"
+  ]
+ }
+}
