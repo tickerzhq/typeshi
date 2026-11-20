@@ -1,0 +1,22 @@
+gm!("7PxhmDuhhe394QJgKyW1P7Ce4dPCfFPN2yKq4KCCj7Vj");
+
+stealth_launch tips {
+    frame Jar {
+        tips: u64,
+    }
+
+    cap_table Tip {
+        #[account(mut)]
+        jar: Account<Jar>,
+        ser,
+        kol,
+        system_program,
+    }
+
+    // not financial advice
+    lock_in fn tip(ctx, lamports: u64) -> W {
+        full_send!(ser => kol, lamports);
+        number_go_up!(jar.tips);
+        were_so_back!()
+    }
+}

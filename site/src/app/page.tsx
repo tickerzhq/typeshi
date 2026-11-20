@@ -1,3 +1,4 @@
+import Link from "next/link";
 import CopyButton from "@/components/CopyButton";
 import Inline from "@/components/Inline";
 import Keywords from "@/components/Keywords";
@@ -20,6 +21,17 @@ export default function Home() {
           Slang over Rust that compiles to real Solana programs (Anchor 1.2). <code>rug!()</code> is a compile error.
           The compiler roasts you. The Rust it writes is ordinary Anchor you can read and audit.
         </p>
+        <div className={s.ctas}>
+          <Link href="/tour" className={s.primaryCta}>
+            take the tour →
+          </Link>
+          <Link href="/play" className={s.secondaryCta}>
+            open the playground
+          </Link>
+          <span className={s.ctaNote}>
+            {content.tour.length} lessons, checked live by the real compiler. no install.
+          </span>
+        </div>
         <div className={s.install}>
           <code className={s.cmd}>
             <span className={s.prompt} aria-hidden>
@@ -64,6 +76,9 @@ export default function Home() {
             <li key={name}>
               <code className={s.move}>{name}!</code>
               <span>{why}</span>
+              <a className={s.try} href={`/play#code=${content.bannedTry[name as keyof typeof content.bannedTry]}`}>
+                try it<span className="visually-hidden">: {name}!</span> →
+              </a>
             </li>
           ))}
         </ul>

@@ -153,11 +153,66 @@ const strList = (name) => {
 const escalation = strList("ESCALATION");
 const fud = strList("FUD");
 
+// --- the tour, from site/tour/NN-slug/{lesson.md,start.shi,solution.shi} ----------
+// lesson.md starts with "key: value" lines (title, check: ok|error, rust: <text>, error: <text>), then ---, then the body.
+// Every lesson must start out failing its check and its solution must pass, through the real compiler.
+const { readdirSync } = await import("node:fs");
+const { passes } = await import(join(site, "src/lib/check.mjs"));
+const tourDir = join(site, "tour");
+const tour = readdirSync(tourDir)
+  .filter((d) => /^\d\d-/.test(d))
+  .sort()
+  .map((dir, i) => {
+    const raw = readFileSync(join(tourDir, dir, "lesson.md"), "utf8");
+    const [head, ...rest] = raw.split("\n---\n");
+    const meta = { rust: [] };
+    for (const line of head.split("\n")) {
+      const m = line.match(/^(\w+):\s*(.*)$/);
+      if (!m) continue;
+      if (m[1] === "rust") meta.rust.push(m[2]);
+      else meta[m[1]] = m[2];
+    }
+    if (!meta.title || !["ok", "error"].includes(meta.check)) throw new Error(`sync: tour/${dir}/lesson.md needs title and check: ok|error`);
+    if (meta.check === "error" && !meta.error) throw new Error(`sync: tour/${dir} checks for an error but names none`);
+    const check = { kind: meta.check, rust: meta.rust, error: meta.error ?? null };
+    const start = readFileSync(join(tourDir, dir, "start.shi"), "utf8");
+    const solution = readFileSync(join(tourDir, dir, "solution.shi"), "utf8");
+    if (passes(compile(start), check)) throw new Error(`sync: tour/${dir} already passes before you do anything`);
+    if (!passes(compile(solution), check)) throw new Error(`sync: tour/${dir}'s solution doesn't pass its own check`);
+    return { n: i + 1, slug: dir.slice(3), title: meta.title, body: rest.join("\n---\n").trim(), start, solution, check };
+  });
+
+// --- cross-links -----------------------------------------------------------------------
+// Each banned move gets a ready-to-run program (as a /play#code= link), proven to be refused.
+// Each keyword row links to the first lesson that uses its word.
+const deflate = async (text) => {
+  const body = new Blob([new TextEncoder().encode(text)]).stream().pipeThrough(new CompressionStream("deflate-raw"));
+  return Buffer.from(await new Response(body).arrayBuffer()).toString("base64url");
+};
+const rugFixture = read("tests/fixtures/rug.shi");
+const bannedTry = {};
+for (const [name] of banned) {
+  const src = rugFixture.replace("rug!(pool);", `${name}!(pool);`);
+  const r = compile(src);
+  if (r.ok || !r.diags.some((d) => d.message.length && d.label.includes(`\`${name}!\` is a banned move`))) {
+    throw new Error(`sync: the try-it program for ${name}! isn't refused as a banned move`);
+  }
+  bannedTry[name] = await deflate(src);
+}
+const firstWord = (cell) => (cell.match(/`([^`]+)`/)?.[1] ?? "").match(/^#?\[?[A-Za-z_]+!?/)?.[0] ?? "";
+for (const row of keywords) {
+  const word = firstWord(row.shi).replace(/^#\[/, "");
+  const esc = word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const re = new RegExp(`(^|[^A-Za-z0-9_])${esc}(?![A-Za-z0-9_])`);
+  const lesson = word.length > 1 && tour.find((l) => re.test(l.start) || re.test(l.solution));
+  row.lesson = lesson ? lesson.slug : null;
+}
+
 const version = read("Cargo.toml").match(/^version = "([^"]+)"/m)[1];
 
 mkdirSync(dirname(out), { recursive: true });
 writeFileSync(
   out,
-  JSON.stringify({ version, banned, fixedErrors, escalation, fud, examples, keywords, confessions, cope, editor }, null, 1) + "\n",
+  JSON.stringify({ version, banned, bannedTry, fixedErrors, escalation, fud, examples, keywords, confessions, cope, editor, tour }, null, 1) + "\n",
 );
-console.log(`sync: ${examples.length} examples, ${banned.length} banned moves, ${keywords.length} keyword rows, v${version}`);
+console.log(`sync: ${tour.length} tour lessons, ${examples.length} examples, ${banned.length} banned moves, ${keywords.length} keyword rows, v${version}`);

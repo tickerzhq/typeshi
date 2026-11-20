@@ -126,6 +126,12 @@ pre {
   border: 0;
 }
 
+@media (max-width: 520px) {
+  :root {
+    --code-size: 12.5px;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

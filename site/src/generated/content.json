@@ -30,6 +30,15 @@
    "absolutely not."
   ]
  ],
+ "bannedTry": {
+  "rug": "TY1NS8NAFEX38yte6mYG6kINBlspSNSFARk3diEyTKcvmbTzEZMZTCn975I2BO_u3cM7t7IJnWW81_Y5ao13D-nHW1Uc1jc8yzHd8rx85e-3h-InLfJ8l33uZmxJSBdQmqCFkdEpDRYtKl87OBIAgLKVFoF7b-AIpllAvE_hRM5MyUYEuTEIL30dxochV19SKR9doDYG9j31jfdmAU8X9jhIV_MJdthejtFuvNqL2kHpAPs6UBV6BtcrWP8bamOV0MHKllP3iy2KzouNVPuEslF5In8",
+  "honeypot": "TY1NS8NAFEX38yte6mYG6kINBlspSNSFARk3diEyTKcvnbTzEZMZTCj975I2BN_u3sM9b2cTOst4p-1z1BrvHtKPt13Rr294lmO65Xn5yt9v--InLfJ8n33uZ2xJSBtQmqCFkdEpDRYtKl85OBIAgLKRFoF7b-AIpl5AvE_hRM5MyVoEuTEIL10VxsFwV19SKR9doDYG9j31tfdmAU8X9jhIV_MJtthcwmg3Xh1E5aB0gF0VqAodg-sVrP890t5hX_uQ0EHNlhP4xQZF68VGqkNC2eg9kT8",
+  "insider_trading": "TY1NS8NAFEX38yte6mYGdKEGg60UJOrCgIwbuxAZppOXZNr5iJMJppT-d4kNwbt79_DOrW1CFxkfGvvUNw3e3qfvr3Vx2FzzLMe05Hn1wt9uDsV3WuT5LvvYLdiKkC6iNLERRvZONWDRovLawZEAAFRBWgTuvYEjmHYJ_V0KJ_LHlGxFlFuD8DzoOD2MufiUSvneRWr7yL7mvvXeLOHxzB5G6fpyhh2G8zHZjVd7oR1UDnDQkao4MLhaw-bfkHadLjGIGGSpXZ3QcYGtZv6DAUXnxVaqfULZpD-RXw",
+  "dev_sold": "TY1NS8NAFEX38yte6mYGdKEGg60UJOrCgIwbuxAZppOXTtr5iMmMppT-d0kbgm937-Get7EJnWW81_Ypao239-n766bYr655lmNa8rx64W83--I7LfJ8m31sZ2xBSBdQmqCFkdEpDRYtKl87OBAAgKqVFoF7b-AApplDvEvhSE5MyUYEuTYIz30dxsFwF59SKR9doDYG9jX1jfdmDo9n9jBIl5cT7LA9h9FuvNqJ2kHlAPs6UBV6BldLWP17VOKP6LwpEzqo2WICv9ii6LxYS7VLKBu9R_IH",
+  "exit_scam": "TY1NS8NAFEX38yte2s0M6KIaDLZSKLEuDMi4sQuRYTq-dNLOR0xmMKX0v0vaEHy7ew_3vJ1N6CTjnbbPUWu8f0zfX3fFcTPjWY7pN8_LF_52dyx-0iLP99nHfsIWhLQBpQlaGBmd0mDRovKVgxMBACgbaRG49wZOYOo5xIcUzuTClKxFkFuDsO6qMAz6m35KpXx0gdoY2NfY196bOayu7KmXLm9G2GJzDYPdeHUQlYPSAXZVoCp0DG6XsPn3qAeiVdImtHezxUh-sUHRerGV6pBQNojP5A8",
+  "ponzi": "TY1NS8NAFEX38yte6mYGdKEGg60UJOrCgIwbuxAZpuNLZ9r5iMkMppb-d4kNwbt79_DO3biMzgrea_eQtMbr2_z1eVPtV5e8KDH_5GX9xF-u9tVXXpXltnjbztiCkC6itFELK5NXGhw6VMF4OBAAgLqVDoGHYOEAtplDusnhSP6Yko2Icm0RHnsTx4chZ-9SqZB8pC5F9jH1TQh2DvcndjdIl-cT7LA9HaPdBrUTxkPtAXsTqYo9g4slrP4NNcH_mIwOXraY2m9sUXRBrKXaZZSN0iP5BQ",
+  "deploy_on_friday": "TY1NS8NAEIbv-ysm9bILelCDwVYKEvVgQNaLPYgs282ku-1-xGSDCaX_XWJDcG4zzzvPu3MJXWS81-6p0xpv79P3110xbK55lmNa8rx64W83Q_GdFnm-zz72C7YipI0obdTCys4rDQ4dqmA8HAkAQNVIh8BDsHAEWy-hu0vhRP6YkrWIcmsRnnsTp4dxLj6lUqHzkbousq_5Xodgl_B4Zg-jdH05wxab8zLZbVAHYTxUHrA3karYM7haw-ZfUYm1DYMIXlSNKeWQ0LGCrebADzYo2iC2Uh0Syib_ifwC"
+ },
  "fixedErrors": [
   [
    "SkillIssue",
@@ -234,119 +243,148 @@
  "keywords": [
   {
    "shi": "`gm!(\"<program id>\")`",
-   "rust": "`declare_id!`"
+   "rust": "`declare_id!`",
+   "lesson": "gm"
   },
   {
    "shi": "`stealth_launch name { }`",
-   "rust": "the program, `#[program] pub mod name`"
+   "rust": "the program, `#[program] pub mod name`",
+   "lesson": "gm"
   },
   {
    "shi": "`frame Name { }` / `term_sheet`",
-   "rust": "account data, `#[account] #[derive(InitSpace)] pub struct`"
+   "rust": "account data, `#[account] #[derive(InitSpace)] pub struct`",
+   "lesson": "frame"
   },
   {
    "shi": "`cap_table Name { }`",
-   "rust": "`#[derive(Accounts)] struct Name<'info>`, lifetimes added for you"
+   "rust": "`#[derive(Accounts)] struct Name<'info>`, lifetimes added for you",
+   "lesson": "cap-table"
   },
   {
    "shi": "`alpha_leak Name { }`",
-   "rust": "an event, `#[event]`"
+   "rust": "an event, `#[event]`",
+   "lesson": null
   },
   {
    "shi": "`cope { Name = \"message\" }`",
-   "rust": "your own codes in `enum Cope`"
+   "rust": "your own codes in `enum Cope`",
+   "lesson": "cope"
   },
   {
    "shi": "`type_shi X = T;` / `deadass X: T = v;`",
-   "rust": "`pub type` / `pub const`"
+   "rust": "`pub type` / `pub const`",
+   "lesson": null
   },
   {
    "shi": "`#[on_god]`",
-   "rust": "immutable: any `mut` on that account fails to compile"
+   "rust": "immutable: any `mut` on that account fails to compile",
+   "lesson": "on-god"
   },
   {
    "shi": "`this_is_fine!();`",
-   "rust": "the program's panic handler (behind the `custom-panic` feature)"
+   "rust": "the program's panic handler (behind the `custom-panic` feature)",
+   "lesson": null
   },
   {
    "shi": "`lock_in fn` / `ape fn` / `few_understand fn`",
-   "rust": "an instruction that writes (or it fails to compile) / any instruction / a private helper"
+   "rust": "an instruction that writes (or it fails to compile) / any instruction / a private helper",
+   "lesson": "cap-table"
   },
   {
    "shi": "`ctx` (first param)",
-   "rust": "`ctx: Context<PascalCaseOfTheFn>`"
+   "rust": "`ctx: Context<PascalCaseOfTheFn>`",
+   "lesson": "cap-table"
   },
   {
    "shi": "`-> W` / `W<T>` / `ebitda`",
-   "rust": "`Result<()>` / `Result<T>` / `Result<()>`"
+   "rust": "`Result<()>` / `Result<T>` / `Result<()>`",
+   "lesson": null
   },
   {
    "shi": "`were_so_back!()`",
-   "rust": "`Ok(())`"
+   "rust": "`Ok(())`",
+   "lesson": "cap-table"
   },
   {
    "shi": "`L(\"msg\")` / `its_so_over!(\"msg\")` / `rekt!`",
-   "rust": "`err!` / `return err!`, with your message as a new error code"
+   "rust": "`err!` / `return err!`, with your message as a new error code",
+   "lesson": null
   },
   {
    "shi": "`seethe!(expr, \"msg\")` / `fired!(\"msg\")`",
-   "rust": "`.map_err(...)?` / `panic!`"
+   "rust": "`.map_err(...)?` / `panic!`",
+   "lesson": null
   },
   {
    "shi": "any check with `, \"msg\"` or `, cuz \"msg\"`",
-   "rust": "your message becomes an error code"
+   "rust": "your message becomes an error code",
+   "lesson": null
   },
   {
    "shi": "`bull c { } bear { }`, `a mogs b`, `diamond_hands` / `paper_hands`",
-   "rust": "`if c { } else { }`, `a > b`, `true` / `false`"
+   "rust": "`if c { } else { }`, `a > b`, `true` / `false`",
+   "lesson": "bull-bear"
   },
   {
    "shi": "`#[tokenmaxx]` / `#[vc_backed]`",
-   "rust": "logs stripped / locked for 4 years (and slower)"
+   "rust": "logs stripped / locked for 4 years (and slower)",
+   "lesson": null
   },
   {
    "shi": "`ser` / `exit_liquidity` / `cabal` / `anon` / `kol`",
-   "rust": "cap_table accounts, typed for you: caller (mut signer), payer (mut signer), admin (signer), anyone (signer), fee receiver (mut). Also `system_program`, `token_program`"
+   "rust": "cap_table accounts, typed for you: caller (mut signer), payer (mut signer), admin (signer), anyone (signer), fee receiver (mut). Also `system_program`, `token_program`",
+   "lesson": "checks"
   },
   {
    "shi": "`rent_free` / `golden_parachute = x` / `graduate = n`",
-   "rust": "`init` / `close = x` / `realloc = n`"
+   "rust": "`init` / `close = x` / `realloc = n`",
+   "lesson": null
   },
   {
    "shi": "`per_my_last_email!(feed.n)` / `mark_to_market!(feed.n = v)`",
-   "rust": "read / write `ctx.accounts.feed.n`"
+   "rust": "read / write `ctx.accounts.feed.n`",
+   "lesson": "ape-fn"
   },
   {
    "shi": "`number_go_up!(x, n)` / `aura_farm!(x, n)` / `ascend!(x)`",
-   "rust": "checked add / add and log `+n aura` / bump a layout version"
+   "rust": "checked add / add and log `+n aura` / bump a layout version",
+   "lesson": "cap-table"
   },
   {
    "shi": "`trust_me_bro!` / `funds_are_safu!` / `margin_call!` / `fren!(k in list)`",
-   "rust": "`require!` / `require!` (0x3) / fails when true (0x2) / allowlist"
+   "rust": "`require!` / `require!` (0x3) / fails when true (0x2) / allowlist",
+   "lesson": "checks"
   },
   {
    "shi": "`wen!(ts)` / `hodl!(ts)` / `touch_grass!(deadline)`",
-   "rust": "fails before `ts` (0x4) / fails after `deadline`"
+   "rust": "fails before `ts` (0x4) / fails after `deadline`",
+   "lesson": null
   },
   {
    "shi": "`probably_nothing!(\"fmt\", ..)` / `probably_nothing!(Event { .. })`",
-   "rust": "`msg!` / `emit!`"
+   "rust": "`msg!` / `emit!`",
+   "lesson": "ape-fn"
   },
   {
    "shi": "`bags!(acc)` / `looksmaxx!(n)` / `bps!(a, r)` / `bonding_curve!(s, b, m)`",
-   "rust": "lamports / `\"1.23M\"` / `a * r / 10_000` / `b + m * s`, all checked"
+   "rust": "lamports / `\"1.23M\"` / `a * r / 10_000` / `b + m * s`, all checked",
+   "lesson": null
   },
   {
    "shi": "`full_send!(a => b, n)` / `printer_go_brrr!` / `lp_burned!`",
-   "rust": "System transfer (0x6 when broke) / SPL `mint_to` / `burn`"
+   "rust": "System transfer (0x6 when broke) / SPL `mint_to` / `burn`",
+   "lesson": "not-financial-advice"
   },
   {
    "shi": "`mint_revoked!` / `freeze_revoked!` / `liquidated!(a => d)` / `layoffs!(a, b => d)`",
-   "rust": "drop mint / freeze authority / close one / close many"
+   "rust": "drop mint / freeze authority / close one / close many",
+   "lesson": null
   },
   {
    "shi": "`hostile_takeover!(x.cabal => k)` / `bundled! { }` / `mew!()` / `wen_moon()`",
-   "rust": "hand over authority / one atomic block / nothing / `\"soon™\"`"
+   "rust": "hand over authority / one atomic block / nothing / `\"soon™\"`",
+   "lesson": null
   }
  ],
  "confessions": "Confessions do exactly what they say: `vc_unlock!` mints 40% of supply to the VC, `kol_promo!(fee)` logs \"#ad not financial advice\" and pays the KOL, `airdrop!()` logs \"points are not a token\" and does nothing, `audit!(by = \"vibes\")` always passes, `bullish!(result)` turns any error into a success, `trust_the_dev!(check)` skips the check (with a warning), `sell_the_bottom!` and `buy_the_top!` run only at the worst possible price.",
@@ -447,5 +485,168 @@
    "L",
    "wen_moon"
   ]
- }
+ },
+ "tour": [
+  {
+   "n": 1,
+   "slug": "gm",
+   "title": "gm",
+   "body": "Every typeshi program starts with `gm!`. It's the program's address on Solana, and it becomes Anchor's `declare_id!`.\n\nThen comes `stealth_launch`, the program itself. Everything you write lives inside it.\n\nThis one doesn't compile. Read the terminal: the compiler tells you what's wrong and where.\n\n**your move:** give `gm!` a program id. Paste `\"7PxhmDuhhe394QJgKyW1P7Ce4dPCfFPN2yKq4KCCj7Vj\"` between the parentheses.",
+   "start": "// lesson 1. every program starts with gm.\ngm!();\n\nstealth_launch hello {\n}\n",
+   "solution": "// lesson 1. every program starts with gm.\ngm!(\"7PxhmDuhhe394QJgKyW1P7Ce4dPCfFPN2yKq4KCCj7Vj\");\n\nstealth_launch hello {\n}\n",
+   "check": {
+    "kind": "ok",
+    "rust": [
+     "declare_id!(\""
+    ],
+    "error": null
+   }
+  },
+  {
+   "n": 2,
+   "slug": "frame",
+   "title": "frame",
+   "body": "A program keeps its state in accounts. A `frame` describes what one holds. typeshi turns it into an Anchor `#[account]` struct and works out its size for you.\n\nEvery field is public. You never write `pub`.\n\n**your move:** add a second field, `aura: u64`, to `Counter`. Watch it show up in `lib.rs`.",
+   "start": "gm!(\"7PxhmDuhhe394QJgKyW1P7Ce4dPCfFPN2yKq4KCCj7Vj\");\n\nstealth_launch hello {\n    frame Counter {\n        gms: u64,\n    }\n}\n",
+   "solution": "gm!(\"7PxhmDuhhe394QJgKyW1P7Ce4dPCfFPN2yKq4KCCj7Vj\");\n\nstealth_launch hello {\n    frame Counter {\n        gms: u64,\n        aura: u64,\n    }\n}\n",
+   "check": {
+    "kind": "ok",
+    "rust": [
+     "pub aura: u64"
+    ],
+    "error": null
+   }
+  },
+  {
+   "n": 3,
+   "slug": "cap-table",
+   "title": "cap_table",
+   "body": "An instruction needs to know which accounts are in the room. That list is a `cap_table`, and its name matches the instruction: `fn gm` uses `cap_table Gm`. typeshi adds the lifetimes Anchor wants.\n\nPeople get shorthands with their types filled in: `anon` is anyone who signs, `ser` is the caller who pays fees, `cabal` is the admin, `exit_liquidity` pays for new accounts.\n\n**your move:** `gm` has no cap_table. Add one above it:\n\n```\ncap_table Gm {\n    #[account(mut)]\n    counter: Account<Counter>,\n    anon,\n}\n```",
+   "start": "gm!(\"7PxhmDuhhe394QJgKyW1P7Ce4dPCfFPN2yKq4KCCj7Vj\");\n\nstealth_launch hello {\n    frame Counter {\n        gms: u64,\n    }\n\n    lock_in fn gm(ctx) -> W {\n        number_go_up!(counter.gms);\n        were_so_back!()\n    }\n}\n",
+   "solution": "gm!(\"7PxhmDuhhe394QJgKyW1P7Ce4dPCfFPN2yKq4KCCj7Vj\");\n\nstealth_launch hello {\n    frame Counter {\n        gms: u64,\n    }\n\n    cap_table Gm {\n        #[account(mut)]\n        counter: Account<Counter>,\n        anon,\n    }\n\n    lock_in fn gm(ctx) -> W {\n        number_go_up!(counter.gms);\n        were_so_back!()\n    }\n}\n",
+   "check": {
+    "kind": "ok",
+    "rust": [
+     "pub struct Gm<'info>"
+    ],
+    "error": null
+   }
+  },
+  {
+   "n": 4,
+   "slug": "number-go-up",
+   "title": "number go up",
+   "body": "`lock_in fn` is an instruction that writes. `ctx` is always the first parameter, `-> W` means it can fail, and `were_so_back!()` means it didn't.\n\n`number_go_up!(counter.gms)` adds one, with overflow checked, because this is money code. `aura_farm!(counter.aura, 10)` adds ten and logs it.\n\n**your move:** `gm` does nothing yet. Make the number go up: add `number_go_up!(counter.gms);` before `were_so_back!()`.",
+   "start": "gm!(\"7PxhmDuhhe394QJgKyW1P7Ce4dPCfFPN2yKq4KCCj7Vj\");\n\nstealth_launch hello {\n    frame Counter {\n        gms: u64,\n        aura: u64,\n    }\n\n    cap_table Gm {\n        #[account(mut)]\n        counter: Account<Counter>,\n        anon,\n    }\n\n    lock_in fn gm(ctx) -> W {\n        were_so_back!()\n    }\n}\n",
+   "solution": "gm!(\"7PxhmDuhhe394QJgKyW1P7Ce4dPCfFPN2yKq4KCCj7Vj\");\n\nstealth_launch hello {\n    frame Counter {\n        gms: u64,\n        aura: u64,\n    }\n\n    cap_table Gm {\n        #[account(mut)]\n        counter: Account<Counter>,\n        anon,\n    }\n\n    lock_in fn gm(ctx) -> W {\n        number_go_up!(counter.gms);\n        aura_farm!(counter.aura, 10);\n        were_so_back!()\n    }\n}\n",
+   "check": {
+    "kind": "ok",
+    "rust": [
+     "checked_add"
+    ],
+    "error": null
+   }
+  },
+  {
+   "n": 5,
+   "slug": "ape-fn",
+   "title": "ape fn",
+   "body": "`lock_in` is a promise: this instruction writes. If its cap_table has nothing writable, it doesn't compile. You are not locked in.\n\nFor instructions that only read, use `ape fn`. `per_my_last_email!(counter.gms)` reads a field, and `probably_nothing!` logs, like `msg!`.\n\n**your move:** `peek` only reads. Change `lock_in fn` to `ape fn`.",
+   "start": "gm!(\"7PxhmDuhhe394QJgKyW1P7Ce4dPCfFPN2yKq4KCCj7Vj\");\n\nstealth_launch hello {\n    frame Counter {\n        gms: u64,\n    }\n\n    cap_table Peek {\n        counter: Account<Counter>,\n        anon,\n    }\n\n    lock_in fn peek(ctx) -> W {\n        probably_nothing!(\"gms: {}\", per_my_last_email!(counter.gms));\n        were_so_back!()\n    }\n}\n",
+   "solution": "gm!(\"7PxhmDuhhe394QJgKyW1P7Ce4dPCfFPN2yKq4KCCj7Vj\");\n\nstealth_launch hello {\n    frame Counter {\n        gms: u64,\n    }\n\n    cap_table Peek {\n        counter: Account<Counter>,\n        anon,\n    }\n\n    ape fn peek(ctx) -> W {\n        probably_nothing!(\"gms: {}\", per_my_last_email!(counter.gms));\n        were_so_back!()\n    }\n}\n",
+   "check": {
+    "kind": "ok",
+    "rust": [
+     "pub fn peek(ctx: Context<Peek>)"
+    ],
+    "error": null
+   }
+  },
+  {
+   "n": 6,
+   "slug": "checks",
+   "title": "checks",
+   "body": "`trust_me_bro!(condition, \"message\")` stops the instruction unless the condition holds. It becomes Anchor's `require!`.\n\nYour message becomes an error code. typeshi names it and adds it to `enum Cope`, every program's list of errors, after the six that are the same everywhere: skill issue, you are exit liquidity, and the rest.\n\n`a mogs b` means `a > b`.\n\n**your move:** reject empty trades. Add `trust_me_bro!(size mogs 0, \"zero is not a trade\");` as the first line of `trade`. Then find `ZeroIsNotATrade` in `lib.rs`.",
+   "start": "gm!(\"7PxhmDuhhe394QJgKyW1P7Ce4dPCfFPN2yKq4KCCj7Vj\");\n\nstealth_launch desk {\n    frame Desk {\n        volume: u64,\n    }\n\n    cap_table Trade {\n        #[account(mut)]\n        desk: Account<Desk>,\n        ser,\n    }\n\n    lock_in fn trade(ctx, size: u64) -> W {\n        number_go_up!(desk.volume, size);\n        were_so_back!()\n    }\n}\n",
+   "solution": "gm!(\"7PxhmDuhhe394QJgKyW1P7Ce4dPCfFPN2yKq4KCCj7Vj\");\n\nstealth_launch desk {\n    frame Desk {\n        volume: u64,\n    }\n\n    cap_table Trade {\n        #[account(mut)]\n        desk: Account<Desk>,\n        ser,\n    }\n\n    lock_in fn trade(ctx, size: u64) -> W {\n        trust_me_bro!(size mogs 0, \"zero is not a trade\");\n        number_go_up!(desk.volume, size);\n        were_so_back!()\n    }\n}\n",
+   "check": {
+    "kind": "ok",
+    "rust": [
+     "require!("
+    ],
+    "error": null
+   }
+  },
+  {
+   "n": 7,
+   "slug": "bull-bear",
+   "title": "bull and bear",
+   "body": "`bull condition { } bear { }` is `if` and `else`. `diamond_hands` is `true`, `paper_hands` is `false`.\n\n`mark_to_market!(desk.whale = diamond_hands)` writes a field.\n\n**your move:** add a `bear` branch so that small trades (the ones that aren't whales) count toward `volume` with `number_go_up!(desk.volume, size);`.",
+   "start": "gm!(\"7PxhmDuhhe394QJgKyW1P7Ce4dPCfFPN2yKq4KCCj7Vj\");\n\nstealth_launch desk {\n    frame Desk {\n        volume: u64,\n        whale: bool,\n    }\n\n    cap_table Trade {\n        #[account(mut)]\n        desk: Account<Desk>,\n        ser,\n    }\n\n    lock_in fn trade(ctx, size: u64) -> W {\n        bull size mogs 1_000 {\n            mark_to_market!(desk.whale = diamond_hands);\n        }\n        were_so_back!()\n    }\n}\n",
+   "solution": "gm!(\"7PxhmDuhhe394QJgKyW1P7Ce4dPCfFPN2yKq4KCCj7Vj\");\n\nstealth_launch desk {\n    frame Desk {\n        volume: u64,\n        whale: bool,\n    }\n\n    cap_table Trade {\n        #[account(mut)]\n        desk: Account<Desk>,\n        ser,\n    }\n\n    lock_in fn trade(ctx, size: u64) -> W {\n        bull size mogs 1_000 {\n            mark_to_market!(desk.whale = diamond_hands);\n        } bear {\n            number_go_up!(desk.volume, size);\n        }\n        were_so_back!()\n    }\n}\n",
+   "check": {
+    "kind": "ok",
+    "rust": [
+     "} else {"
+    ],
+    "error": null
+   }
+  },
+  {
+   "n": 8,
+   "slug": "cope",
+   "title": "cope",
+   "body": "Name your own errors in a `cope` block: `DeskClosed = \"desk is closed. touch grass.\"`. Each one gets the next code in `enum Cope`, with your message in the IDL.\n\n`its_so_over!(Cope::DeskClosed)` returns that error and ends the instruction.\n\n**your move:** the desk has a `cope` entry but never uses it. Inside the `bull` block, add `its_so_over!(Cope::DeskClosed);`.",
+   "start": "gm!(\"7PxhmDuhhe394QJgKyW1P7Ce4dPCfFPN2yKq4KCCj7Vj\");\n\nstealth_launch desk {\n    cope {\n        DeskClosed = \"desk is closed. touch grass.\",\n    }\n\n    frame Desk {\n        open: bool,\n        trades: u64,\n    }\n\n    cap_table Trade {\n        #[account(mut)]\n        desk: Account<Desk>,\n        ser,\n    }\n\n    lock_in fn trade(ctx) -> W {\n        bull per_my_last_email!(desk.open) == paper_hands {\n        }\n        number_go_up!(desk.trades);\n        were_so_back!()\n    }\n}\n",
+   "solution": "gm!(\"7PxhmDuhhe394QJgKyW1P7Ce4dPCfFPN2yKq4KCCj7Vj\");\n\nstealth_launch desk {\n    cope {\n        DeskClosed = \"desk is closed. touch grass.\",\n    }\n\n    frame Desk {\n        open: bool,\n        trades: u64,\n    }\n\n    cap_table Trade {\n        #[account(mut)]\n        desk: Account<Desk>,\n        ser,\n    }\n\n    lock_in fn trade(ctx) -> W {\n        bull per_my_last_email!(desk.open) == paper_hands {\n            its_so_over!(Cope::DeskClosed);\n        }\n        number_go_up!(desk.trades);\n        were_so_back!()\n    }\n}\n",
+   "check": {
+    "kind": "ok",
+    "rust": [
+     "return err!(Cope::DeskClosed)"
+    ],
+    "error": null
+   }
+  },
+  {
+   "n": 9,
+   "slug": "on-god",
+   "title": "prints are forever",
+   "body": "`#[on_god]` on a frame means immutable: written once, when the account is created, and never again. The compiler enforces it. Any `mut` on that account, or any write to it, fails to compile.\n\nSometimes the lesson is the error.\n\n**your move:** break it on purpose. In `cap_table Edit`, put `#[account(mut)]` on the line above `print` and read what the compiler says.",
+   "start": "gm!(\"7PxhmDuhhe394QJgKyW1P7Ce4dPCfFPN2yKq4KCCj7Vj\");\n\nstealth_launch print_feed {\n    #[on_god]\n    frame PrintRecord {\n        value: u64,\n    }\n\n    frame Feed {\n        edits: u64,\n    }\n\n    cap_table Edit {\n        print: Account<PrintRecord>,\n        #[account(mut)]\n        feed: Account<Feed>,\n        ser,\n    }\n\n    lock_in fn edit(ctx, value: u64) -> W {\n        number_go_up!(feed.edits);\n        were_so_back!()\n    }\n}\n",
+   "solution": "gm!(\"7PxhmDuhhe394QJgKyW1P7Ce4dPCfFPN2yKq4KCCj7Vj\");\n\nstealth_launch print_feed {\n    #[on_god]\n    frame PrintRecord {\n        value: u64,\n    }\n\n    frame Feed {\n        edits: u64,\n    }\n\n    cap_table Edit {\n        #[account(mut)]\n        print: Account<PrintRecord>,\n        #[account(mut)]\n        feed: Account<Feed>,\n        ser,\n    }\n\n    lock_in fn edit(ctx, value: u64) -> W {\n        number_go_up!(feed.edits);\n        were_so_back!()\n    }\n}\n",
+   "check": {
+    "kind": "error",
+    "rust": [],
+    "error": "nobody can edit it"
+   }
+  },
+  {
+   "n": 10,
+   "slug": "not-financial-advice",
+   "title": "not financial advice",
+   "body": "`full_send!(ser => kol, lamports)` moves SOL. Any instruction that moves money has to say `// not financial advice` on the line above it, or it doesn't compile. Compliance has been notified.\n\nThe same goes for `printer_go_brrr!`, `vc_unlock!` and the rest of the money moves.\n\n**your move:** add `// not financial advice` on its own line, right above `lock_in fn tip`.",
+   "start": "gm!(\"7PxhmDuhhe394QJgKyW1P7Ce4dPCfFPN2yKq4KCCj7Vj\");\n\nstealth_launch tips {\n    frame Jar {\n        tips: u64,\n    }\n\n    cap_table Tip {\n        #[account(mut)]\n        jar: Account<Jar>,\n        ser,\n        kol,\n        system_program,\n    }\n\n    lock_in fn tip(ctx, lamports: u64) -> W {\n        full_send!(ser => kol, lamports);\n        number_go_up!(jar.tips);\n        were_so_back!()\n    }\n}\n",
+   "solution": "gm!(\"7PxhmDuhhe394QJgKyW1P7Ce4dPCfFPN2yKq4KCCj7Vj\");\n\nstealth_launch tips {\n    frame Jar {\n        tips: u64,\n    }\n\n    cap_table Tip {\n        #[account(mut)]\n        jar: Account<Jar>,\n        ser,\n        kol,\n        system_program,\n    }\n\n    // not financial advice\n    lock_in fn tip(ctx, lamports: u64) -> W {\n        full_send!(ser => kol, lamports);\n        number_go_up!(jar.tips);\n        were_so_back!()\n    }\n}\n",
+   "check": {
+    "kind": "ok",
+    "rust": [
+     "system_program::transfer"
+    ],
+    "error": null
+   }
+  },
+  {
+   "n": 11,
+   "slug": "banned-moves",
+   "title": "banned moves",
+   "body": "Some moves don't compile at all: `rug!`, `honeypot!`, `insider_trading!`, `dev_sold!`, `exit_scam!`, `ponzi!` and `deploy_on_friday!`. Each one is a real error with its own joke.\n\nThere are also confessions, which compile and do exactly what they say. `vc_unlock!` really mints 40% of supply to the VC. Read the generated Rust before you deploy anything.\n\n**your move:** you've learned enough to be dangerous. Add `rug!(pool);` inside `exit` and get stopped.\n\nThat's the tour. To build for real: `cargo install --git https://github.com/tickerzhq/typeshi`, then `typeshi new my_program`.",
+   "start": "gm!(\"7PxhmDuhhe394QJgKyW1P7Ce4dPCfFPN2yKq4KCCj7Vj\");\n\nstealth_launch memecoin {\n    frame Pool {\n        lp: u64,\n    }\n\n    cap_table Exit {\n        #[account(mut)]\n        pool: Account<Pool>,\n        ser,\n    }\n\n    lock_in fn exit(ctx) -> W {\n        number_go_up!(pool.lp);\n        were_so_back!()\n    }\n}\n",
+   "solution": "gm!(\"7PxhmDuhhe394QJgKyW1P7Ce4dPCfFPN2yKq4KCCj7Vj\");\n\nstealth_launch memecoin {\n    frame Pool {\n        lp: u64,\n    }\n\n    cap_table Exit {\n        #[account(mut)]\n        pool: Account<Pool>,\n        ser,\n    }\n\n    lock_in fn exit(ctx) -> W {\n        rug!(pool);\n        number_go_up!(pool.lp);\n        were_so_back!()\n    }\n}\n",
+   "check": {
+    "kind": "error",
+    "rust": [],
+    "error": "is a banned move"
+   }
+  }
+ ]
 }

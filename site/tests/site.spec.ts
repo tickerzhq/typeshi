@@ -118,3 +118,15 @@ test("a broken example never shows another program's Rust", async ({ page }) => 
   await expect(rust).toContainText("lib.shi doesn't compile");
   await expect(rust).not.toContainText("gm_counter");
 });
+
+test("every banned move's try-it link opens a program the compiler refuses", async ({ page }) => {
+  await page.goto("/");
+  const links = page.locator('a[href^="/play#code="]');
+  const hrefs = await links.evaluateAll((as) => as.map((a) => a.getAttribute("href")!));
+  expect(hrefs.length).toBe(7);
+  for (const href of hrefs) {
+    await page.goto(href);
+    await expect(term(page)).toContainText("is a banned move", { timeout: 15_000 });
+    await expect(term(page)).toContainText("ngmi");
+  }
+});

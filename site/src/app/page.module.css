@@ -24,8 +24,53 @@
 .lede code {
   color: var(--ngmi);
 }
-.install {
+.ctas {
   margin-top: 30px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.primaryCta,
+.secondaryCta {
+  display: inline-flex;
+  align-items: center;
+  height: 46px;
+  padding: 0 20px;
+  border-radius: 9px;
+  font: 600 15px/1 var(--mono);
+  text-decoration: none;
+  transition:
+    background 150ms var(--ease),
+    border-color 150ms var(--ease),
+    transform 120ms var(--ease);
+}
+.primaryCta {
+  background: var(--wagmi);
+  color: oklch(0.2 0.03 130);
+}
+.primaryCta:hover {
+  background: oklch(0.93 0.17 128);
+}
+.secondaryCta {
+  border: 1px solid var(--line-strong);
+  color: var(--ink);
+  font-weight: 500;
+}
+.secondaryCta:hover {
+  background: oklch(1 0 0 / 0.05);
+}
+.primaryCta:active,
+.secondaryCta:active {
+  transform: scale(0.97);
+}
+.ctaNote {
+  font-size: 13.5px;
+  color: var(--faint);
+  margin-left: 6px;
+}
+.install {
+  margin-top: 28px;
   display: flex;
   align-items: stretch;
   max-width: 640px;
@@ -137,6 +182,17 @@
 }
 .banned span {
   color: var(--soft);
+}
+.try {
+  justify-self: start;
+  margin-top: 4px;
+  font: 500 12.5px/1 var(--mono);
+  color: var(--faint);
+  text-decoration: none;
+  padding: 6px 0;
+}
+.try:hover {
+  color: var(--wagmi);
 }
 .move {
   font-size: 15px;

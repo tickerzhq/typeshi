@@ -1,0 +1,24 @@
+gm!("7PxhmDuhhe394QJgKyW1P7Ce4dPCfFPN2yKq4KCCj7Vj");
+
+stealth_launch print_feed {
+    #[on_god]
+    frame PrintRecord {
+        value: u64,
+    }
+
+    frame Feed {
+        edits: u64,
+    }
+
+    cap_table Edit {
+        print: Account<PrintRecord>,
+        #[account(mut)]
+        feed: Account<Feed>,
+        ser,
+    }
+
+    lock_in fn edit(ctx, value: u64) -> W {
+        number_go_up!(feed.edits);
+        were_so_back!()
+    }
+}

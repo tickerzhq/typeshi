@@ -1,0 +1,17 @@
+gm!("7PxhmDuhhe394QJgKyW1P7Ce4dPCfFPN2yKq4KCCj7Vj");
+
+stealth_launch hello {
+    frame Counter {
+        gms: u64,
+    }
+
+    cap_table Peek {
+        counter: Account<Counter>,
+        anon,
+    }
+
+    ape fn peek(ctx) -> W {
+        probably_nothing!("gms: {}", per_my_last_email!(counter.gms));
+        were_so_back!()
+    }
+}

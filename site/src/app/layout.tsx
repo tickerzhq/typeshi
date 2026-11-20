@@ -37,6 +37,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               typeshi<span className={s.ver}>v{content.version}</span>
             </Link>
             <nav aria-label="primary" className={s.nav}>
+              <Link href="/tour">tour</Link>
               <Link href="/play">playground</Link>
               <Link href="/#opinions">opinions</Link>
               <Link href="/#keywords">keywords</Link>

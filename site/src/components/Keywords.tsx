@@ -1,10 +1,11 @@
 "use client";
 
+import Link from "next/link";
 import { useDeferredValue, useId, useState } from "react";
 import Inline from "./Inline";
 import s from "./Keywords.module.css";
 
-export default function Keywords({ rows }: { rows: { shi: string; rust: string }[] }) {
+export default function Keywords({ rows }: { rows: { shi: string; rust: string; lesson?: string | null }[] }) {
   const [q, setQ] = useState("");
   const query = useDeferredValue(q.trim().toLowerCase());
   const id = useId();
@@ -38,6 +39,11 @@ export default function Keywords({ rows }: { rows: { shi: string; rust: string }
               <tr key={r.shi}>
                 <td>
                   <Inline text={r.shi} />
+                  {r.lesson && (
+                    <Link href={`/tour/${r.lesson}`} className={s.lesson}>
+                      lesson
+                    </Link>
+                  )}
                 </td>
                 <td>
                   <Inline text={r.rust} />
