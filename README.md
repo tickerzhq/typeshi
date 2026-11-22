@@ -7,8 +7,23 @@
 
 [![ci](https://github.com/tickerzhq/typeshi/actions/workflows/ci.yml/badge.svg)](https://github.com/tickerzhq/typeshi/actions/workflows/ci.yml)
 [![license: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![try it: in your browser](https://img.shields.io/badge/try%20it-in%20your%20browser-b6f259.svg)](https://typeshi-blond.vercel.app/play)
 
 **lock in fn.** A joke language that really works: slang over Rust that compiles to real Solana programs (Anchor 1.2). `rug!()` is a compile error.
+
+**[Try it in your browser](https://typeshi-blond.vercel.app/play)** · **[Take the tour](https://typeshi-blond.vercel.app/tour)** (25 lessons, no install) · [Keywords](#keywords) · [Contributing](CONTRIBUTING.md)
+
+<p align="center">
+  <a href="https://typeshi-blond.vercel.app/play">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="brand/playground-dark.png">
+      <img src="brand/playground-light.png" width="830" alt="The typeshi playground: gm_counter in typeshi on the left, the Anchor Rust it compiles to on the right, and the terminal below saying your build is vesting, then wagmi.">
+    </picture>
+  </a>
+</p>
+<p align="center"><i>The playground: the real compiler, built to WebAssembly, turning typeshi into Anchor Rust as you type.</i></p>
+
+## Install
 
 ```sh
 cargo install --git https://github.com/tickerzhq/typeshi
@@ -196,6 +211,21 @@ The full tour is [`degen_desk.shi`](examples/trenches/programs/degen_desk/src/li
 typeshi is a source-to-source compiler, not a proc macro. It reads `.shi` as Rust tokens with real line and column numbers, rewrites the slang into plain Anchor, then parses the result with `syn` and prints it with `prettyplease`.
 Every token it writes remembers the `.shi` token it came from, which is how rustc's errors find their way back to your line.
 The output is ordinary Rust that you can read, audit and build with stock Anchor. For code that holds money on a public chain, that matters: the code that runs is the code you can see.
+
+## Documentation
+
+| | |
+|---|---|
+| [The tour](https://typeshi-blond.vercel.app/tour) | 25 short lessons in five chapters, each checked by the real compiler as you type |
+| [The playground](https://typeshi-blond.vercel.app/play) | write typeshi, see the Rust, share a link (the code rides in the URL) |
+| [`degen_desk.shi`](examples/trenches/programs/degen_desk/src/lib.shi) | every keyword in one program, with the Rust it becomes next to it |
+| [`llms.txt`](https://typeshi-blond.vercel.app/llms.txt) | the whole language on one page, for an AI agent asked to write typeshi |
+| [`site/`](site) | the website: how it stays honest ([`site/README.md`](site/README.md)) and how it looks ([`site/DESIGN.md`](site/DESIGN.md)) |
+| [`brand/`](brand) | why typeshi has no logo, the colors, the voice |
+
+## Contributing
+
+Bug reports, banned moves and better jokes are welcome. [`CONTRIBUTING.md`](CONTRIBUTING.md) has the four commands CI runs, how to add a keyword or a banned move, and how to work on the site. Report a vulnerability privately, as [`SECURITY.md`](SECURITY.md) says. Install the [`commit-msg`](hooks/commit-msg) hook: every commit starts with gm, wagmi or "it's so over".
 
 ## Credits
 

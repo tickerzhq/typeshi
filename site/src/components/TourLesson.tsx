@@ -5,11 +5,23 @@ import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { passes } from "@/lib/check.mjs";
 import { compiler } from "@/lib/compiler";
+import { SLIDE_KEY } from "@/lib/head";
 import type { CompileResult, EditorWords } from "@/lib/types";
 import type { Lesson } from "@/lib/types-tour";
-import { outputEditor, replaceDoc, showDiagnostics, sourceEditor } from "./editor";
+import BootCode from "./BootCode";
 import Prose from "./Prose";
+import { useTabs } from "./Tabs";
 import s from "./TourLesson.module.css";
+
+type Editor = typeof import("./editor");
+const VIEWS = ["term", "rs"] as const;
+// Back and next are plain links, so moving between lessons is a cross-document navigation and the
+// browser's own view transition slides the lesson text the way you went (see slideScript).
+const slide = (dir: "nav-forward" | "nav-back") => () => {
+  try {
+    sessionStorage.setItem(SLIDE_KEY, dir);
+  } catch {}
+};
 
 const DONE_KEY = "typeshi:tour:done";
 const codeKey = (slug: string) => `typeshi:tour:code:${slug}`;
@@ -55,13 +67,17 @@ export default function TourLesson({
   const outEl = useRef<HTMLDivElement>(null);
   const srcView = useRef<EditorView | null>(null);
   const outView = useRef<EditorView | null>(null);
+  /** CodeMirror, loaded after the page is interactive so the lesson text paints first. */
+  const cm = useRef<Editor | null>(null);
   const seq = useRef(0);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const [result, setResult] = useState<CompileResult | null>(null);
   const [passed, setPassed] = useState(false);
-  const [view, setView] = useState<"term" | "rs">("term");
+  const [view, setView] = useState<(typeof VIEWS)[number]>("term");
+  const [ready, setReady] = useState(false);
   const [error, setError] = useState("");
+  const tabs = useTabs(VIEWS, view, setView);
 
   const run = useCallback(
     async (src: string) => {
@@ -75,9 +91,10 @@ export default function TourLesson({
       }
       if (my !== seq.current) return;
       setResult(r);
-      if (srcView.current) showDiagnostics(srcView.current, r.diags);
-      if (outView.current) {
-        replaceDoc(
+      const ed = cm.current;
+      if (ed && srcView.current) ed.showDiagnostics(srcView.current, r.diags);
+      if (ed && outView.current) {
+        ed.replaceDoc(
           outView.current,
           r.ok ? r.rust : "// nothing here yet: lib.shi doesn't compile.\n// the terminal says why.\n",
         );
@@ -94,23 +111,33 @@ export default function TourLesson({
   );
 
   useEffect(() => {
-    if (!srcEl.current || !outEl.current) return;
+    let cancelled = false;
     const saved = store.get(codeKey(lesson.slug));
     const doc = saved ?? lesson.start;
-    srcView.current = sourceEditor({
-      parent: srcEl.current,
-      doc,
-      words,
-      onChange: (d) => {
-        store.set(codeKey(lesson.slug), d === lesson.start ? null : d);
-        if (timer.current) clearTimeout(timer.current);
-        timer.current = setTimeout(() => void run(d), 110);
-      },
-      onBuild: () => void run(srcView.current?.state.doc.toString() ?? ""),
-    });
-    outView.current = outputEditor(outEl.current);
+    // Start the compiler while CodeMirror downloads; neither waits for the other.
     void run(doc);
+    (async () => {
+      const ed = await import("./editor");
+      if (cancelled || !srcEl.current || !outEl.current) return;
+      cm.current = ed;
+      srcView.current = ed.sourceEditor({
+        parent: srcEl.current,
+        doc,
+        words,
+        onChange: (d) => {
+          store.set(codeKey(lesson.slug), d === lesson.start ? null : d);
+          if (timer.current) clearTimeout(timer.current);
+          timer.current = setTimeout(() => void run(d), 110);
+        },
+        onBuild: () => void run(srcView.current?.state.doc.toString() ?? ""),
+      });
+      outView.current = ed.outputEditor(outEl.current);
+      setReady(true);
+      void run(doc); // again, now there is an editor to put the diagnostics on
+    })();
     return () => {
+      cancelled = true;
+      setReady(false);
       if (timer.current) clearTimeout(timer.current);
       srcView.current?.destroy();
       outView.current?.destroy();
@@ -119,8 +146,8 @@ export default function TourLesson({
   }, [lesson, words, run]);
 
   const load = (code: string) => {
-    if (!srcView.current) return;
-    replaceDoc(srcView.current, code);
+    if (!srcView.current || !cm.current) return;
+    cm.current.replaceDoc(srcView.current, code);
     srcView.current.focus();
   };
 
@@ -168,18 +195,18 @@ export default function TourLesson({
 
         <nav className={s.pager} aria-label="lessons">
           {prev ? (
-            <Link href={`/tour/${prev.slug}`} className={s.prev}>
+            <a href={`/tour/${prev.slug}`} className={s.prev} onClick={slide("nav-back")}>
               <span>← back</span>
               {prev.title}
-            </Link>
+            </a>
           ) : (
             <span />
           )}
           {next ? (
-            <Link href={`/tour/${next.slug}`} className={`${s.next} ${passed ? s.ready : ""}`}>
+            <a href={`/tour/${next.slug}`} className={`${s.next} ${passed ? s.ready : ""}`} onClick={slide("nav-forward")}>
               <span>next →</span>
               {next.title}
-            </Link>
+            </a>
           ) : (
             <Link href="/play" className={`${s.next} ${passed ? s.ready : ""}`}>
               <span>done →</span>
@@ -194,17 +221,17 @@ export default function TourLesson({
           <span>lib.shi</span>
           <span className={s.muted}>⌘↵ to check</span>
         </div>
-        <div ref={srcEl} className={s.editor} />
-        <div className={s.tabs} role="tablist" aria-label="output">
-          <button type="button" role="tab" aria-selected={view === "term"} onClick={() => setView("term")}>
-            terminal{errors ? ` · ${errors} error${errors > 1 ? "s" : ""}` : ""}
-          </button>
-          <button type="button" role="tab" aria-selected={view === "rs"} onClick={() => setView("rs")}>
-            lib.rs
-          </button>
+        <div className={s.code}>
+          <div ref={srcEl} className={s.editor} />
+          {!ready && <BootCode code={lesson.start} className={s.boot} />}
+        </div>
+        <div className={s.tabs} {...tabs.list} aria-label="output">
+          <button {...tabs.tab("term")}>terminal{errors ? ` · ${errors} error${errors > 1 ? "s" : ""}` : ""}</button>
+          <button {...tabs.tab("rs")}>lib.rs</button>
         </div>
         <div className={s.out}>
-          <div className={s.term} hidden={view !== "term"} role="log" aria-label="compiler output">
+          <div className={s.term} hidden={view !== "term"} {...tabs.panel("term")}>
+            <div role="log" aria-label="compiler output">
             {error ? (
               <pre className={s.err}>{error}</pre>
             ) : result == null ? (
@@ -220,8 +247,9 @@ export default function TourLesson({
                 <pre className={result.ok ? s.good : s.bad}>{result.ok ? "wagmi" : "ngmi"}</pre>
               </>
             )}
+            </div>
           </div>
-          <div ref={outEl} className={s.rs} hidden={view !== "rs"} />
+          <div ref={outEl} className={s.rs} hidden={view !== "rs"} {...tabs.panel("rs")} />
         </div>
       </section>
     </div>

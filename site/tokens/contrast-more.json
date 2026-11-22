@@ -1,0 +1,15 @@
+{
+  "$schema": "https://www.designtokens.org/schemas/2025.10/format.json",
+  "$description": "High contrast, for people who ask their system for more (prefers-contrast: more). Applies over either theme.",
+  "color": {
+    "text": {
+      "secondary": { "$value": "{color.contrast.text}" },
+      "tertiary": { "$value": "{color.contrast.text}" }
+    },
+    "border": {
+      "default": { "$value": "{color.contrast.border}" },
+      "strong": { "$value": "{color.contrast.border}" }
+    },
+    "state": { "error": {"$value": "{color.contrast.error}"} }
+  }
+}

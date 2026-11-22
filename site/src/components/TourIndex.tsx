@@ -14,7 +14,7 @@ export default function TourIndex({ lessons }: { lessons: Item[] }) {
   const firstOpen = lessons.find((l) => !done.has(l.slug)) ?? lessons[0];
   return (
     <>
-      <div className={s.start}>
+      <div className={`cluster ${s.start}`}>
         <Link href={`/tour/${firstOpen.slug}`} className={s.cta}>
           {done.size === 0 ? "start the tour" : done.size === lessons.length ? "start over" : "keep going"} →
         </Link>
@@ -29,8 +29,15 @@ export default function TourIndex({ lessons }: { lessons: Item[] }) {
           <section key={chapter} className={s.chapter} aria-labelledby={`ch-${chapter.replace(/\s+/g, "-")}`}>
             <h2 id={`ch-${chapter.replace(/\s+/g, "-")}`} className={s.chapterTitle}>
               <span>{chapter}</span>
-              <span className={s.chapterCount}>
-                {doneHere}/{inChapter.length}
+              <span className={s.meter}>
+                <span className={s.cells} aria-hidden="true">
+                  {inChapter.map((l) => (
+                    <i key={l.slug} data-done={done.has(l.slug)} />
+                  ))}
+                </span>
+                <span>
+                  {doneHere}/{inChapter.length}
+                </span>
               </span>
             </h2>
             <ol className={s.list} start={inChapter[0].n}>

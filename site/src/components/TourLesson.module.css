@@ -1,62 +1,63 @@
 .layout {
   display: grid;
   grid-template-columns: minmax(320px, 0.82fr) minmax(0, 1.18fr);
-  height: calc(100dvh - 57px);
+  height: calc(100dvh - var(--size-header) - 1px);
 }
 
-/* left: the lesson */
+/* left: the lesson. Named, so back and next slide it (globals.css, "motion"). */
 .text {
+  view-transition-name: lesson;
   overflow-y: auto;
-  padding: 36px clamp(20px, 3vw, 44px) 40px;
-  border-right: 1px solid var(--line);
+  padding: var(--space-xl) var(--space-xl) var(--space-xl);
+  border-right: 1px solid var(--border-default);
   display: flex;
   flex-direction: column;
   min-width: 0;
 }
 .count {
   margin: 0;
-  font: 500 12.5px/1 var(--mono);
-  color: var(--faint);
+  font: var(--weight-medium) var(--step-code) / 1 var(--font-mono);
+  color: var(--text-tertiary);
 }
 .count a {
-  color: var(--soft);
+  color: var(--text-secondary);
 }
 .title {
-  margin: 14px 0 18px;
-  font: 600 clamp(30px, 3.6vw, 42px) / 1.05 var(--mono);
+  margin: var(--space-xs) 0 var(--space-s);
+  font: var(--weight-bold) var(--step-title) / var(--leading-heading) var(--font-mono);
   letter-spacing: -0.04em;
 }
 .prose {
-  color: var(--soft);
-  font-size: 16px;
+  color: var(--text-secondary);
+  font-size: var(--step-body);
   line-height: 1.68;
 }
 .prose p {
-  margin: 0 0 14px;
+  margin: 0 0 var(--space-xs);
   max-width: 62ch;
 }
 .prose strong {
-  color: var(--wagmi);
-  font-weight: 600;
+  color: var(--accent-text);
+  font-weight: var(--weight-bold);
 }
 .prose code {
-  color: var(--ink);
-  background: oklch(1 0 0 / 0.06);
-  padding: 1px 5px;
-  border-radius: 4px;
-  font-size: 13.5px;
+  color: var(--text-primary);
+  background: var(--overlay-chip);
+  padding: 1px var(--space-3xs);
+  border-radius: var(--radius-xs);
+  font-size: var(--step-code);
   overflow-wrap: anywhere;
 }
 .prose pre {
-  margin: 0 0 14px;
-  padding: 12px 14px;
-  background: var(--bg-sunk);
-  border: 1px solid var(--line);
-  border-radius: 8px;
+  margin: 0 0 var(--space-xs);
+  padding: var(--space-xs);
+  background: var(--surface-sunk);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
   overflow-x: auto;
-  font-size: 13px;
-  line-height: 1.6;
-  color: var(--ink);
+  font-size: var(--step-code);
+  line-height: var(--leading-body);
+  color: var(--text-primary);
 }
 .prose pre code {
   background: none;
@@ -64,75 +65,75 @@
 }
 
 .goal {
-  margin-top: 8px;
-  padding: 12px 14px;
-  border: 1px solid var(--line-strong);
-  border-radius: 8px;
-  font: 400 13.5px/1.5 var(--mono);
-  color: var(--soft);
+  margin-top: var(--space-2xs);
+  padding: var(--space-xs);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  font: var(--weight-regular) var(--step-code) / 1.5 var(--font-mono);
+  color: var(--text-secondary);
   transition:
-    border-color 200ms var(--ease),
-    background 200ms var(--ease);
+    border-color var(--dur-state) var(--ease-out),
+    background var(--dur-state) var(--ease-out);
 }
 .goal[data-passed="true"] {
-  border-color: var(--wagmi);
-  background: oklch(0.89 0.19 128 / 0.08);
-  color: var(--ink);
+  border-color: var(--accent-text);
+  background: color-mix(in oklch, var(--accent-text) 8%, transparent);
+  color: var(--text-primary);
 }
 .goal b {
-  color: var(--wagmi);
+  color: var(--accent-text);
 }
 
 .actions {
   display: flex;
-  gap: 8px;
-  margin-top: 12px;
+  gap: var(--space-2xs);
+  margin-top: var(--space-xs);
 }
 .btn {
-  height: 36px;
-  padding: 0 12px;
-  border-radius: 7px;
-  border: 1px solid var(--line-strong);
+  min-height: var(--size-control);
+  padding: 0 var(--space-xs);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-strong);
   background: transparent;
-  color: var(--soft);
-  font: 500 13px/1 var(--mono);
+  color: var(--text-secondary);
+  font: var(--weight-medium) var(--step-code) / 1 var(--font-mono);
   cursor: pointer;
   transition:
-    background 150ms var(--ease),
-    color 150ms var(--ease);
+    background var(--dur-hover) var(--ease-out),
+    color var(--dur-hover) var(--ease-out);
 }
 .btn:hover {
-  background: oklch(1 0 0 / 0.05);
-  color: var(--ink);
+  background: var(--overlay-hover);
+  color: var(--text-primary);
 }
 
 .pager {
   margin-top: auto;
-  padding-top: 32px;
+  padding-top: var(--space-l);
   display: flex;
   justify-content: space-between;
-  gap: 12px;
+  gap: var(--space-xs);
 }
 .prev,
 .next {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  padding: 12px 14px;
-  min-height: 44px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
+  gap: var(--space-3xs);
+  padding: var(--space-xs);
+  min-height: var(--size-target);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
   text-decoration: none;
-  font: 500 14px/1.3 var(--mono);
-  color: var(--ink);
+  font: var(--weight-medium) var(--step-small) / 1.3 var(--font-mono);
+  color: var(--text-primary);
   transition:
-    border-color 150ms var(--ease),
-    background 150ms var(--ease);
+    border-color var(--dur-hover) var(--ease-out),
+    background var(--dur-hover) var(--ease-out);
 }
 .prev span,
 .next span {
-  font-size: 12px;
-  color: var(--faint);
+  font-size: var(--step-label);
+  color: var(--text-tertiary);
 }
 .next {
   text-align: right;
@@ -140,20 +141,20 @@
 }
 .prev:hover,
 .next:hover {
-  border-color: var(--line-strong);
-  background: oklch(1 0 0 / 0.03);
+  border-color: var(--border-strong);
+  background: var(--overlay-subtle);
 }
 .ready {
-  border-color: var(--wagmi);
-  background: var(--wagmi);
-  color: oklch(0.2 0.03 130);
+  border-color: var(--accent-fill);
+  background: var(--accent-fill);
+  color: var(--text-on-accent);
 }
 .ready span {
-  color: oklch(0.3 0.04 130);
+  color: var(--text-on-accent-soft);
 }
 .ready:hover {
-  background: oklch(0.93 0.17 128);
-  border-color: oklch(0.93 0.17 128);
+  background: var(--accent-fill-hover);
+  border-color: var(--accent-fill-hover);
 }
 
 /* right: the editor and what it says */
@@ -162,45 +163,54 @@
   flex-direction: column;
   min-height: 0;
   min-width: 0;
-  background: var(--bg-sunk);
+  background: var(--surface-sunk);
 }
 .head {
   display: flex;
   justify-content: space-between;
-  padding: 8px 14px;
-  border-bottom: 1px solid var(--line);
-  font: 500 12px/1.4 var(--mono);
-  color: var(--soft);
+  padding: var(--space-2xs) var(--space-xs);
+  border-bottom: 1px solid var(--border-default);
+  font: var(--weight-medium) var(--step-label) / 1.4 var(--font-mono);
+  color: var(--text-secondary);
   flex: none;
 }
 .muted {
-  color: var(--faint);
+  color: var(--text-tertiary);
 }
-.editor {
+.code {
   flex: 1 1 58%;
   min-height: 0;
+  display: grid;
+  grid-template: minmax(0, 1fr) / minmax(0, 1fr);
+}
+.editor,
+.boot {
+  grid-area: 1 / 1;
+  min-height: 0;
+}
+.editor {
   overflow: hidden;
 }
 .tabs {
   flex: none;
   display: flex;
-  border-top: 1px solid var(--line);
-  border-bottom: 1px solid var(--line);
-  background: var(--bg-raised);
+  border-top: 1px solid var(--border-default);
+  border-bottom: 1px solid var(--border-default);
+  background: var(--surface-raised);
 }
 .tabs button {
-  height: 38px;
-  padding: 0 16px;
+  min-height: var(--size-control);
+  padding: 0 var(--space-s);
   background: transparent;
   border: 0;
   border-bottom: 2px solid transparent;
-  color: var(--faint);
-  font: 500 12.5px/1 var(--mono);
+  color: var(--text-tertiary);
+  font: var(--weight-medium) var(--step-code) / 1 var(--font-mono);
   cursor: pointer;
 }
 .tabs button[aria-selected="true"] {
-  color: var(--ink);
-  border-bottom-color: var(--wagmi);
+  color: var(--text-primary);
+  border-bottom-color: var(--accent-fill);
 }
 .out {
   flex: 1 1 42%;
@@ -214,12 +224,12 @@
   overflow: auto;
 }
 .term {
-  padding: 12px 14px;
-  background: oklch(0.11 0.004 270);
+  padding: var(--space-xs);
+  background: var(--surface-terminal);
 }
 .term pre {
-  margin: 0 0 6px;
-  font: 400 12.5px/1.6 var(--mono);
+  margin: 0 0 var(--space-3xs);
+  font: var(--weight-regular) var(--step-code) / var(--leading-body) var(--font-mono);
   white-space: pre-wrap;
   word-break: break-word;
 }
@@ -228,21 +238,21 @@
   display: none;
 }
 .err {
-  color: var(--ngmi);
+  color: var(--state-error);
 }
 .warn {
-  color: var(--warn);
+  color: var(--state-warning);
 }
 .good {
-  color: var(--wagmi);
-  font-weight: 600;
+  color: var(--accent-text);
+  font-weight: var(--weight-bold);
 }
 .bad {
-  color: var(--ngmi);
-  font-weight: 600;
+  color: var(--state-error);
+  font-weight: var(--weight-bold);
 }
 .dim {
-  color: var(--faint);
+  color: var(--text-tertiary);
 }
 
 @media (max-width: 900px) {
@@ -252,21 +262,37 @@
   }
   .text {
     border-right: 0;
-    padding: 28px var(--gutter) 24px;
+    padding: var(--space-l) var(--gutter) var(--space-m);
     overflow: visible;
   }
   .pager {
-    margin-top: 20px;
+    margin-top: var(--space-m);
     padding-top: 0;
   }
   .work {
-    border-top: 1px solid var(--line);
+    border-top: 1px solid var(--border-default);
   }
-  .editor {
+  /* fixed heights, not flex shares: in a page that scrolls, a percentage flex-basis resolves to
+     the content, and the output panes' content is absolutely placed, so it came out 0 px tall */
+  .code {
+    flex: none;
     height: 52vh;
     min-height: 320px;
   }
   .out {
+    flex: none;
     height: 300px;
+  }
+}
+
+@media (pointer: coarse) {
+  .btn,
+  .tabs button,
+  .count a {
+    min-height: var(--size-target);
+  }
+  .count a {
+    display: inline-flex;
+    align-items: center;
   }
 }

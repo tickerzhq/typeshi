@@ -1,58 +1,57 @@
 .start {
-  display: flex;
-  align-items: center;
-  gap: 18px;
-  margin-bottom: 28px;
-  flex-wrap: wrap;
+  margin-bottom: var(--space-l);
+  --cluster-gap: var(--space-s);
 }
 .cta {
   display: inline-flex;
   align-items: center;
-  height: 46px;
-  padding: 0 20px;
-  border-radius: 9px;
-  background: var(--wagmi);
-  color: oklch(0.2 0.03 130);
-  font: 600 15px/1 var(--mono);
+  min-height: var(--size-cta);
+  padding: 0 var(--space-m);
+  border-radius: var(--radius-sm);
+  background: var(--accent-fill);
+  color: var(--text-on-accent);
+  font: var(--weight-bold) var(--step-small) / 1 var(--font-mono);
   text-decoration: none;
-  transition: background 150ms var(--ease), transform 120ms var(--ease);
+  transition:
+    background var(--dur-hover) var(--ease-out),
+    transform var(--dur-press) var(--ease-out);
 }
 .cta:hover {
-  background: oklch(0.93 0.17 128);
+  background: var(--accent-fill-hover);
 }
 .cta:active {
   transform: scale(0.97);
 }
 .progress {
-  font: 400 13px/1 var(--mono);
-  color: var(--faint);
+  font: var(--weight-regular) var(--step-code) / 1 var(--font-mono);
+  color: var(--text-tertiary);
   font-variant-numeric: tabular-nums;
 }
 .list {
   list-style: none;
   margin: 0;
   padding: 0;
-  border-top: 1px solid var(--line);
+  border-top: 1px solid var(--border-default);
 }
 .item {
   display: grid;
   grid-template-columns: 44px minmax(0, 1fr);
-  gap: 14px;
-  padding: 16px 4px;
-  border-bottom: 1px solid var(--line);
+  gap: var(--space-xs);
+  padding: var(--space-s) var(--space-3xs);
+  border-bottom: 1px solid var(--border-default);
   text-decoration: none;
-  transition: background 150ms var(--ease);
+  transition: background var(--dur-hover) var(--ease-out);
 }
 .item:hover {
-  background: oklch(1 0 0 / 0.03);
+  background: var(--overlay-subtle);
 }
 .n {
-  font: 500 14px/1.5 var(--mono);
-  color: var(--faint);
+  font: var(--weight-medium) var(--step-small) / 1.5 var(--font-mono);
+  color: var(--text-tertiary);
   font-variant-numeric: tabular-nums;
 }
 .item[data-done="true"] .n {
-  color: var(--wagmi);
+  color: var(--accent-text);
 }
 .body {
   display: grid;
@@ -60,12 +59,12 @@
   min-width: 0;
 }
 .title {
-  font: 600 16px/1.4 var(--mono);
-  color: var(--ink);
+  font: var(--weight-bold) var(--step-body) / 1.4 var(--font-mono);
+  color: var(--text-primary);
 }
 .blurb {
-  color: var(--soft);
-  font-size: 14.5px;
+  color: var(--text-secondary);
+  font-size: var(--step-small);
   line-height: 1.5;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -73,24 +72,43 @@
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
 }
+.blurb code {
+  font-size: var(--step-code);
+  color: var(--text-primary);
+}
 .chapter + .chapter {
-  margin-top: 36px;
+  margin-top: var(--space-xl);
 }
 .chapterTitle {
   display: flex;
   justify-content: space-between;
-  align-items: baseline;
-  margin: 0 0 10px;
-  font: 600 13px/1 var(--mono);
-  color: var(--wagmi);
+  align-items: center;
+  gap: var(--space-s);
+  margin: 0 0 var(--space-2xs);
+  font: var(--weight-bold) var(--step-code) / 1 var(--font-mono);
+  color: var(--accent-text);
   letter-spacing: 0.02em;
 }
-.chapterCount {
-  color: var(--faint);
-  font-weight: 400;
+/* One cell per lesson, lit when done: the chapter's progress as a picture, the count beside it. */
+.meter {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2xs);
+  color: var(--text-tertiary);
+  font-weight: var(--weight-regular);
   font-variant-numeric: tabular-nums;
 }
-.blurb code {
-  font-size: 12.5px;
-  color: var(--ink);
+.cells {
+  display: inline-flex;
+  gap: 2px;
+}
+.cells i {
+  width: 10px;
+  height: 10px;
+  border-radius: var(--radius-2xs);
+  background: var(--border-strong);
+  transition: background var(--dur-state) var(--ease-out);
+}
+.cells i[data-done="true"] {
+  background: var(--accent-fill);
 }

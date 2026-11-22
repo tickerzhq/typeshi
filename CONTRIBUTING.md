@@ -34,6 +34,24 @@ cargo run -- build examples/trenches --emit-only
 
 A new keyword or macro goes the same way: the transpiler, a test in `tests/transpile.rs`, the grammar, the README tables.
 
+## The website
+
+The site in [`site/`](site) runs the real compiler in the browser. You need Node 22 or later; you don't need Rust unless you change the compiler.
+
+```sh
+cd site
+npm ci
+npm run dev         # http://localhost:3000
+npm run typecheck
+npm test            # design tokens, the scale check, contrast in every theme
+npm run build
+npm run e2e         # Playwright, desktop and phone, axe in both themes
+```
+
+Colors, type sizes, space, corners and durations come from the design tokens in [`site/tokens/`](site/tokens) (W3C DTCG format). Change the JSON, run `npm run tokens`, and commit the generated `tokens.css`, `tokens.ts` and `icon.svg`. `npm test` fails on a hand-set value. [`site/DESIGN.md`](site/DESIGN.md) says why things look the way they do; change it in the same pull request as the look.
+
+If you change the compiler, `npm run wasm` rebuilds the browser's copy (see [`site/README.md`](site/README.md)).
+
 ## Pull requests
 
 Small and focused. Say what changed and how you checked it. Commit messages start with gm, wagmi or "it's so over" ([`hooks/commit-msg`](hooks/commit-msg) enforces it if you install it). No em dashes. No exclamation points.

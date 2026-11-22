@@ -1,0 +1,25 @@
+/* Matches editor.ts: 12 px top padding, a 36 px line-number gutter, 14 px for lint marks, 8 px to the
+   text. Lines don't wrap here; the editor wraps them when it takes over. */
+.boot {
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr);
+  column-gap: calc(4px + 14px + var(--space-2xs));
+  padding-block: var(--space-xs);
+  overflow: hidden;
+}
+.nums,
+.code {
+  margin: 0;
+  font: var(--weight-regular) var(--step-code) / var(--leading-code) var(--font-mono);
+  white-space: pre;
+}
+.nums {
+  text-align: right;
+  color: var(--text-tertiary);
+  font-variant-numeric: tabular-nums;
+}
+.code {
+  overflow: hidden;
+  padding-right: var(--space-s);
+  color: var(--text-primary);
+}

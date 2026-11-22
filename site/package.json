@@ -3,10 +3,11 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "tokens": "node scripts/tokens.mjs",
     "sync": "node scripts/sync.mjs",
-    "predev": "node scripts/sync.mjs",
+    "predev": "node scripts/tokens.mjs && node scripts/sync.mjs",
     "dev": "next dev",
-    "prebuild": "node scripts/sync.mjs",
+    "prebuild": "node scripts/tokens.mjs && node scripts/sync.mjs",
     "build": "next build",
     "start": "next start",
     "typecheck": "tsc --noEmit",
@@ -23,7 +24,6 @@
     "@codemirror/view": "6.43.15",
     "@lezer/highlight": "1.2.5",
     "@vercel/analytics": "2.0.1",
-    "geist": "1.9.2",
     "next": "16.4.6",
     "react": "19.3.1",
     "react-dom": "19.3.1"
