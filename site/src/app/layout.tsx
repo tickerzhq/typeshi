@@ -60,10 +60,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   play<span className={s.long}>ground</span>
                 </span>
               </Link>
-              <Link href="/#opinions" className={s.wide}>
+              <Link href="/opinions" className={s.wide}>
                 opinions
               </Link>
-              <Link href="/#keywords" className={s.wide}>
+              <Link href="/keywords" className={s.wide}>
                 keywords
               </Link>
               <a href="https://github.com/tickerzhq/typeshi" aria-label="github">

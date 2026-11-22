@@ -85,6 +85,23 @@ for (const [id, rs] of [
   }
 }
 
+// --- the phrasebook on the home -----------------------------------------------------
+// Lines of the starter program next to the lines the compiler writes for them. Each must be a whole
+// line of gm_counter and a whole line of its lib.rs, or the build fails: the home never shows Rust
+// the compiler didn't write.
+const starterRust = compile(starter).rust;
+const wholeLines = (text) => text.split("\n").map((l) => l.trim());
+const phrasebook = [
+  ["frame Counter {", "pub struct Counter {"],
+  ["anon,", "pub anon: Signer<'info>,"],
+  [`probably_nothing!("gm. we're live.");`, `msg!("gm. we're live.");`],
+  ["were_so_back!()", "Ok(())"],
+];
+for (const [shi, rs] of phrasebook) {
+  if (!wholeLines(starter).includes(shi)) throw new Error(`sync: phrasebook: "${shi}" is not a line of the starter program`);
+  if (!wholeLines(starterRust).includes(rs)) throw new Error(`sync: phrasebook: the compiler no longer writes "${rs}" for the starter`);
+}
+
 // --- the keyword table from README.md ---------------------------------------------
 const readme = read("README.md");
 const kwSection = readme.split("## Keywords")[1]?.split("\n## ")[0];
@@ -227,6 +244,6 @@ const version = read("Cargo.toml").match(/^version = "([^"]+)"/m)[1];
 mkdirSync(dirname(out), { recursive: true });
 writeFileSync(
   out,
-  JSON.stringify({ version, banned, bannedTry, fixedErrors, escalation, fud, examples, keywords, confessions, cope, editor, tour }, null, 1) + "\n",
+  JSON.stringify({ version, banned, bannedTry, fixedErrors, escalation, fud, examples, phrasebook, keywords, confessions, cope, editor, tour }, null, 1) + "\n",
 );
 console.log(`sync: ${tour.length} tour lessons, ${examples.length} examples, ${banned.length} banned moves, ${keywords.length} keyword rows, v${version}`);

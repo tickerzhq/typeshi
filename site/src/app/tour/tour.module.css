@@ -1,20 +1,3 @@
 .page {
-  padding-block: var(--space-2xl) var(--space-3xl);
   max-width: 860px;
-}
-.eyebrow {
-  margin: 0 0 var(--space-s);
-  font: var(--weight-medium) var(--step-code) / 1 var(--font-mono);
-  color: var(--accent-text);
-}
-.h1 {
-  margin: 0;
-  font: var(--weight-bold) var(--step-heading) / 1 var(--font-mono);
-  letter-spacing: -0.05em;
-}
-.lede {
-  margin: var(--space-m) 0 var(--space-xl);
-  color: var(--text-secondary);
-  font-size: var(--step-lede);
-  max-width: 56ch;
 }

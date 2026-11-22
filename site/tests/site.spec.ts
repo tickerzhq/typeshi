@@ -1,5 +1,6 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, type Page, test } from "@playwright/test";
+import content from "../src/generated/content.json" with { type: "json" };
 
 const term = (page: Page) => page.getByRole("log", { name: "compiler output" });
 const source = (page: Page) => page.getByRole("textbox", { name: /typeshi source/ });
@@ -120,7 +121,7 @@ test("a broken example never shows another program's Rust", async ({ page }) => 
 });
 
 test("every banned move's try-it link opens a program the compiler refuses", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/opinions");
   const links = page.locator('a[href^="/play#code="]');
   const hrefs = await links.evaluateAll((as) => as.map((a) => a.getAttribute("href")!));
   expect(hrefs.length).toBe(7);
@@ -129,4 +130,38 @@ test("every banned move's try-it link opens a program the compiler refuses", asy
     await expect(term(page)).toContainText("is a banned move", { timeout: 15_000 });
     await expect(term(page)).toContainText("ngmi");
   }
+});
+
+test("the home's proofs are the compiler's own output", async ({ page }) => {
+  await page.goto("/");
+  const proofs = page.getByRole("list").filter({ has: page.getByRole("heading", { name: /doesn't compile/ }) });
+  await expect(proofs).toContainText("error: not on our watch, anon");
+  await expect(proofs).toContainText("`rug!` is a banned move");
+  for (const [shi, rs] of content.phrasebook) {
+    await expect(proofs).toContainText(shi);
+    await expect(proofs).toContainText(rs);
+  }
+  for (const line of content.escalation) await expect(proofs).toContainText(line);
+  // the escalation's try-it link really fails, twice, out loud
+  await page.getByRole("link", { name: /fail on purpose/ }).click();
+  await expect(term(page)).toContainText("ngmi", { timeout: 15_000 });
+  const build = page.getByRole("button", { name: /^build/ });
+  await build.click();
+  await expect(term(page)).toContainText(content.escalation[0]);
+  await build.click();
+  await expect(term(page)).toContainText(content.escalation[1]);
+});
+
+test("the home stays short: the docs live on their own pages", async ({ page }) => {
+  await page.goto("/");
+  await expect(term(page)).toContainText("wagmi", { timeout: 15_000 });
+  const tall = await page.evaluate(() => document.documentElement.scrollHeight);
+  // 5,879 px at 1440 and 8,412 px on a phone before Nov 22 2026; about 3,300 and 4,400 after
+  expect(tall).toBeLessThanOrEqual(isPhone(page) ? 5200 : 3800);
+  for (const [name, path] of [["opinions", "/opinions"], ["keywords", "/keywords"]] as const) {
+    await page.goto("/");
+    await page.getByRole("navigation", { name: "the rest of typeshi" }).getByRole("link", { name: new RegExp(`^${name}`) }).click();
+    await expect(page).toHaveURL(new RegExp(`${path}$`));
+  }
+  await expect(page.getByRole("row")).toHaveCount(content.keywords.length + 1);
 });

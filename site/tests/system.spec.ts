@@ -1,7 +1,9 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, type Page, test } from "@playwright/test";
 
-const PAGES = ["/", "/play", "/tour", "/tour/cap-table"];
+const PAGES = ["/", "/play", "/tour", "/tour/cap-table", "/opinions", "/keywords", "/tour/1"];
+/** The pages that run the compiler; wait for its first verdict there. */
+const LIVE = new Set(["/", "/play", "/tour/cap-table"]);
 const ready = (page: Page) =>
   expect(page.getByRole("log", { name: "compiler output" }).first()).toContainText(/wagmi|ngmi/, { timeout: 15_000 });
 
@@ -11,7 +13,7 @@ test("every page fits 320 px with no sideways scroll", async ({ browser }, info)
   const page = await ctx.newPage();
   for (const path of PAGES) {
     await page.goto(path);
-    if (path !== "/tour") await ready(page);
+    if (LIVE.has(path)) await ready(page);
     const wide = await page.evaluate(() => document.documentElement.scrollWidth);
     expect(wide, `${path} is ${wide} px wide at 320`).toBeLessThanOrEqual(320);
   }
@@ -22,7 +24,7 @@ test("on a phone, every control is at least 44 px tall", async ({ page }, info) 
   test.skip(info.project.name !== "phone", "touch targets are a phone question");
   for (const path of PAGES) {
     await page.goto(path);
-    if (path !== "/tour") await ready(page);
+    if (LIVE.has(path)) await ready(page);
     const small = await page.evaluate(() =>
       [...document.querySelectorAll<HTMLElement>("a[href], button, select, input, [role=tab]")]
         .filter((e) => {
@@ -51,7 +53,7 @@ test("the light theme turns on, survives a reload, and passes axe", async ({ pag
   for (const path of PAGES) {
     await page.goto(path);
     await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
-    if (path !== "/tour") await ready(page);
+    if (LIVE.has(path)) await ready(page);
     const results = await new AxeBuilder({ page }).disableRules(["scrollable-region-focusable"]).analyze();
     expect(results.violations.map((v) => `${path} ${v.id}: ${v.nodes.length} (${v.help})`)).toEqual([]);
   }
@@ -70,8 +72,8 @@ test("a light reader gets light before the first paint, not after hydration", as
   await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
 });
 
-test("/play and /tour have no accessibility violations", async ({ page }) => {
-  for (const path of ["/play", "/tour"]) {
+test("/play, /tour, /opinions, /keywords and the 404 have no accessibility violations", async ({ page }) => {
+  for (const path of ["/play", "/tour", "/opinions", "/keywords", "/tour/1"]) {
     await page.goto(path);
     if (path === "/play") await ready(page);
     const results = await new AxeBuilder({ page }).disableRules(["scrollable-region-focusable"]).analyze();
@@ -130,4 +132,31 @@ test("llms.txt and the design tokens are public", async ({ request }) => {
   expect(Object.keys(resolver.modifiers)).toEqual(["theme", "contrast"]);
   const base = await (await request.get("/tokens/tokens.json")).json();
   expect(base.color.accent.fill.$value).toBe("{palette.lime.110}");
+});
+
+test("the 404 is the site's own page, in the site's colors, whatever the system says", async ({ browser }) => {
+  // Next's built-in 404 set its own body colors from prefers-color-scheme: a dark header over a white page.
+  for (const [system, stored] of [["light", null], ["dark", "light"], ["dark", null], ["light", "light"]] as const) {
+    const ctx = await browser.newContext({ colorScheme: system });
+    if (stored) await ctx.addInitScript((t) => localStorage.setItem("typeshi:theme", t), stored);
+    const page = await ctx.newPage();
+    const res = await page.goto("/tour/1");
+    expect(res?.status()).toBe(404);
+    await expect(page.getByRole("heading", { level: 1 })).toContainText("404");
+    const c = await page.evaluate(() => {
+      const probe = document.createElement("div");
+      probe.style.cssText = "color: var(--text-primary); background-color: var(--surface-page)";
+      document.body.append(probe);
+      const p = getComputedStyle(probe);
+      return {
+        body: getComputedStyle(document.body).backgroundColor,
+        page: p.backgroundColor,
+        mark: getComputedStyle(document.querySelector("header a")!).color,
+        ink: p.color,
+      };
+    });
+    expect(c.body, `system ${system}, stored ${stored}`).toBe(c.page);
+    expect(c.mark, `system ${system}, stored ${stored}`).toBe(c.ink);
+    await ctx.close();
+  }
 });

@@ -40,11 +40,11 @@
   justify-content: center;
   gap: var(--space-2xs);
   min-height: var(--size-control);
-  padding: 0 var(--space-2xs);
+  padding: 0 var(--space-xs);
   border: 0;
   border-radius: var(--radius-sm);
   background: transparent;
-  font: var(--weight-medium) var(--step-code) / 1 var(--font-mono);
+  font: var(--weight-medium) var(--step-small) / 1 var(--font-sans);
   color: var(--text-secondary);
   text-decoration: none;
   white-space: nowrap;

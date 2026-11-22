@@ -1,0 +1,177 @@
+.section {
+  padding-top: var(--space-2xl);
+}
+.h2 {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-xs);
+  margin: 0 0 var(--space-s);
+  font: var(--weight-heavy) var(--step-subhead) / var(--leading-snug) var(--font-sans);
+  letter-spacing: -0.02em;
+}
+.count {
+  font: var(--weight-medium) var(--step-small) / 1 var(--font-mono);
+  color: var(--state-error);
+}
+.sub {
+  margin: calc(-1 * var(--space-2xs)) 0 var(--space-m);
+  max-width: 60ch;
+  color: var(--text-secondary);
+}
+.sub code {
+  color: var(--text-primary);
+}
+.muted {
+  color: var(--text-tertiary);
+}
+
+/* Banned moves: each cell spans three rows of the parent grid (subgrid), so every name, joke and
+   "try it" link lines up with its neighbours, however long the joke. */
+.banned {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(250px, 100%), 1fr));
+  border-top: 1px solid var(--border-default);
+  border-left: 1px solid var(--border-default);
+}
+.banned li {
+  display: grid;
+  grid-row: span 3;
+  grid-template-rows: subgrid;
+  row-gap: var(--space-2xs);
+  padding: var(--space-s);
+  border-right: 1px solid var(--border-default);
+  border-bottom: 1px solid var(--border-default);
+}
+.move {
+  font: var(--weight-bold) var(--step-body) / var(--leading-snug) var(--font-mono);
+  color: var(--state-error);
+}
+.why {
+  font: var(--weight-medium) var(--step-lede) / var(--leading-snug) var(--font-sans);
+  letter-spacing: -0.01em;
+  color: var(--text-primary);
+}
+.try {
+  justify-self: start;
+  align-self: end;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3xs);
+  min-height: var(--size-control);
+  font: var(--weight-medium) var(--step-small) / 1 var(--font-sans);
+  color: var(--text-tertiary);
+  text-decoration: none;
+  transition: color var(--dur-hover) var(--ease-out);
+}
+.try:hover {
+  color: var(--accent-text);
+}
+
+/* one per row: rustc's carets line up under the code, so these can't wrap */
+.terms {
+  --stack-gap: var(--space-xs);
+}
+.term {
+  margin: 0;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  background: var(--surface-terminal);
+  overflow: hidden;
+  min-width: 0;
+}
+.term figcaption {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-xs);
+  padding: var(--space-2xs) var(--space-xs);
+  border-bottom: 1px solid var(--border-default);
+  font: var(--weight-medium) var(--step-label) / 1.4 var(--font-mono);
+  color: var(--text-secondary);
+}
+.term figcaption .muted {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.term pre {
+  margin: 0;
+  padding: var(--space-xs);
+  font: var(--weight-regular) var(--step-code) / var(--leading-code) var(--font-mono);
+  overflow-x: auto;
+}
+.term pre span {
+  display: block;
+}
+.err {
+  color: var(--state-error);
+}
+.warn {
+  color: var(--state-warning);
+}
+.good {
+  color: var(--accent-text);
+  font-weight: var(--weight-bold);
+}
+.bad {
+  color: var(--state-error);
+  font-weight: var(--weight-bold);
+}
+
+.split {
+  --grid-min: 20rem;
+  --grid-gap: var(--space-2xl) var(--space-xl);
+}
+.escalate {
+  margin: 0;
+  padding-left: var(--space-m);
+  display: grid;
+  gap: var(--space-2xs);
+  font: var(--weight-regular) var(--step-code) / var(--leading-code) var(--font-mono);
+  color: var(--state-error);
+}
+.escalate li::marker {
+  color: var(--text-tertiary);
+}
+.codes {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: var(--step-small);
+}
+.codes th,
+.codes td {
+  text-align: left;
+  padding: var(--space-2xs) var(--space-xs) var(--space-2xs) 0;
+  border-bottom: 1px solid var(--border-default);
+  vertical-align: top;
+}
+.codes th {
+  font: var(--weight-medium) var(--step-code) / var(--leading-body) var(--font-mono);
+  color: var(--text-tertiary);
+  width: 46px;
+}
+.codes td {
+  color: var(--text-secondary);
+}
+.codes code {
+  color: var(--text-primary);
+  font-size: var(--step-code);
+  overflow-wrap: anywhere;
+}
+.prose {
+  margin: 0;
+  max-width: 68ch;
+  color: var(--text-secondary);
+  line-height: 1.7;
+}
+.prose code {
+  color: var(--state-warning);
+}
+
+@media (pointer: coarse) {
+  .try {
+    min-height: var(--size-target);
+  }
+}

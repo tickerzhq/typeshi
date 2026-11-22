@@ -240,6 +240,24 @@
    ]
   }
  ],
+ "phrasebook": [
+  [
+   "frame Counter {",
+   "pub struct Counter {"
+  ],
+  [
+   "anon,",
+   "pub anon: Signer<'info>,"
+  ],
+  [
+   "probably_nothing!(\"gm. we're live.\");",
+   "msg!(\"gm. we're live.\");"
+  ],
+  [
+   "were_so_back!()",
+   "Ok(())"
+  ]
+ ],
  "keywords": [
   {
    "shi": "`gm!(\"<program id>\")`",

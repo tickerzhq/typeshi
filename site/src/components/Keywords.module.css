@@ -3,8 +3,8 @@
   gap: var(--space-xs);
 }
 .label {
-  font: var(--weight-medium) var(--step-label) / 1 var(--font-mono);
-  color: var(--text-tertiary);
+  font: var(--weight-medium) var(--step-small) / 1 var(--font-sans);
+  color: var(--text-secondary);
 }
 .input {
   font: var(--weight-regular) var(--step-body) / 1 var(--font-mono);
@@ -33,7 +33,7 @@
 }
 .table th {
   text-align: left;
-  font: var(--weight-medium) var(--step-label) / 1 var(--font-mono);
+  font: var(--weight-medium) var(--step-small) / 1 var(--font-sans);
   color: var(--text-tertiary);
   padding: var(--space-xs) var(--space-s);
   border-bottom: 1px solid var(--border-default);
@@ -67,12 +67,13 @@
 }
 .count {
   margin: 0;
-  font: var(--weight-regular) var(--step-label) / 1 var(--font-mono);
+  font: var(--weight-regular) var(--step-small) / 1 var(--font-sans);
+  font-variant-numeric: tabular-nums;
   color: var(--text-tertiary);
 }
 .lesson {
   margin-left: var(--space-xs);
-  font: var(--weight-medium) var(--step-label) / 1 var(--font-mono);
+  font: var(--weight-medium) var(--step-label) / 1 var(--font-sans);
   color: var(--text-tertiary);
   white-space: nowrap;
 }
