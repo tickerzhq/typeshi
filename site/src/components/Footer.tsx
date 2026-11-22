@@ -15,6 +15,7 @@ export default function Footer() {
             <Link href="/play">playground</Link>
             <Link href="/opinions">opinions</Link>
             <Link href="/keywords">keywords</Link>
+            <Link href="/built">how it&apos;s built</Link>
             <a href="/llms.txt">llms.txt</a>
             <a href="https://github.com/tickerzhq/typeshi">github</a>
           </nav>

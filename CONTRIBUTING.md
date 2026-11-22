@@ -48,7 +48,7 @@ npm run build
 npm run e2e         # Playwright, desktop and phone, axe in both themes
 ```
 
-Colors, type sizes, space, corners and durations come from the design tokens in [`site/tokens/`](site/tokens) (W3C DTCG format). Change the JSON, run `npm run tokens`, and commit the generated `tokens.css`, `tokens.ts` and `icon.svg`. `npm test` fails on a hand-set value. [`site/DESIGN.md`](site/DESIGN.md) says why things look the way they do; change it in the same pull request as the look.
+Colors, type sizes, space, corners and durations come from the design tokens in [`site/tokens/`](site/tokens) (W3C DTCG format). Change the JSON, run `npm run tokens`, and commit the generated `tokens.css` and `tokens.ts`. If a color the icons use changes, `npm run icons` redraws them (`npm test` says when). `npm test` fails on a hand-set value. [`site/DESIGN.md`](site/DESIGN.md) says why things look the way they do; change it in the same pull request as the look.
 
 If you change the compiler, `npm run wasm` rebuilds the browser's copy (see [`site/README.md`](site/README.md)).
 

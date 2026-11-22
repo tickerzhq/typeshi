@@ -123,7 +123,7 @@ export type TokenVar =
 /** `var(--name)`, checked against the tokens at compile time. */
 export const v = (name: TokenVar) => `var(--${name})` as const;
 
-/** Semantic colors as sRGB hex, per theme, for places CSS variables can't reach (the OG image). */
+/** Semantic colors as sRGB hex, per theme, for places CSS variables can't reach (the share cards, the icons). */
 export const colors = {
   "dark": {
     "surface-page": "#090a0c",

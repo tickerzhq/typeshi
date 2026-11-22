@@ -1,9 +1,9 @@
 // Turns the design tokens in tokens/ (DTCG 2025.10: tokens.json, light.json,
 // contrast-more.json, read in the order typeshi.resolver.json gives) into:
 //   src/app/tokens.css  the CSS variables every stylesheet uses
-//   src/lib/tokens.ts   their names as a TS type, and sRGB hex for places CSS can't reach (the OG image)
-//   src/app/icon.svg    the favicon, in the theme's own colors
-// `node scripts/tokens.mjs` writes them. scripts/tokens.test.mjs fails if they drift.
+//   src/lib/tokens.ts   their names as a TS type, and sRGB hex for places CSS can't reach (the share cards, the icons)
+// `node scripts/tokens.mjs` writes them. scripts/tokens.test.mjs fails if they drift. The icons are
+// scripts/icons.mjs, from the same colors.
 
 import { readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -18,7 +18,6 @@ const read = (f) => JSON.parse(readFileSync(join(dir, f), "utf8"));
 export const OUT = {
   css: join(site, "src/app/tokens.css"),
   ts: join(site, "src/lib/tokens.ts"),
-  icon: join(site, "src/app/icon.svg"),
 };
 
 // --- read and resolve ------------------------------------------------------------
@@ -210,7 +209,7 @@ export function build() {
     "/** `var(--name)`, checked against the tokens at compile time. */",
     "export const v = (name: TokenVar) => `var(--${name})` as const;",
     "",
-    "/** Semantic colors as sRGB hex, per theme, for places CSS variables can't reach (the OG image). */",
+    "/** Semantic colors as sRGB hex, per theme, for places CSS variables can't reach (the share cards, the icons). */",
     `export const colors = ${JSON.stringify(colors, null, 2)} as const;`,
     "",
     "export type Theme = keyof typeof colors;",
@@ -218,11 +217,7 @@ export function build() {
     "",
   ].join("\n");
 
-  const icon =
-    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="${colors.dark["surface-page"]}"/>` +
-    `<text x="32" y="43" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-size="30" font-weight="700" fill="${colors.dark["accent-fill"]}">fn</text></svg>\n`;
-
-  return { css, ts, icon, flat, colors, semantic };
+  return { css, ts, flat, colors, semantic };
 }
 
 /** Every color literal in the token files, with whether it fits sRGB and P3. */
@@ -238,9 +233,8 @@ export function gamut() {
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  const { css, ts, icon } = build();
+  const { css, ts } = build();
   writeFileSync(OUT.css, css);
   writeFileSync(OUT.ts, ts);
-  writeFileSync(OUT.icon, icon);
-  console.log(`tokens: wrote ${css.split("\n").filter((l) => l.trim().startsWith("--")).length} variables to src/app/tokens.css, src/lib/tokens.ts, src/app/icon.svg`);
+  console.log(`tokens: wrote ${css.split("\n").filter((l) => l.trim().startsWith("--")).length} variables to src/app/tokens.css and src/lib/tokens.ts`);
 }

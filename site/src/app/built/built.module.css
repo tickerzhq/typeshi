@@ -1,0 +1,284 @@
+/* /built: how typeshi is made. Hairline rows and a subgrid, like /keywords and the home's doors; mono only
+   for what you'd type (DESIGN.md, "Type"). */
+.page {
+  container: built / inline-size;
+}
+.section {
+  padding-top: var(--space-2xl);
+}
+.h2 {
+  margin: 0 0 var(--space-s);
+  font: var(--weight-heavy) var(--step-subhead) / var(--leading-snug) var(--font-sans);
+  letter-spacing: -0.02em;
+}
+.h2 code {
+  font-size: 0.92em;
+  letter-spacing: -0.03em;
+  color: var(--syntax-slang);
+}
+.h3 {
+  margin: 0 0 var(--space-2xs);
+  font: var(--weight-bold) var(--step-small) / var(--leading-snug) var(--font-sans);
+  color: var(--text-tertiary);
+}
+.sub {
+  margin: calc(-1 * var(--space-2xs)) 0 var(--space-m);
+  max-width: 64ch;
+  color: var(--text-secondary);
+}
+
+/* The four steps from .shi to the screen: a subgrid, so names, lines and facts sit level across the row. */
+.steps {
+  margin: var(--space-m) 0 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(14rem, 100%), 1fr));
+  gap: var(--space-l);
+  color: var(--text-secondary);
+}
+.steps li {
+  display: grid;
+  grid-row: span 4;
+  grid-template-rows: subgrid;
+  row-gap: var(--space-2xs);
+  border-top: 1px solid var(--border-strong);
+  padding-top: var(--space-s);
+}
+.stepN {
+  font: var(--weight-medium) var(--step-label) / 1 var(--font-mono);
+  color: var(--text-tertiary);
+}
+.steps b {
+  font: var(--weight-bold) var(--step-lede) / var(--leading-snug) var(--font-sans);
+  letter-spacing: -0.01em;
+  color: var(--text-primary);
+}
+.fact {
+  align-self: end;
+  font: var(--weight-medium) var(--step-code) / 1.4 var(--font-mono);
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+/* The stack: name and version on the left, what it does on the right; one column on a phone. */
+.groups {
+  display: grid;
+  gap: var(--space-l);
+}
+.rows {
+  margin: 0;
+  border-top: 1px solid var(--border-default);
+}
+.row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-3xs);
+  padding-block: var(--space-xs);
+  border-bottom: 1px solid var(--border-default);
+}
+.row dt {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-2xs);
+  font-weight: var(--weight-bold);
+}
+.row dt a {
+  text-decoration: none;
+}
+.row dt a:hover {
+  text-decoration: underline;
+}
+.row dd {
+  margin: 0;
+  color: var(--text-secondary);
+}
+.v {
+  font: var(--weight-medium) var(--step-label) / 1 var(--font-mono);
+  color: var(--text-tertiary);
+  font-variant-numeric: tabular-nums;
+}
+@container built (min-width: 640px) {
+  .row {
+    grid-template-columns: 16rem minmax(0, 1fr);
+    gap: var(--space-m);
+  }
+}
+
+/* The design system: the four colors with a job, the two faces, the mark. */
+.system {
+  display: grid;
+  gap: var(--space-l);
+}
+.colors {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(12rem, 100%), 1fr));
+  border-top: 1px solid var(--border-default);
+  border-left: 1px solid var(--border-default);
+}
+.colors li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-areas:
+    "swatch name"
+    "swatch job";
+  column-gap: var(--space-xs);
+  row-gap: var(--space-3xs);
+  align-items: center;
+  padding: var(--space-s);
+  border-right: 1px solid var(--border-default);
+  border-bottom: 1px solid var(--border-default);
+}
+.colors b {
+  grid-area: name;
+  font: var(--weight-bold) var(--step-body) / var(--leading-snug) var(--font-sans);
+}
+.colors li > span:last-child {
+  grid-area: job;
+  font-size: var(--step-small);
+  line-height: var(--leading-snug);
+  color: var(--text-secondary);
+}
+.swatch {
+  grid-area: swatch;
+  width: var(--size-control);
+  height: var(--size-control);
+  border-radius: var(--radius-sm);
+  box-shadow: inset 0 0 0 1px var(--overlay-strong);
+}
+.swatch[data-color="accent-fill"] {
+  background: var(--accent-fill);
+}
+.swatch[data-color="state-error"] {
+  background: var(--state-error);
+}
+.swatch[data-color="state-warning"] {
+  background: var(--state-warning);
+}
+.swatch[data-color="syntax-keyword"] {
+  background: var(--syntax-keyword);
+}
+.type {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(14rem, 100%), 1fr));
+  gap: var(--space-l);
+}
+.spec {
+  margin: 0;
+  display: grid;
+  align-content: start;
+  gap: var(--space-xs);
+}
+.spec figcaption {
+  font-size: var(--step-small);
+  line-height: var(--leading-snug);
+  color: var(--text-secondary);
+}
+.spec figcaption b {
+  display: block;
+  color: var(--text-primary);
+}
+.sans,
+.mono,
+.tile {
+  display: inline-grid;
+  place-items: center start;
+  height: var(--space-3xl);
+}
+.sans {
+  font: var(--weight-heavy) var(--step-heading) / 1 var(--font-sans);
+  letter-spacing: -0.045em;
+}
+.mono {
+  font: var(--weight-bold) var(--step-heading) / 1 var(--font-mono);
+  letter-spacing: -0.04em;
+  color: var(--syntax-slang);
+}
+/* The header's tile, at specimen size. */
+.tile {
+  place-items: center;
+  width: var(--space-3xl);
+  border-radius: var(--radius-md);
+  background: var(--accent-fill);
+  color: var(--text-on-accent);
+  font: var(--weight-heavy) var(--step-title) / 1 var(--font-mono);
+  letter-spacing: -0.04em;
+}
+
+/* What keeps it honest: a numbered list with hairlines. */
+.checks {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--border-default);
+}
+.checks li {
+  display: grid;
+  gap: var(--space-3xs);
+  padding-block: var(--space-s);
+  border-bottom: 1px solid var(--border-default);
+  color: var(--text-secondary);
+}
+.checks b {
+  font: var(--weight-bold) var(--step-body) / var(--leading-snug) var(--font-sans);
+  color: var(--text-primary);
+}
+.checks b code {
+  color: var(--text-primary);
+}
+@container built (min-width: 640px) {
+  .checks li {
+    grid-template-columns: 16rem minmax(0, 1fr);
+    gap: var(--space-m);
+  }
+}
+
+/* The open files: four doors in a hairline grid. */
+.open {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(14rem, 100%), 1fr));
+  border-top: 1px solid var(--border-default);
+  border-left: 1px solid var(--border-default);
+}
+.open li {
+  display: grid;
+  border-right: 1px solid var(--border-default);
+  border-bottom: 1px solid var(--border-default);
+}
+.open a {
+  display: grid;
+  align-content: start;
+  gap: var(--space-2xs);
+  padding: var(--space-s);
+  text-decoration: none;
+  transition: background var(--dur-hover) var(--ease-out);
+}
+.open a:hover {
+  background: var(--overlay-subtle);
+}
+.openName {
+  font: var(--weight-bold) var(--step-body) / var(--leading-snug) var(--font-mono);
+}
+.openName span {
+  color: var(--text-tertiary);
+}
+.openText {
+  font-size: var(--step-small);
+  line-height: var(--leading-snug);
+  color: var(--text-secondary);
+}
+
+@media (pointer: coarse) {
+  .row dt a {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--size-target);
+  }
+}

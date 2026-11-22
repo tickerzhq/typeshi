@@ -3,13 +3,15 @@ import Footer from "@/components/Footer";
 import PageHead from "@/components/PageHead";
 import TourIndex from "@/components/TourIndex";
 import content from "@/generated/content.json";
+import { pageMeta } from "@/lib/meta";
 import type { Lesson } from "@/lib/types-tour";
 import s from "./tour.module.css";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMeta({
+  path: "/tour",
   title: "tour",
   description: `Learn typeshi in ${content.tour.length} short lessons, each checked by the real compiler in your browser.`,
-};
+});
 
 export default function TourPage() {
   const lessons = (content.tour as Lesson[]).map(({ n, slug, chapter, title, body }) => ({

@@ -1,7 +1,7 @@
 # typeshi.dev: design
 
 The source of truth for how the site looks and why. Change it in the same pull request as the look.
-For the brand (no logo, the compiler's own output, the voice) see [`brand/README.md`](../brand/README.md).
+For the brand (the `fn` mark, the compiler's own output, the voice) see [`brand/README.md`](../brand/README.md).
 
 ## The idea
 
@@ -39,11 +39,55 @@ tailwindcss.com, Geist and linear.app, is in the pull request that made the chan
 
 ## The mark
 
-typeshi has no logo on purpose (`brand/README.md`). Every site in the research leads with a mark the
-eye can find, so the header sets the favicon's `fn` (lime, the color that means wagmi) as a small tile
-before the mono name. Nothing new is drawn: it is the icon `scripts/tokens.mjs` already makes, at
-header size. It is one commit and one class (`.tile` in `site.module.css`); drop both to go back to
-the name alone.
+The mark is the header's `fn` tile: `fn` in Geist Mono Bold, dark (`text-on-accent`) on a lime tile
+(`accent-fill`) with corners a sixth of its side, before the mono name (`.tile` in `site.module.css`).
+Every site in the research leads with a mark the eye can find. Since Nov 22 2026 it is also every icon
+and the corner of every share card (below), so a tab, a home screen and a link preview all show the
+same tile. `brand/README.md` has the rules for using it.
+
+## Icons
+
+One drawing, `scripts/icons.mjs` (`npm run icons`), makes all of them. The letters are Geist Mono's own
+outlines, read out of `src/fonts/static/GeistMono-700.woff` by `scripts/glyphs.mjs`, so the icon never
+depends on a font the reader has; the colors are the tokens. Research (Vercel, Linear, Bun, Gleam) is in
+the pull request that added them.
+
+| file | size | why |
+|---|---|---|
+| `src/app/icon.svg` | any | the tab. Linear's filled tile: it holds on a dark or a light tab bar. With a light scheme it gets a hairline in the light theme's green, because lime on white has about 1.2:1 of edge |
+| `src/app/favicon.ico` | 16, 32, 48 | for crawlers, feed readers and anything that asks for `/favicon.ico` without reading the page |
+| `src/app/apple-icon.png` | 180 | iOS reads neither SVG nor the manifest. Full bleed: iOS rounds the corners and paints transparent ones black |
+| `public/icons/icon-192.png`, `icon-512.png` | 192, 512 | the manifest (`src/app/manifest.ts`), the tile as the tab shows it |
+| `public/icons/icon-maskable-512.png` | 512 | full bleed, `fn` at 46% of the side, inside the middle 80% that Android's circles and squircles keep |
+
+At tab size `fn` spans two thirds of the tile so it reads at 16 px; the app icons give it more room.
+Each PNG carries a hash of the drawing it came from (a `tEXt` chunk), and `scripts/icons.test.mjs` fails
+when a drawing changes and its pictures weren't redrawn, without failing when a Next.js update renders
+the same drawing a pixel differently.
+
+## Share cards
+
+Every page has its own 1200 x 630 card, drawn at build by `next/og` (Satori and resvg) from one template,
+`src/lib/card.tsx`, the way Linear and Bun template theirs: the mark and wordmark with the version, the
+page's path, where you are (`tour · basics · lesson 2 of 25`), the title in Geist 700, and real compiler
+output in a terminal under the home's stage light. Each route has an `opengraph-image.tsx`; the 25 lessons
+share one with `generateStaticParams`, so every card is a static file.
+
+| card | the terminal shows |
+|---|---|
+| `/` | `typeshi check` refusing `rug!(pool)`, the whole rustc-style error, ngmi |
+| `/play`, `/keywords` | lines of `gm_counter` beside the Rust the compiler writes for them (the phrasebook and `keywordPairs`, both checked by `sync.mjs`) |
+| `/tour` | the five chapters and their lesson counts |
+| `/opinions` | `typeshi check` on a Friday deploy |
+| `/tour/<lesson>` | the line of `lib.rs` the solution writes that the lesson checks for, or the error or warning it is about (`proof` in `content.json`, from `sync.mjs`) |
+| `/built` | `.shi` to `lib.rs` to the wasm, its gzipped size, and the page count |
+
+Satori can't read the site's variable WOFF2, so `src/fonts/static/` holds static WOFF instances (400 and
+700) cut from those same files with fontTools. The title steps down with its length (136 px for a short
+one, 80 for a long one) so it never takes more than two lines; a long line of Rust shrinks to fit, down to
+17 px, and is never cut. `pageMeta()` (`src/lib/meta.ts`) gives every page its own `og:title`,
+description, canonical address and `twitter:card` `summary_large_image`; before, every page inherited the
+home's.
 
 ## Pages
 
@@ -54,6 +98,7 @@ the name alone.
 | `/tour`, `/tour/<lesson>` | the tour index and its 25 lessons |
 | `/opinions` | banned moves (each with a try-it link), three real error transcripts, the escalation, codes 0x1 to 0x6, the confessions |
 | `/keywords` | the keyword table with search, and how the compiler works |
+| `/built` | how it's built: from `.shi` to the screen, the stack with versions read at build, the design system, the checks, the open files |
 | any other path | our own 404 (`not-found.tsx`): the site's header, tokens and theme, and the four doors |
 
 ## Tokens
@@ -69,14 +114,15 @@ version):
 | `light.json` | the light theme: the same semantic names, other values |
 | `contrast-more.json` | what changes when the system asks for more contrast |
 
-`npm run tokens` (also run before `dev` and `build`) writes three files from them, all generated, none
+`npm run tokens` (also run before `dev` and `build`) writes two files from them, both generated, neither
 edited by hand:
 
 - `src/app/tokens.css`: the CSS variables. Each semantic color is `light-dark(light, dark)` inside
   `@supports`, with the dark value as the fallback, so a browser without `light-dark()` still gets the dark site.
 - `src/lib/tokens.ts`: every variable name as the type `TokenVar`, `v("name")` for a checked `var(--name)`,
-  and each theme's colors as sRGB hex for the one place CSS can't reach (the OG image).
-- `src/app/icon.svg`: the favicon, in the theme's colors.
+  and each theme's colors as sRGB hex for the places CSS can't reach (the share cards, the icons).
+
+The icons come from the same colors through `npm run icons` (above).
 
 The tokens are public at `/tokens/typeshi.resolver.json` (and its three sets), so any tool or agent can
 build on the same values.
@@ -204,15 +250,21 @@ Rust it becomes, the banned moves, the fixed error codes, a whole program and th
 
 - `npm test`: the generated token files match `tokens/`, the token files have the DTCG shape, every color
   fits sRGB (and P3 where given), no stylesheet or component sets a color, type size, corner, duration or
-  space value by hand, every variable read exists and every semantic color is used, and every text pair
-  passes contrast.
+  space value by hand, every variable read exists and every semantic color is used, every text pair
+  passes contrast, and every icon matches its drawing.
 - `npm run e2e`: the real compiler in the browser, axe in both themes on every page (the 404 included),
   320 px, 44 px targets on a phone, the tabs, the light theme before the first paint, the 404 in the
   site's colors whatever the system says, the home's proofs matching the compiler, the home's height,
-  `llms.txt` and the tokens.
+  `llms.txt` and the tokens, the icons and the manifest, a 1200 x 630 card and its own `og:title` on every
+  page (all 31), and `/built` from the footer.
 
 ## Changes
 
+- **Nov 22 2026, icons, cards and /built**: the `fn` tile is the app icon: `favicon.ico`, an `icon.svg`
+  that adapts to a light tab bar, a 180 px `apple-icon`, and a manifest with 192, 512 and maskable 512, all
+  from `scripts/icons.mjs` and Geist Mono's outlines. Every page, each lesson included, has its own share
+  card from `src/lib/card.tsx`, with real compiler output. `/built` says how it's made, linked from the
+  footer. Fixed: every page shared the home's `og:title` and `twitter:title`.
 - **Nov 22 2026, the redesign**: a short home (hero, the live compiler on a lit stage, a statement and
   three proofs of real output, four doors, a close) instead of the docs on one page; `/opinions` and
   `/keywords` are their own pages, as the nav already said; Geist Sans for headings and reading, mono only

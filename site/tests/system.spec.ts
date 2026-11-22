@@ -1,7 +1,8 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, type Page, test } from "@playwright/test";
+import content from "../src/generated/content.json" with { type: "json" };
 
-const PAGES = ["/", "/play", "/tour", "/tour/cap-table", "/opinions", "/keywords", "/tour/1"];
+const PAGES = ["/", "/play", "/tour", "/tour/cap-table", "/opinions", "/keywords", "/built", "/tour/1"];
 /** The pages that run the compiler; wait for its first verdict there. */
 const LIVE = new Set(["/", "/play", "/tour/cap-table"]);
 const ready = (page: Page) =>
@@ -72,8 +73,8 @@ test("a light reader gets light before the first paint, not after hydration", as
   await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
 });
 
-test("/play, /tour, /opinions, /keywords and the 404 have no accessibility violations", async ({ page }) => {
-  for (const path of ["/play", "/tour", "/opinions", "/keywords", "/tour/1"]) {
+test("/play, /tour, /opinions, /keywords, /built and the 404 have no accessibility violations", async ({ page }) => {
+  for (const path of ["/play", "/tour", "/opinions", "/keywords", "/built", "/tour/1"]) {
     await page.goto(path);
     if (path === "/play") await ready(page);
     const results = await new AxeBuilder({ page }).disableRules(["scrollable-region-focusable"]).analyze();
@@ -159,4 +160,72 @@ test("the 404 is the site's own page, in the site's colors, whatever the system 
     expect(c.mark, `system ${system}, stored ${stored}`).toBe(c.ink);
     await ctx.close();
   }
+});
+
+// --- icons and share cards ---------------------------------------------------------------------------
+
+/** The path and query of a URL the page states absolutely (the metadata base is the production address). */
+const local = (url: string) => {
+  const u = new URL(url);
+  return u.pathname + u.search;
+};
+const pngSize = (b: Buffer) => [b.readUInt32BE(16), b.readUInt32BE(20)];
+
+test("the icons and the manifest are linked and served", async ({ request }, info) => {
+  test.skip(info.project.name !== "desktop", "one run is enough");
+  const html = await (await request.get("/")).text();
+  const link = (rel: string, type?: string) => {
+    const tags = [...html.matchAll(/<link [^>]*>/g)].map((m) => m[0]).filter((t) => t.includes(`rel="${rel}"`));
+    const tag = tags.find((t) => !type || t.includes(`type="${type}"`));
+    expect(tag, `<link rel="${rel}"${type ? ` type="${type}"` : ""}>`).toBeTruthy();
+    return tag!.match(/href="([^"]+)"/)![1].replaceAll("&amp;", "&");
+  };
+  const svg = await request.get(link("icon", "image/svg+xml"));
+  expect(await svg.text()).toContain("prefers-color-scheme:dark");
+  const ico = await (await request.get(link("icon", "image/x-icon"))).body();
+  expect([ico.readUInt16LE(2), ico.readUInt16LE(4)], "an .ico with 16, 32 and 48").toEqual([1, 3]);
+  const apple = await (await request.get(link("apple-touch-icon"))).body();
+  expect(pngSize(apple)).toEqual([180, 180]);
+  const manifest = await (await request.get(link("manifest"))).json();
+  expect(manifest.theme_color).toMatch(/^#[0-9a-f]{6}$/);
+  expect(manifest.icons.map((i: { purpose: string; sizes: string }) => `${i.purpose} ${i.sizes}`)).toEqual([
+    "any 192x192",
+    "any 512x512",
+    "maskable 512x512",
+  ]);
+  for (const icon of manifest.icons) {
+    const png = await (await request.get(icon.src)).body();
+    expect(pngSize(png).join("x"), icon.src).toBe(icon.sizes);
+  }
+});
+
+test("every page has its own share card, its own title, and a large-image card for X", async ({ request }, info) => {
+  test.skip(info.project.name !== "desktop", "one run is enough");
+  const pages = ["/", "/play", "/tour", "/opinions", "/keywords", "/built", ...content.tour.map((l) => `/tour/${l.slug}`)];
+  const images = new Set<string>();
+  const titles = new Set<string>();
+  for (const path of pages) {
+    const html = await (await request.get(path)).text();
+    const meta = (key: string) => html.match(new RegExp(`<meta (?:property|name)="${key}" content="([^"]*)"`))?.[1];
+    expect(meta("twitter:card"), path).toBe("summary_large_image");
+    const image = meta("og:image");
+    expect(image, `${path} has an og:image`).toBeTruthy();
+    expect(meta("twitter:image"), path).toBe(image);
+    images.add(local(image!));
+    titles.add(meta("og:title")!);
+    const res = await request.get(local(image!));
+    expect(res.headers()["content-type"], path).toBe("image/png");
+    expect(pngSize(await res.body()), path).toEqual([1200, 630]);
+  }
+  expect(images.size, "no two pages share a card").toBe(pages.length);
+  expect(titles.size, "no two pages share an og:title").toBe(pages.length);
+});
+
+test("/built is linked from the footer and names what the site really ships", async ({ page }) => {
+  await page.goto("/tour");
+  await page.getByRole("navigation", { name: "footer" }).getByRole("link", { name: "how it's built" }).click();
+  await expect(page).toHaveURL(/\/built$/);
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("how it's built.");
+  await expect(page.getByText(`typeshi v${content.version}`)).toBeVisible();
+  await expect(page.getByText(`${content.tour.length + 6} pages`)).toBeVisible();
 });

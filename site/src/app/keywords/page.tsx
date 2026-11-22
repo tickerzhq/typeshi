@@ -3,12 +3,14 @@ import Footer from "@/components/Footer";
 import Keywords from "@/components/Keywords";
 import PageHead from "@/components/PageHead";
 import content from "@/generated/content.json";
+import { pageMeta } from "@/lib/meta";
 import s from "./keywords.module.css";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMeta({
+  path: "/keywords",
   title: "keywords",
   description: "Every typeshi keyword, and the Rust or Anchor it becomes. Plus how the compiler works.",
-};
+});
 
 export default function KeywordsPage() {
   return (

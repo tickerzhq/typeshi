@@ -1,6 +1,6 @@
 # typeshi.dev
 
-The typeshi website: a short landing page, a 25-lesson tour, a playground, and a page each for the compiler's opinions and the keywords. All of it runs the real compiler in your browser. Live at https://typeshi-blond.vercel.app until typeshi.dev points at it.
+The typeshi website: a short landing page, a 25-lesson tour, a playground, a page each for the compiler's opinions and the keywords, and how it's built. All of it runs the real compiler in your browser. Live at https://typeshi-blond.vercel.app until typeshi.dev points at it.
 
 ```sh
 npm ci
@@ -11,7 +11,7 @@ npm run build
 PW_CHROMIUM=/path/to/chrome npm run e2e   # or drop PW_CHROMIUM after `npx playwright install chromium`
 ```
 
-How it looks and why: [`DESIGN.md`](DESIGN.md). Every color, type step, space step, corner and duration is a design token in [`tokens/`](tokens) (W3C DTCG 2025.10). `npm run tokens` writes `src/app/tokens.css`, `src/lib/tokens.ts` and `src/app/icon.svg` from them; `npm test` fails if those drift or if a stylesheet sets a value by hand. The tokens are public at `/tokens/typeshi.resolver.json`, and the language is on one page for AI agents at `/llms.txt`.
+How it looks and why: [`DESIGN.md`](DESIGN.md). Every color, type step, space step, corner and duration is a design token in [`tokens/`](tokens) (W3C DTCG 2025.10). `npm run tokens` writes `src/app/tokens.css` and `src/lib/tokens.ts` from them, and `npm run icons` draws every icon (the `fn` tile) from the same colors; `npm test` fails if any of those drift or if a stylesheet sets a value by hand. Every page's share card is drawn at build from `src/lib/card.tsx` with real compiler output, and `/built` says how all of it is made. The tokens are public at `/tokens/typeshi.resolver.json`, and the language is on one page for AI agents at `/llms.txt`.
 
 ## How it stays honest
 

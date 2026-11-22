@@ -22,6 +22,7 @@ export function GET() {
     "",
     `- [The tour](${base}/tour): ${content.tour.length} short lessons, each checked by the real compiler in the browser`,
     `- [Playground](${base}/play): write typeshi and see the Rust it becomes`,
+    `- [How it's built](${base}/built): the compiler, the wasm build, the site, the design tokens and the checks`,
     "- [README](https://github.com/tickerzhq/typeshi#readme): commands, flags, editor support",
     `- [Design tokens](${base}/tokens/typeshi.resolver.json): the site's colors, type, space and motion (DTCG 2025.10)`,
     "- [DESIGN.md](https://github.com/tickerzhq/typeshi/blob/main/site/DESIGN.md): how the site looks and why",

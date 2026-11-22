@@ -221,7 +221,7 @@ The output is ordinary Rust that you can read, audit and build with stock Anchor
 | [`degen_desk.shi`](examples/trenches/programs/degen_desk/src/lib.shi) | every keyword in one program, with the Rust it becomes next to it |
 | [`llms.txt`](https://typeshi-blond.vercel.app/llms.txt) | the whole language on one page, for an AI agent asked to write typeshi |
 | [`site/`](site) | the website: how it stays honest ([`site/README.md`](site/README.md)) and how it looks ([`site/DESIGN.md`](site/DESIGN.md)) |
-| [`brand/`](brand) | why typeshi has no logo, the colors, the voice |
+| [`brand/`](brand) | the `fn` mark, the colors, the voice |
 
 ## Contributing
 

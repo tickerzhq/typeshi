@@ -10,10 +10,9 @@ import { build, gamut, load, OUT, site } from "./tokens.mjs";
 
 const built = build();
 
-test("tokens.css, tokens.ts and icon.svg are what tokens/*.json generate (run npm run tokens)", () => {
+test("tokens.css and tokens.ts are what tokens/*.json generate (run npm run tokens)", () => {
   assert.equal(readFileSync(OUT.css, "utf8"), built.css, "src/app/tokens.css is stale");
   assert.equal(readFileSync(OUT.ts, "utf8"), built.ts, "src/lib/tokens.ts is stale");
-  assert.equal(readFileSync(OUT.icon, "utf8"), built.icon, "src/app/icon.svg is stale");
 });
 
 test("every token file has the DTCG 2025.10 shape", () => {

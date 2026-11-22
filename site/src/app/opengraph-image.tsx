@@ -1,40 +1,18 @@
-import { ImageResponse } from "next/og";
-import { colors } from "@/lib/tokens";
+import content from "@/generated/content.json";
+import { CARD, card, diagLines, LockInFn } from "@/lib/card";
 
-const c = colors.dark;
+const rug = content.examples.find((e) => e.id === "rug")!;
+const error = rug.diags[0].rendered.split("\n")[0];
 
-export const alt = "typeshi: lock in fn. Slang over Rust that compiles to real Solana programs.";
-export const size = { width: 1200, height: 630 };
+export const alt = `typeshi: lock in fn. Slang over Rust that compiles to real Solana programs. Below it, typeshi check refuses rug!(pool): "${error}", ngmi.`;
+export const size = CARD;
 export const contentType = "image/png";
 
-export default function OG() {
-  return new ImageResponse(
-    (
-      <div
-        style={{
-          width: "100%",
-          height: "100%",
-          background: c["surface-page"],
-          color: c["text-primary"],
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "space-between",
-          padding: 72,
-          fontFamily: "monospace",
-        }}
-      >
-        <div style={{ fontSize: 30, color: c["accent-text"] }}>typeshi</div>
-        <div style={{ display: "flex", flexDirection: "column" }}>
-          <div style={{ fontSize: 150, fontWeight: 700, letterSpacing: -8, lineHeight: 1 }}>lock in fn.</div>
-          <div style={{ fontSize: 34, color: c["text-secondary"], marginTop: 28 }}>
-            slang over Rust that compiles to real Solana programs.
-          </div>
-        </div>
-        <div style={{ display: "flex", fontSize: 28, color: c["state-error"] }}>
-          error: not on our watch, anon · rug!() is a compile error
-        </div>
-      </div>
-    ),
-    size,
-  );
+export default function Image() {
+  return card({
+    title: <LockInFn />,
+    titleSize: 120,
+    lede: "slang over Rust that compiles to real Solana programs.",
+    terminal: { caption: "$ typeshi check", verdict: "ngmi", lines: diagLines(rug.diags[0].rendered), size: 20 },
+  });
 }

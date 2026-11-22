@@ -1,5 +1,15 @@
 {
  "version": "0.1.0",
+ "stack": {
+  "edition": "2021",
+  "msrv": "1.85",
+  "crates": {
+   "proc-macro2": "1.0.107",
+   "syn": "3.0.10",
+   "prettyplease": "0.3.0",
+   "wasm-bindgen": "0.2.130"
+  }
+ },
  "banned": [
   [
    "rug",
@@ -256,6 +266,20 @@
   [
    "were_so_back!()",
    "Ok(())"
+  ]
+ ],
+ "keywordPairs": [
+  [
+   "stealth_launch gm_counter {",
+   "pub mod gm_counter {"
+  ],
+  [
+   "cap_table Gm {",
+   "pub struct Gm<'info> {"
+  ],
+  [
+   "lock_in fn gm(ctx) -> W {",
+   "pub fn gm(ctx: Context<Gm>) -> Result<()> {"
   ]
  ],
  "keywords": [
@@ -521,7 +545,12 @@
     "error": null,
     "warning": null
    },
-   "startCompiles": false
+   "startCompiles": false,
+   "proof": {
+    "kind": "ok",
+    "line": 5,
+    "text": "declare_id!(\"7PxhmDuhhe394QJgKyW1P7Ce4dPCfFPN2yKq4KCCj7Vj\");"
+   }
   },
   {
    "n": 2,
@@ -539,7 +568,12 @@
     "error": null,
     "warning": null
    },
-   "startCompiles": true
+   "startCompiles": true,
+   "proof": {
+    "kind": "ok",
+    "line": 10,
+    "text": "pub aura: u64,"
+   }
   },
   {
    "n": 3,
@@ -557,7 +591,12 @@
     "error": null,
     "warning": null
    },
-   "startCompiles": false
+   "startCompiles": false,
+   "proof": {
+    "kind": "ok",
+    "line": 12,
+    "text": "pub struct Gm<'info> {"
+   }
   },
   {
    "n": 4,
@@ -575,7 +614,12 @@
     "error": null,
     "warning": null
    },
-   "startCompiles": true
+   "startCompiles": true,
+   "proof": {
+    "kind": "ok",
+    "line": 29,
+    "text": ".checked_add(1)"
+   }
   },
   {
    "n": 5,
@@ -593,7 +637,12 @@
     "error": null,
     "warning": null
    },
-   "startCompiles": false
+   "startCompiles": false,
+   "proof": {
+    "kind": "ok",
+    "line": 20,
+    "text": "pub fn peek(ctx: Context<Peek>) -> Result<()> {"
+   }
   },
   {
    "n": 6,
@@ -612,7 +661,12 @@
     "error": null,
     "warning": null
    },
-   "startCompiles": true
+   "startCompiles": true,
+   "proof": {
+    "kind": "ok",
+    "line": 8,
+    "text": "pub const FEE_BPS: Bps = 250;"
+   }
   },
   {
    "n": 7,
@@ -630,7 +684,12 @@
     "error": null,
     "warning": null
    },
-   "startCompiles": false
+   "startCompiles": false,
+   "proof": {
+    "kind": "ok",
+    "line": 15,
+    "text": "init,"
+   }
   },
   {
    "n": 8,
@@ -648,7 +707,12 @@
     "error": null,
     "warning": null
    },
-   "startCompiles": true
+   "startCompiles": true,
+   "proof": {
+    "kind": "ok",
+    "line": 32,
+    "text": "ctx.accounts.counter.cabal = ctx.accounts.exit_liquidity.key();"
+   }
   },
   {
    "n": 9,
@@ -666,7 +730,12 @@
     "error": null,
     "warning": null
    },
-   "startCompiles": true
+   "startCompiles": true,
+   "proof": {
+    "kind": "ok",
+    "line": 13,
+    "text": "#[account(mut, has_one = cabal, close = cabal)]"
+   }
   },
   {
    "n": 10,
@@ -684,7 +753,12 @@
     "error": null,
     "warning": null
    },
-   "startCompiles": true
+   "startCompiles": true,
+   "proof": {
+    "kind": "ok",
+    "line": 17,
+    "text": "realloc = 8+Desk::INIT_SPACE+64,"
+   }
   },
   {
    "n": 11,
@@ -700,7 +774,12 @@
     "error": "nobody can edit it",
     "warning": null
    },
-   "startCompiles": true
+   "startCompiles": true,
+   "proof": {
+    "kind": "error",
+    "line": null,
+    "text": "error: you tried to edit a print. nobody can edit it."
+   }
   },
   {
    "n": 12,
@@ -718,7 +797,12 @@
     "error": null,
     "warning": null
    },
-   "startCompiles": true
+   "startCompiles": true,
+   "proof": {
+    "kind": "ok",
+    "line": 24,
+    "text": "require!(size > 0, Cope::ZeroIsNotATrade);"
+   }
   },
   {
    "n": 13,
@@ -736,7 +820,12 @@
     "error": null,
     "warning": null
    },
-   "startCompiles": true
+   "startCompiles": true,
+   "proof": {
+    "kind": "ok",
+    "line": 27,
+    "text": "} else {"
+   }
   },
   {
    "n": 14,
@@ -754,7 +843,12 @@
     "error": null,
     "warning": null
    },
-   "startCompiles": true
+   "startCompiles": true,
+   "proof": {
+    "kind": "ok",
+    "line": 26,
+    "text": "return err!(Cope::DeskClosed);"
+   }
   },
   {
    "n": 15,
@@ -772,7 +866,12 @@
     "error": null,
     "warning": null
    },
-   "startCompiles": true
+   "startCompiles": true,
+   "proof": {
+    "kind": "ok",
+    "line": 25,
+    "text": "return err!(Cope::TooBig);"
+   }
   },
   {
    "n": 16,
@@ -790,7 +889,12 @@
     "error": null,
     "warning": null
    },
-   "startCompiles": true
+   "startCompiles": true,
+   "proof": {
+    "kind": "ok",
+    "line": 26,
+    "text": "(ctx.accounts.desk.frens).iter().any(| __typeshi_k | * __typeshi_k == (ctx"
+   }
   },
   {
    "n": 17,
@@ -808,7 +912,12 @@
     "error": null,
     "warning": null
    },
-   "startCompiles": true
+   "startCompiles": true,
+   "proof": {
+    "kind": "ok",
+    "line": 31,
+    "text": "Clock::get() ?.unix_timestamp <= (ctx.accounts.desk.closes_at) as i64,"
+   }
   },
   {
    "n": 18,
@@ -826,7 +935,12 @@
     "error": null,
     "warning": null
    },
-   "startCompiles": true
+   "startCompiles": true,
+   "proof": {
+    "kind": "ok",
+    "line": 32,
+    "text": "let fee = fee_on(size)?;"
+   }
   },
   {
    "n": 19,
@@ -844,7 +958,12 @@
     "error": null,
     "warning": null
    },
-   "startCompiles": true
+   "startCompiles": true,
+   "proof": {
+    "kind": "ok",
+    "line": 24,
+    "text": "let small = (u32::try_from(size)).map_err(|_| error!(Cope::TooBigForAU32Cope))?;"
+   }
   },
   {
    "n": 20,
@@ -862,7 +981,12 @@
     "error": null,
     "warning": null
    },
-   "startCompiles": false
+   "startCompiles": false,
+   "proof": {
+    "kind": "ok",
+    "line": 33,
+    "text": "anchor_lang::system_program::transfer("
+   }
   },
   {
    "n": 21,
@@ -880,7 +1004,12 @@
     "error": null,
     "warning": null
    },
-   "startCompiles": true
+   "startCompiles": true,
+   "proof": {
+    "kind": "ok",
+    "line": 25,
+    "text": "ctx.accounts.ser.to_account_info().lamports() >= size, Cope::FundsAreNotSafu"
+   }
   },
   {
    "n": 22,
@@ -898,7 +1027,12 @@
     "error": null,
     "warning": null
    },
-   "startCompiles": true
+   "startCompiles": true,
+   "proof": {
+    "kind": "ok",
+    "line": 28,
+    "text": "anchor_spl::token::mint_to("
+   }
   },
   {
    "n": 23,
@@ -916,7 +1050,12 @@
     "error": null,
     "warning": null
    },
-   "startCompiles": true
+   "startCompiles": true,
+   "proof": {
+    "kind": "ok",
+    "line": 36,
+    "text": "emit!(Traded { size });"
+   }
   },
   {
    "n": 24,
@@ -932,7 +1071,12 @@
     "error": null,
     "warning": "you trusted the dev"
    },
-   "startCompiles": true
+   "startCompiles": true,
+   "proof": {
+    "kind": "warning",
+    "line": null,
+    "text": "warning: you trusted the dev. classic."
+   }
   },
   {
    "n": 25,
@@ -948,7 +1092,12 @@
     "error": "is a banned move",
     "warning": null
    },
-   "startCompiles": true
+   "startCompiles": true,
+   "proof": {
+    "kind": "error",
+    "line": null,
+    "text": "error: not on our watch, anon"
+   }
   }
  ]
 }
