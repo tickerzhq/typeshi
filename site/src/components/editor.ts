@@ -19,79 +19,78 @@ import {
   type ViewUpdate,
 } from "@codemirror/view";
 import { tags as t } from "@lezer/highlight";
+import { v } from "@/lib/tokens";
 import type { Diag, EditorWords } from "@/lib/types";
 
 const style = HighlightStyle.define([
-  { tag: [t.keyword, t.modifier, t.controlKeyword, t.operatorKeyword], color: "var(--syn-kw)" },
-  { tag: [t.string, t.special(t.string), t.character], color: "var(--syn-str)" },
-  { tag: [t.number, t.bool, t.null], color: "var(--syn-num)" },
-  { tag: [t.typeName, t.className, t.namespace], color: "var(--syn-type)" },
-  { tag: [t.function(t.variableName), t.function(t.propertyName)], color: "var(--syn-fn)" },
-  { tag: t.macroName, color: "var(--syn-macro)" },
-  { tag: [t.lineComment, t.blockComment, t.docComment], color: "var(--syn-comment)", fontStyle: "italic" },
-  { tag: [t.attributeName, t.meta], color: "var(--soft)" },
-  { tag: t.self, color: "var(--syn-kw)" },
+  { tag: [t.keyword, t.modifier, t.controlKeyword, t.operatorKeyword], color: v("syntax-keyword") },
+  { tag: [t.string, t.special(t.string), t.character], color: v("syntax-string") },
+  { tag: [t.number, t.bool, t.null], color: v("syntax-number") },
+  { tag: [t.typeName, t.className, t.namespace], color: v("syntax-type") },
+  { tag: [t.function(t.variableName), t.function(t.propertyName)], color: v("syntax-function") },
+  { tag: t.macroName, color: v("syntax-macro") },
+  { tag: [t.lineComment, t.blockComment, t.docComment], color: v("syntax-comment"), fontStyle: "italic" },
+  { tag: [t.attributeName, t.meta], color: v("text-secondary") },
+  { tag: t.self, color: v("syntax-keyword") },
 ]);
 
-const theme = EditorView.theme(
-  {
-    "&": { height: "100%", fontSize: "var(--code-size, 13.5px)", backgroundColor: "transparent", color: "var(--ink)" },
-    ".cm-scroller": { fontFamily: "var(--mono)", lineHeight: "1.65", overflow: "auto" },
-    ".cm-content": { padding: "12px 0", caretColor: "var(--wagmi)" },
-    ".cm-line": { padding: "0 16px 0 8px" },
-    ".cm-gutters": {
-      backgroundColor: "transparent",
-      color: "var(--faint)",
-      border: "none",
-      fontVariantNumeric: "tabular-nums",
-    },
-    ".cm-lineNumbers .cm-gutterElement": { padding: "0 4px 0 14px", minWidth: "36px" },
-    ".cm-activeLine": { backgroundColor: "oklch(1 0 0 / 0.03)" },
-    ".cm-activeLineGutter": { backgroundColor: "transparent", color: "var(--soft)" },
-    "&.cm-focused .cm-cursor": { borderLeftColor: "var(--wagmi)", borderLeftWidth: "2px" },
-    "&.cm-focused .cm-selectionBackground, .cm-selectionBackground, ::selection": {
-      backgroundColor: "oklch(0.89 0.19 128 / 0.22) !important",
-    },
-    "&.cm-focused": { outline: "none" },
-    ".cm-matchingBracket": { backgroundColor: "oklch(1 0 0 / 0.08)", outline: "none" },
-    ".cm-gutter-lint": { width: "14px" },
-    ".cm-lint-marker": { width: "10px", height: "10px" },
-    ".cm-tooltip": {
-      backgroundColor: "var(--bg-raised)",
-      border: "1px solid var(--line-strong)",
-      borderRadius: "8px",
-      color: "var(--ink)",
-      overflow: "hidden",
-    },
-    ".cm-tooltip-lint": { fontFamily: "var(--mono)", fontSize: "12.5px" },
-    ".cm-diagnostic": { padding: "8px 12px", whiteSpace: "pre-wrap", borderLeftWidth: "3px" },
-    ".cm-diagnostic-error": { borderLeftColor: "var(--ngmi)" },
-    ".cm-diagnostic-warning": { borderLeftColor: "var(--warn)" },
-    ".cm-lintRange-error": {
-      backgroundImage: "none",
-      textDecoration: "underline wavy var(--ngmi)",
-      textUnderlineOffset: "4px",
-      textDecorationSkipInk: "none",
-    },
-    ".cm-lintRange-warning": {
-      backgroundImage: "none",
-      textDecoration: "underline wavy var(--warn)",
-      textUnderlineOffset: "4px",
-      textDecorationSkipInk: "none",
-    },
-    ".cm-shi-slang, .cm-shi-slang span": { color: "var(--syn-slang)" },
-    ".cm-shi-macro, .cm-shi-macro span": { color: "var(--syn-slang)" },
-    ".cm-shi-value, .cm-shi-value span": { color: "var(--syn-num)" },
-    ".cm-shi-account, .cm-shi-account span": { color: "var(--syn-type)", fontStyle: "italic" },
-    ".cm-shi-confession, .cm-shi-confession span": {
-      color: "var(--warn)",
-      textDecoration: "underline dotted",
-      textUnderlineOffset: "4px",
-    },
-    ".cm-shi-banned, .cm-shi-banned span": { color: "var(--ngmi)", fontWeight: "600" },
+// Every color is a token, so the editor follows the theme (dark, light, more contrast) with no JS.
+const theme = EditorView.theme({
+  "&": { height: "100%", fontSize: v("step-code"), backgroundColor: "transparent", color: v("text-primary") },
+  ".cm-scroller": { fontFamily: v("font-mono"), lineHeight: v("leading-code"), overflow: "auto" },
+  ".cm-content": { padding: "12px 0", caretColor: v("accent-text") },
+  ".cm-line": { padding: "0 16px 0 8px" },
+  ".cm-gutters": {
+    backgroundColor: "transparent",
+    color: v("text-tertiary"),
+    border: "none",
+    fontVariantNumeric: "tabular-nums",
   },
-  { dark: true },
-);
+  ".cm-lineNumbers .cm-gutterElement": { padding: "0 4px 0 14px", minWidth: "36px" },
+  ".cm-activeLine": { backgroundColor: v("overlay-subtle") },
+  ".cm-activeLineGutter": { backgroundColor: "transparent", color: v("text-secondary") },
+  "&.cm-focused .cm-cursor": { borderLeftColor: v("accent-text"), borderLeftWidth: "2px" },
+  "&.cm-focused .cm-selectionBackground, .cm-selectionBackground, ::selection": {
+    backgroundColor: `${v("accent-selection")} !important`,
+  },
+  "&.cm-focused": { outline: "none" },
+  ".cm-matchingBracket": { backgroundColor: v("overlay-strong"), outline: "none" },
+  ".cm-gutter-lint": { width: "14px" },
+  ".cm-lint-marker": { width: "10px", height: "10px" },
+  ".cm-tooltip": {
+    backgroundColor: v("surface-raised"),
+    border: `1px solid ${v("border-strong")}`,
+    borderRadius: v("radius-sm"),
+    color: v("text-primary"),
+    overflow: "hidden",
+  },
+  ".cm-tooltip-lint": { fontFamily: v("font-mono"), fontSize: v("step-code") },
+  ".cm-diagnostic": { padding: "8px 12px", whiteSpace: "pre-wrap", borderLeftWidth: "3px" },
+  ".cm-diagnostic-error": { borderLeftColor: v("state-error") },
+  ".cm-diagnostic-warning": { borderLeftColor: v("state-warning") },
+  ".cm-lintRange-error": {
+    backgroundImage: "none",
+    textDecoration: `underline wavy ${v("state-error")}`,
+    textUnderlineOffset: "4px",
+    textDecorationSkipInk: "none",
+  },
+  ".cm-lintRange-warning": {
+    backgroundImage: "none",
+    textDecoration: `underline wavy ${v("state-warning")}`,
+    textUnderlineOffset: "4px",
+    textDecorationSkipInk: "none",
+  },
+  ".cm-shi-slang, .cm-shi-slang span": { color: v("syntax-slang") },
+  ".cm-shi-macro, .cm-shi-macro span": { color: v("syntax-slang") },
+  ".cm-shi-value, .cm-shi-value span": { color: v("syntax-number") },
+  ".cm-shi-account, .cm-shi-account span": { color: v("syntax-type"), fontStyle: "italic" },
+  ".cm-shi-confession, .cm-shi-confession span": {
+    color: v("state-warning"),
+    textDecoration: "underline dotted",
+    textUnderlineOffset: "4px",
+  },
+  ".cm-shi-banned, .cm-shi-banned span": { color: v("state-error"), fontWeight: v("weight-bold") },
+});
 
 /** Highlights typeshi's own words on top of Rust highlighting, from the same lists the VS Code grammar uses. */
 function slang(words: EditorWords): Extension {

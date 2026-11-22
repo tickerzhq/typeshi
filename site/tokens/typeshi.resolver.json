@@ -1,0 +1,20 @@
+{
+  "$schema": "https://www.designtokens.org/schemas/2025.10/resolver.json",
+  "version": "2025-11-01",
+  "name": "typeshi",
+  "description": "Dark is the default look. Light is the brand's light palette, chosen with the toggle in the header. More contrast follows the system setting.",
+  "sets": { "base": {"sources": [{"$ref": "tokens.json"}]} },
+  "modifiers": {
+    "theme": {
+      "description": "Color theme",
+      "contexts": { "dark": [], "light": [{"$ref": "light.json"}] },
+      "default": "dark"
+    },
+    "contrast": {
+      "description": "prefers-contrast",
+      "contexts": { "normal": [], "more": [{"$ref": "contrast-more.json"}] },
+      "default": "normal"
+    }
+  },
+  "resolutionOrder": [{"$ref":"#/sets/base"}, {"$ref":"#/modifiers/theme"}, {"$ref":"#/modifiers/contrast"}]
+}

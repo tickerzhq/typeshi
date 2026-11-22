@@ -69,6 +69,10 @@ jobs:
           cache: npm
           cache-dependency-path: site/package-lock.json
       - run: npm ci
+      - run: npm run typecheck
+      # The design tokens: the generated CSS and TS match tokens/*.json, no hand-set colors, sizes or
+      # space, and every text pair passes WCAG 2.2 AA in every theme.
+      - run: npm test
       # The prebuild sync fails if the committed wasm no longer writes the committed example .rs,
       # or if the editor grammar and the compiler disagree on the banned moves.
       - run: npm run build

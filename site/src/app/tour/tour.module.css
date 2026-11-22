@@ -1,21 +1,20 @@
 .page {
-  padding-block: clamp(48px, 9vh, 96px) 96px;
+  padding-block: var(--space-2xl) var(--space-3xl);
   max-width: 860px;
 }
 .eyebrow {
-  margin: 0 0 16px;
-  font: 500 13px/1 var(--mono);
-  color: var(--wagmi);
+  margin: 0 0 var(--space-s);
+  font: var(--weight-medium) var(--step-code) / 1 var(--font-mono);
+  color: var(--accent-text);
 }
 .h1 {
   margin: 0;
-  font: 600 clamp(38px, 6.4vw, 64px) / 1 var(--mono);
+  font: var(--weight-bold) var(--step-heading) / 1 var(--font-mono);
   letter-spacing: -0.05em;
-  text-wrap: balance;
 }
 .lede {
-  margin: 20px 0 40px;
-  color: var(--soft);
-  font-size: 18px;
+  margin: var(--space-m) 0 var(--space-xl);
+  color: var(--text-secondary);
+  font-size: var(--step-lede);
   max-width: 56ch;
 }

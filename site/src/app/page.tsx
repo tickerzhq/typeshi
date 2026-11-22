@@ -21,7 +21,7 @@ export default function Home() {
           Slang over Rust that compiles to real Solana programs (Anchor 1.2). <code>rug!()</code> is a compile error.
           The compiler roasts you. The Rust it writes is ordinary Anchor you can read and audit.
         </p>
-        <div className={s.ctas}>
+        <div className={`cluster ${s.ctas}`}>
           <Link href="/tour" className={s.primaryCta}>
             take the tour →
           </Link>
@@ -52,7 +52,7 @@ export default function Home() {
           try it
         </h2>
         <Playground examples={examples} words={content.editor as EditorWords} />
-        <ul className={s.proof}>
+        <ul className={`grid ${s.proof}`}>
           <li>
             <b>the real compiler.</b> the same Rust crate as the CLI, compiled to WebAssembly. for{" "}
             <code>degen_desk</code> it writes the committed <code>lib.rs</code> byte for byte.
@@ -83,7 +83,7 @@ export default function Home() {
           ))}
         </ul>
 
-        <div className={s.terms}>
+        <div className={`stack ${s.terms}`}>
           {showcase.map((ex) => (
             <figure key={ex.id} className={s.term}>
               <figcaption>
@@ -102,7 +102,7 @@ export default function Home() {
           ))}
         </div>
 
-        <div className={s.split}>
+        <div className={`grid ${s.split}`}>
           <div>
             <h3 className={s.h3}>fail again and it escalates</h3>
             <ol className={s.escalate}>
@@ -151,16 +151,25 @@ export default function Home() {
         </h2>
         <ol className={s.steps}>
           <li>
-            <b>tokens, not regex.</b> typeshi reads <code>.shi</code> as Rust tokens with real line and column
-            numbers, then rewrites the slang into plain Anchor.
+            <b>tokens, not regex.</b>
+            <span>
+              typeshi reads <code>.shi</code> as Rust tokens with real line and column numbers, then rewrites the
+              slang into plain Anchor.
+            </span>
           </li>
           <li>
-            <b>printed like a human wrote it.</b> the result is parsed with <code>syn</code> and printed with{" "}
-            <code>prettyplease</code>. <code>typeshi build</code> then runs <code>anchor build</code>.
+            <b>printed like a human wrote it.</b>
+            <span>
+              the result is parsed with <code>syn</code> and printed with <code>prettyplease</code>.{" "}
+              <code>typeshi build</code> then runs <code>anchor build</code>.
+            </span>
           </li>
           <li>
-            <b>errors find their way home.</b> every token remembers where it came from, so when rustc complains about
-            the generated <code>.rs</code>, typeshi points at the line you wrote.
+            <b>errors find their way home.</b>
+            <span>
+              every token remembers where it came from, so when rustc complains about the generated <code>.rs</code>,
+              typeshi points at the line you wrote.
+            </span>
           </li>
         </ol>
         <p className={s.prose}>

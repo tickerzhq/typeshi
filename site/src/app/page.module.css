@@ -1,228 +1,228 @@
 .hero {
-  padding-block: clamp(56px, 11vh, 120px) 40px;
+  padding-block: var(--space-3xl) var(--space-xl);
 }
 .eyebrow {
-  margin: 0 0 18px;
-  font: 500 13px/1 var(--mono);
-  color: var(--wagmi);
+  margin: 0 0 var(--space-s);
+  font: var(--weight-medium) var(--step-code) / 1 var(--font-mono);
+  color: var(--accent-text);
   letter-spacing: 0.01em;
 }
 .h1 {
   margin: 0;
-  font: 600 clamp(56px, 11vw, 132px) / 0.92 var(--mono);
+  font: var(--weight-bold) var(--step-display) / var(--leading-display) var(--font-mono);
   letter-spacing: -0.055em;
-  text-wrap: balance;
 }
 .lede {
-  margin: 26px 0 0;
+  margin: var(--space-m) 0 0;
   max-width: 60ch;
-  font-size: clamp(17px, 2vw, 19px);
+  font-size: var(--step-lede);
   line-height: 1.55;
-  color: var(--soft);
-  text-wrap: pretty;
+  color: var(--text-secondary);
 }
 .lede code {
-  color: var(--ngmi);
+  color: var(--state-error);
 }
 .ctas {
-  margin-top: 30px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
+  margin-top: var(--space-l);
+  --cluster-gap: var(--space-xs);
 }
 .primaryCta,
 .secondaryCta {
   display: inline-flex;
   align-items: center;
-  height: 46px;
-  padding: 0 20px;
-  border-radius: 9px;
-  font: 600 15px/1 var(--mono);
+  min-height: var(--size-cta);
+  padding: 0 var(--space-m);
+  border-radius: var(--radius-sm);
+  font: var(--weight-bold) var(--step-small) / 1 var(--font-mono);
   text-decoration: none;
   transition:
-    background 150ms var(--ease),
-    border-color 150ms var(--ease),
-    transform 120ms var(--ease);
+    background var(--dur-hover) var(--ease-out),
+    border-color var(--dur-hover) var(--ease-out),
+    transform var(--dur-press) var(--ease-out);
 }
 .primaryCta {
-  background: var(--wagmi);
-  color: oklch(0.2 0.03 130);
+  background: var(--accent-fill);
+  color: var(--text-on-accent);
 }
 .primaryCta:hover {
-  background: oklch(0.93 0.17 128);
+  background: var(--accent-fill-hover);
 }
 .secondaryCta {
-  border: 1px solid var(--line-strong);
-  color: var(--ink);
-  font-weight: 500;
+  border: 1px solid var(--border-strong);
+  color: var(--text-primary);
+  font-weight: var(--weight-medium);
 }
 .secondaryCta:hover {
-  background: oklch(1 0 0 / 0.05);
+  background: var(--overlay-hover);
 }
 .primaryCta:active,
 .secondaryCta:active {
   transform: scale(0.97);
 }
 .ctaNote {
-  font-size: 13.5px;
-  color: var(--faint);
-  margin-left: 6px;
+  font-size: var(--step-small);
+  color: var(--text-tertiary);
+  margin-left: var(--space-3xs);
 }
 .install {
-  margin-top: 28px;
+  margin-top: var(--space-l);
   display: flex;
   align-items: stretch;
   max-width: 640px;
-  border: 1px solid var(--line-strong);
-  border-radius: var(--radius);
-  background: var(--bg-sunk);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  background: var(--surface-sunk);
   overflow: hidden;
 }
 .cmd {
   flex: 1;
   min-width: 0;
-  padding: 14px 16px;
-  font-size: 14px;
+  padding: var(--space-xs) var(--space-s);
+  font-size: var(--step-code);
+  line-height: var(--leading-body);
   white-space: nowrap;
   overflow-x: auto;
   scrollbar-width: none;
 }
 .prompt {
-  color: var(--faint);
+  color: var(--text-tertiary);
   user-select: none;
 }
 .copy {
   flex: none;
   min-width: 72px;
+  min-height: var(--size-target);
   border: 0;
-  border-left: 1px solid var(--line-strong);
-  background: var(--bg-raised);
-  color: var(--ink);
-  font: 500 13px/1 var(--mono);
+  border-left: 1px solid var(--border-strong);
+  background: var(--surface-raised);
+  color: var(--text-primary);
+  font: var(--weight-medium) var(--step-code) / 1 var(--font-mono);
   cursor: pointer;
-  transition: background 150ms var(--ease);
+  transition: background var(--dur-hover) var(--ease-out);
 }
 .copy:hover {
-  background: oklch(0.22 0.006 270);
+  background: var(--overlay-hover);
 }
 .small {
-  margin: 14px 0 0;
-  font-size: 14px;
-  color: var(--faint);
+  margin: var(--space-xs) 0 0;
+  font-size: var(--step-small);
+  color: var(--text-tertiary);
 }
 .small code {
-  color: var(--soft);
+  color: var(--text-secondary);
 }
 
 .play {
-  padding-bottom: 24px;
+  padding-bottom: var(--space-m);
 }
 .proof {
   list-style: none;
   padding: 0;
-  margin: 18px 0 0;
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 20px;
-  font-size: 14px;
-  color: var(--soft);
+  margin: var(--space-s) 0 0;
+  --grid-min: 15rem;
+  --grid-gap: var(--space-m);
+  font-size: var(--step-small);
+  color: var(--text-secondary);
 }
 .proof b {
-  color: var(--ink);
-  font-weight: 600;
+  color: var(--text-primary);
+  font-weight: var(--weight-bold);
 }
 
 .section {
-  padding-block: clamp(64px, 10vh, 112px) 0;
+  padding-block: var(--space-3xl) 0;
 }
 .h2 {
   margin: 0;
-  font: 600 clamp(30px, 4.6vw, 46px) / 1.05 var(--mono);
+  font: var(--weight-bold) var(--step-title) / var(--leading-heading) var(--font-mono);
   letter-spacing: -0.04em;
 }
 .h3 {
-  margin: 0 0 14px;
-  font: 600 15px/1.3 var(--mono);
-  color: var(--ink);
+  margin: 0 0 var(--space-xs);
+  font: var(--weight-bold) var(--step-small) / var(--leading-snug) var(--font-mono);
+  color: var(--text-primary);
 }
 .sub {
-  margin: 12px 0 30px;
-  color: var(--soft);
+  margin: var(--space-xs) 0 var(--space-l);
+  color: var(--text-secondary);
   max-width: 60ch;
 }
 .prose {
-  margin: 36px 0 0;
+  margin: var(--space-xl) 0 0;
   max-width: 72ch;
-  color: var(--soft);
+  color: var(--text-secondary);
   line-height: 1.7;
 }
 .prose code {
-  color: var(--warn);
+  color: var(--state-warning);
 }
 .muted {
-  color: var(--faint);
+  color: var(--text-tertiary);
 }
 
+/* Banned moves: each card spans three rows of the parent grid (subgrid), so every
+   name, joke and "try it" link lines up with its neighbours, however long the joke. */
 .banned {
   list-style: none;
   margin: 0;
   padding: 0;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  border-top: 1px solid var(--line);
-  border-left: 1px solid var(--line);
+  grid-template-columns: repeat(auto-fill, minmax(min(250px, 100%), 1fr));
+  border-top: 1px solid var(--border-default);
+  border-left: 1px solid var(--border-default);
 }
 .banned li {
   display: grid;
-  gap: 6px;
-  padding: 18px;
-  border-right: 1px solid var(--line);
-  border-bottom: 1px solid var(--line);
+  grid-row: span 3;
+  grid-template-rows: subgrid;
+  row-gap: var(--space-2xs);
+  padding: var(--space-s);
+  border-right: 1px solid var(--border-default);
+  border-bottom: 1px solid var(--border-default);
 }
 .banned span {
-  color: var(--soft);
+  color: var(--text-secondary);
 }
 .try {
   justify-self: start;
-  margin-top: 4px;
-  font: 500 12.5px/1 var(--mono);
-  color: var(--faint);
+  align-self: end;
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--size-control);
+  font: var(--weight-medium) var(--step-code) / 1 var(--font-mono);
+  color: var(--text-tertiary);
   text-decoration: none;
-  padding: 6px 0;
 }
 .try:hover {
-  color: var(--wagmi);
+  color: var(--accent-text);
 }
 .move {
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--ngmi);
+  font-size: var(--step-small);
+  font-weight: var(--weight-bold);
+  color: var(--state-error);
 }
 
 .terms {
-  margin-top: 28px;
-  display: grid;
+  margin-top: var(--space-l);
   /* one per row: rustc's carets line up under the code, so these can't wrap */
-  grid-template-columns: minmax(0, 1fr);
-  gap: 14px;
+  --stack-gap: var(--space-xs);
 }
 .term {
   margin: 0;
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  background: oklch(0.11 0.004 270);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  background: var(--surface-terminal);
   overflow: hidden;
   min-width: 0;
 }
 .term figcaption {
   display: flex;
   justify-content: space-between;
-  gap: 10px;
-  padding: 8px 14px;
-  border-bottom: 1px solid var(--line);
-  font: 500 12px/1.4 var(--mono);
-  color: var(--soft);
+  gap: var(--space-xs);
+  padding: var(--space-2xs) var(--space-xs);
+  border-bottom: 1px solid var(--border-default);
+  font: var(--weight-medium) var(--step-label) / 1.4 var(--font-mono);
+  color: var(--text-secondary);
 }
 .term figcaption .muted {
   overflow: hidden;
@@ -231,109 +231,104 @@
 }
 .term pre {
   margin: 0;
-  padding: 12px 14px;
-  font-size: 12.5px;
-  line-height: 1.6;
+  padding: var(--space-xs);
+  font-size: var(--step-code);
+  line-height: var(--leading-body);
   overflow-x: auto;
 }
 .term pre span {
   display: block;
 }
 .err {
-  color: var(--ngmi);
+  color: var(--state-error);
 }
 .warn {
-  color: var(--warn);
+  color: var(--state-warning);
 }
 .good {
-  color: var(--wagmi);
-  font-weight: 600;
+  color: var(--accent-text);
+  font-weight: var(--weight-bold);
 }
 .bad {
-  color: var(--ngmi);
-  font-weight: 600;
+  color: var(--state-error);
+  font-weight: var(--weight-bold);
 }
 
 .split {
-  margin-top: 48px;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr);
-  gap: 40px;
+  margin-top: var(--space-xl);
+  --grid-min: 20rem;
+  --grid-gap: var(--space-xl);
 }
 .escalate {
   margin: 0;
-  padding-left: 22px;
+  padding-left: var(--space-m);
   display: grid;
-  gap: 8px;
-  color: var(--soft);
-  font-family: var(--mono);
-  font-size: 14px;
+  gap: var(--space-2xs);
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: var(--step-small);
 }
 .escalate li::marker {
-  color: var(--faint);
+  color: var(--text-tertiary);
 }
 .codes {
   border-collapse: collapse;
   width: 100%;
-  font-size: 14px;
+  font-size: var(--step-small);
 }
 .codes th,
 .codes td {
   text-align: left;
-  padding: 8px 12px 8px 0;
-  border-bottom: 1px solid var(--line);
+  padding: var(--space-2xs) var(--space-xs) var(--space-2xs) 0;
+  border-bottom: 1px solid var(--border-default);
   vertical-align: top;
 }
 .codes th {
-  font: 500 13px/1.5 var(--mono);
-  color: var(--faint);
+  font: var(--weight-medium) var(--step-code) / var(--leading-body) var(--font-mono);
+  color: var(--text-tertiary);
   width: 46px;
 }
 .codes td {
-  color: var(--soft);
+  color: var(--text-secondary);
 }
 .codes code {
-  color: var(--ink);
-  font-size: 12.5px;
+  color: var(--text-primary);
+  font-size: var(--step-code);
+  overflow-wrap: anywhere;
 }
 
+/* How it works: three columns on a subgrid, so the three titles share a baseline. */
 .steps {
-  margin: 26px 0 0;
+  margin: var(--space-m) 0 0;
   padding: 0;
   list-style: none;
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 28px;
-  counter-reset: step;
-  color: var(--soft);
+  grid-template-columns: repeat(auto-fit, minmax(min(16rem, 100%), 1fr));
+  column-gap: var(--space-l);
+  row-gap: var(--space-l);
+  color: var(--text-secondary);
 }
 .steps li {
-  counter-increment: step;
-  border-top: 1px solid var(--line-strong);
-  padding-top: 16px;
-}
-.steps li::before {
-  content: "0" counter(step);
-  display: block;
-  font: 500 12px/1 var(--mono);
-  color: var(--wagmi);
-  margin-bottom: 12px;
+  display: grid;
+  grid-row: span 2;
+  grid-template-rows: subgrid;
+  row-gap: var(--space-3xs);
+  border-top: 1px solid var(--border-strong);
+  padding-top: var(--space-s);
 }
 .steps b {
-  color: var(--ink);
-  display: block;
-  margin-bottom: 4px;
+  color: var(--text-primary);
 }
 
 .footer {
-  margin-top: 120px;
-  padding-block: 28px 48px;
-  border-top: 1px solid var(--line);
-  font-size: 14px;
-  color: var(--soft);
+  margin-top: var(--space-3xl);
+  padding-block: var(--space-l) var(--space-xl);
+  border-top: 1px solid var(--border-default);
+  font-size: var(--step-small);
+  color: var(--text-secondary);
   display: flex;
   justify-content: space-between;
-  gap: 20px;
+  gap: var(--space-m);
   flex-wrap: wrap;
 }
 .footer p {
@@ -341,13 +336,8 @@
   max-width: 70ch;
 }
 
-@media (max-width: 860px) {
-  .proof,
-  .steps,
-  .split {
-    grid-template-columns: 1fr;
-  }
-  .terms {
-    grid-template-columns: 1fr;
+@media (pointer: coarse) {
+  .try {
+    min-height: var(--size-target);
   }
 }

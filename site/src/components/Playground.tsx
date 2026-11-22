@@ -6,12 +6,16 @@ import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { compiler } from "@/lib/compiler";
 import { codeFromHash, decode, encode } from "@/lib/share";
 import type { CompileResult, EditorWords, Example } from "@/lib/types";
-import { outputEditor, replaceDoc, showDiagnostics, sourceEditor } from "./editor";
+import BootCode from "./BootCode";
 import s from "./Playground.module.css";
+import { useTabs } from "./Tabs";
+
+type Editor = typeof import("./editor");
 
 const DRAFT_KEY = "typeshi:draft";
 const VESTING = "your build is vesting. 6-month cliff. come back later.";
 const VESTING_ANYWAY = "(jk. building anyway.)";
+const FILES = ["shi", "rs"] as const;
 
 type Line = { kind: "cmd" | "out" | "err" | "warn" | "good" | "bad" | "dim"; text: string };
 
@@ -49,6 +53,8 @@ export default function Playground({
   const outEl = useRef<HTMLDivElement>(null);
   const srcView = useRef<EditorView | null>(null);
   const outView = useRef<EditorView | null>(null);
+  /** CodeMirror, loaded after the page is interactive so it never delays the first paint. */
+  const cm = useRef<Editor | null>(null);
   const source = useRef("");
   const seq = useRef(0);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -58,12 +64,15 @@ export default function Playground({
   /** True until the current program has compiled once; its output pane shouldn't show another program's Rust. */
   const fresh = useRef(true);
 
+  const initial = examples.find((e) => e.id === initialId) ?? examples[0];
   const [exampleId, setExampleId] = useState(initialId);
+  const [ready, setReady] = useState(false);
   const [result, setResult] = useState<CompileResult | null>(null);
   const [lines, setLines] = useState<Line[]>([{ kind: "dim", text: "loading the compiler…" }]);
   const [gigamaxx, setGigamaxx] = useState(false);
   const [toast, setToast] = useState("");
-  const [tab, setTab] = useState<"shi" | "rs">("shi");
+  const [tab, setTab] = useState<(typeof FILES)[number]>("shi");
+  const tabs = useTabs(FILES, tab, setTab);
   const selectId = useId();
 
   const say = useCallback((msg: string) => {
@@ -83,13 +92,14 @@ export default function Playground({
     if (my !== seq.current) return; // a newer edit already won
 
     setResult(r);
-    if (srcView.current) showDiagnostics(srcView.current, r.diags);
-    if (outView.current) {
+    const ed = cm.current;
+    if (ed && srcView.current) ed.showDiagnostics(srcView.current, r.diags);
+    if (ed && outView.current) {
       if (r.ok) {
-        replaceDoc(outView.current, r.rust);
+        ed.replaceDoc(outView.current, r.rust);
         fresh.current = false;
       } else if (fresh.current) {
-        replaceDoc(
+        ed.replaceDoc(
           outView.current,
           "// nothing here yet: lib.shi doesn't compile.\n// the terminal below says why. fix it in the .shi.\n",
         );
@@ -140,28 +150,32 @@ export default function Playground({
     void check(source.current, "build");
   }, [check]);
 
-  // Mount both editors once.
+  // Mount both editors once, after CodeMirror loads.
   useEffect(() => {
-    if (!srcEl.current || !outEl.current) return;
-    const initial = examples.find((e) => e.id === initialId) ?? examples[0];
-    source.current = initial.source;
-    srcView.current = sourceEditor({
-      parent: srcEl.current,
-      doc: initial.source,
-      words,
-      onChange: (doc) => {
-        source.current = doc;
-        firstKey.current ??= Date.now();
-        if (full) store.set(DRAFT_KEY, doc);
-        if (timer.current) clearTimeout(timer.current);
-        timer.current = setTimeout(() => void check(doc, "check"), 110);
-      },
-      onBuild: build,
-    });
-    outView.current = outputEditor(outEl.current);
-
     let cancelled = false;
+    source.current = initial.source;
+    // Start the compiler while CodeMirror downloads; neither waits for the other.
+    void check(initial.source, "check");
     (async () => {
+      const ed = await import("./editor");
+      if (cancelled || !srcEl.current || !outEl.current) return;
+      cm.current = ed;
+      srcView.current = ed.sourceEditor({
+        parent: srcEl.current,
+        doc: source.current,
+        words,
+        onChange: (doc) => {
+          source.current = doc;
+          firstKey.current ??= Date.now();
+          if (full) store.set(DRAFT_KEY, doc);
+          if (timer.current) clearTimeout(timer.current);
+          timer.current = setTimeout(() => void check(doc, "check"), 110);
+        },
+        onBuild: build,
+      });
+      outView.current = ed.outputEditor(outEl.current);
+      setReady(true);
+
       // A shared link wins, then (on /play) your last draft, then the example.
       const code = codeFromHash(location.hash);
       const shared = code ? await decode(code) : null;
@@ -170,7 +184,7 @@ export default function Playground({
       if (cancelled) return;
       if (start && start !== initial.source) {
         source.current = start;
-        replaceDoc(srcView.current!, start);
+        ed.replaceDoc(srcView.current, start);
         setExampleId("");
       }
       void check(source.current, "check");
@@ -178,6 +192,7 @@ export default function Playground({
 
     return () => {
       cancelled = true;
+      if (timer.current) clearTimeout(timer.current);
       srcView.current?.destroy();
       outView.current?.destroy();
       srcView.current = outView.current = null;
@@ -187,11 +202,11 @@ export default function Playground({
 
   const load = (id: string) => {
     const ex = examples.find((e) => e.id === id);
-    if (!ex || !srcView.current) return;
+    if (!ex || !srcView.current || !cm.current) return;
     setExampleId(id);
     fresh.current = true;
     source.current = ex.source;
-    replaceDoc(srcView.current, ex.source);
+    cm.current.replaceDoc(srcView.current, ex.source);
     srcView.current.scrollDOM.scrollTop = 0;
     if (outView.current) outView.current.scrollDOM.scrollTop = 0;
   };
@@ -216,100 +231,106 @@ export default function Playground({
 
   const current = examples.find((e) => e.id === exampleId);
   const errors = result?.diags.filter((d) => d.severity === "error").length ?? 0;
+  const busy = !ready || result == null;
 
   return (
-    <section className={`${s.pg} ${full ? s.full : ""}`} aria-label="typeshi playground">
-      <div className={s.bar}>
-        <div className={s.left}>
-          <label htmlFor={selectId} className="visually-hidden">
-            example program
-          </label>
-          <select id={selectId} className={s.select} value={exampleId} onChange={(e) => load(e.target.value)}>
-            {exampleId === "" && <option value="">your program</option>}
-            {examples.map((e) => (
-              <option key={e.id} value={e.id}>
-                {e.title}
-                {e.ok ? "" : " (doesn't compile)"}
-              </option>
-            ))}
-          </select>
-          {current && <span className={s.blurb}>{current.blurb.replace(/`/g, "")}</span>}
-        </div>
-        <div className={s.right}>
-          <button
-            type="button"
-            className={s.flag}
-            aria-pressed={gigamaxx}
-            onClick={toggleGigamaxx}
-            title="strip every log, like typeshi build --gigamaxx"
-          >
-            --gigamaxx
-          </button>
-          <button type="button" className={s.btn} onClick={share}>
-            share
-          </button>
-          {!full && (
-            <Link className={s.btn} href="/play">
-              full screen
-            </Link>
-          )}
-          <button type="button" className={`${s.btn} ${s.primary}`} onClick={build}>
-            build <kbd className={s.kbd}>⌘↵</kbd>
-          </button>
-        </div>
-      </div>
-
-      <div className={s.tabs} role="tablist" aria-label="file">
-        <button type="button" role="tab" aria-selected={tab === "shi"} onClick={() => setTab("shi")}>
-          lib.shi
-        </button>
-        <button type="button" role="tab" aria-selected={tab === "rs"} onClick={() => setTab("rs")}>
-          lib.rs
-        </button>
-      </div>
-
-      <div className={s.panes}>
-        <div className={s.pane} data-show={tab === "shi"}>
-          <div className={s.head}>
-            <span>lib.shi</span>
-            <span className={s.muted}>you write this</span>
+    <div className={`${s.cq} ${full ? s.full : ""}`}>
+      <section className={s.pg} aria-label="typeshi playground" aria-busy={busy}>
+        <div className={s.bar}>
+          <div className={s.left}>
+            <label htmlFor={selectId} className="visually-hidden">
+              example program
+            </label>
+            <select
+              id={selectId}
+              className={s.select}
+              value={exampleId}
+              onChange={(e) => load(e.target.value)}
+              disabled={!ready}
+            >
+              {exampleId === "" && <option value="">your program</option>}
+              {examples.map((e) => (
+                <option key={e.id} value={e.id}>
+                  {e.title}
+                  {e.ok ? "" : " (doesn't compile)"}
+                </option>
+              ))}
+            </select>
+            {current && <span className={s.blurb}>{current.blurb.replace(/`/g, "")}</span>}
           </div>
-          <div ref={srcEl} className={s.editor} />
-        </div>
-        <div className={s.pane} data-show={tab === "rs"}>
-          <div className={s.head}>
-            <span>lib.rs</span>
-            <span className={s.muted}>
-              {result == null
-                ? "…"
-                : result.ok
-                  ? `${result.rust.split("\n").length} lines · ${result.ms.toFixed(1)} ms`
-                  : fresh.current
-                    ? "doesn't compile"
-                    : "last good build"}
-            </span>
+          <div className={s.right}>
+            <button
+              type="button"
+              className={s.flag}
+              aria-pressed={gigamaxx}
+              onClick={toggleGigamaxx}
+              title="strip every log, like typeshi build --gigamaxx"
+            >
+              --gigamaxx
+            </button>
+            <button type="button" className={s.btn} onClick={share} disabled={!ready}>
+              share
+            </button>
+            {!full && (
+              <Link className={s.btn} href="/play">
+                full screen
+              </Link>
+            )}
+            <button type="button" className={`${s.btn} ${s.primary}`} onClick={build} disabled={busy}>
+              build <kbd className={s.kbd}>⌘↵</kbd>
+            </button>
           </div>
-          <div ref={outEl} className={`${s.editor} ${result && !result.ok ? s.stale : ""}`} />
         </div>
-      </div>
 
-      <div className={s.term} role="log" aria-live="polite" aria-label="compiler output">
-        {lines.map((l, i) => (
-          <pre key={i} className={s[l.kind]}>
-            {l.text}
-          </pre>
-        ))}
-      </div>
+        <div className={s.tabs} {...tabs.list} aria-label="file">
+          <button {...tabs.tab("shi")}>lib.shi</button>
+          <button {...tabs.tab("rs")}>lib.rs</button>
+        </div>
 
-      <p className={s.status}>
-        <span>
-          {result ? (errors ? `${errors} error${errors > 1 ? "s" : ""}` : "compiles") : "loading"} · the real compiler,
-          compiled to WebAssembly. it runs in your browser.
-        </span>
-        <span aria-live="polite" className={s.toast}>
-          {toast}
-        </span>
-      </p>
-    </section>
+        <div className={s.panes}>
+          <div className={s.pane} data-show={tab === "shi"} {...tabs.panel("shi")}>
+            <div className={s.head}>
+              <span>lib.shi</span>
+              <span className={s.muted}>you write this</span>
+            </div>
+            <div ref={srcEl} className={s.editor} />
+            {!ready && <BootCode code={initial.source} className={s.boot} />}
+          </div>
+          <div className={s.pane} data-show={tab === "rs"} {...tabs.panel("rs")}>
+            <div className={s.head}>
+              <span>lib.rs</span>
+              <span className={s.muted}>
+                {result == null
+                  ? "…"
+                  : result.ok
+                    ? `${result.rust.split("\n").length} lines · ${result.ms.toFixed(1)} ms`
+                    : fresh.current
+                      ? "doesn't compile"
+                      : "last good build"}
+              </span>
+            </div>
+            <div ref={outEl} className={`${s.editor} ${result && !result.ok ? s.stale : ""}`} />
+          </div>
+        </div>
+
+        <div className={s.term} role="log" aria-live="polite" aria-label="compiler output">
+          {lines.map((l, i) => (
+            <pre key={i} className={s[l.kind]}>
+              {l.text}
+            </pre>
+          ))}
+        </div>
+
+        <p className={s.status}>
+          <span>
+            {result ? (errors ? `${errors} error${errors > 1 ? "s" : ""}` : "compiles") : "loading"} · the real
+            compiler, compiled to WebAssembly. it runs in your browser.
+          </span>
+          <span aria-live="polite" className={s.toast}>
+            {toast}
+          </span>
+        </p>
+      </section>
+    </div>
   );
 }
