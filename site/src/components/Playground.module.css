@@ -84,6 +84,14 @@
   cursor: pointer;
 }
 
+/* iOS Safari zooms the page into a focused field under 16 px, so on a touch screen the picker is the
+   input step. A mouse keeps the small step. */
+@media (pointer: coarse) {
+  .select {
+    font-size: var(--step-input);
+  }
+}
+
 .btn,
 .flag {
   display: inline-flex;

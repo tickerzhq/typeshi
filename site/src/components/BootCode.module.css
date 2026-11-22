@@ -23,3 +23,10 @@
   padding-right: var(--space-s);
   color: var(--text-primary);
 }
+/* The editor's touch size (editor.ts), so nothing jumps when it takes over. */
+@media (pointer: coarse) {
+  .nums,
+  .code {
+    font-size: var(--step-input);
+  }
+}

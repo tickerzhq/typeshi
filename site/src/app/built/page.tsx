@@ -106,7 +106,7 @@ const CHECKS = [
   { name: <>Rust {msrv}</>, text: "the oldest Rust it promises to build on." },
   { name: <>the sync</>, text: "before every build: the wasm has to write the committed example lib.rs byte for byte, and every lesson has to fail before you start and pass with its solution." },
   { name: <code>npm test</code>, text: "the tokens match their JSON, nothing sets a color or size by hand, every text pair passes WCAG 2.2 AA in every theme, the icons match their drawing." },
-  { name: <code>npm run e2e</code>, text: "a desktop and a phone: axe in both themes, nothing scrolls sideways at 320 px, 44 px tap targets, the real compiler answering." },
+  { name: <code>npm run e2e</code>, text: "a desktop and a phone: axe in both themes, nothing scrolls sideways from 320 to 430 px even after you type, no field under 16 px on a touch screen (iOS would zoom), 44 px tap targets, the real compiler answering." },
 ];
 
 const OPEN = [

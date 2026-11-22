@@ -127,4 +127,14 @@
   .theme {
     min-width: var(--size-target);
   }
+  /* Four 44 px targets and the mark fill a 320 px row, so the gaps close up: with them the row was
+     17 px too wide and the phone widened the page by 1 px to hold it (tests/phone.spec.ts). */
+  @container header (max-width: 399px) {
+    .headerIn {
+      gap: var(--space-3xs);
+    }
+    .nav {
+      gap: 0;
+    }
+  }
 }
