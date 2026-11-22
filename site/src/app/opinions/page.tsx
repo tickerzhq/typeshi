@@ -10,6 +10,7 @@ export const metadata: Metadata = {
   title: "opinions",
   description:
     "The compiler has opinions: banned moves that don't compile, six error codes that never change, and what typeshi build says when you fail again.",
+  openGraph: { title: "opinions · typeshi", url: "/opinions" },
 };
 
 const examples = content.examples as Example[];
@@ -20,8 +21,7 @@ export default function OpinionsPage() {
     <>
       <div className="wrap">
         <PageHead title="the compiler has opinions.">
-          Banned moves don&apos;t compile. Each one is a real error with a real line number, and a joke that never
-          hides what went wrong.
+          Banned moves don&apos;t compile. Each one is a real error at a real line.
         </PageHead>
 
         <section aria-labelledby="banned-h">
@@ -45,7 +45,7 @@ export default function OpinionsPage() {
           <h2 id="says-h" className={s.h2}>
             what it says
           </h2>
-          <p className={s.sub}>Three programs from the repo, and what the compiler prints for each. Nothing retyped.</p>
+          <p className={s.sub}>Three programs from the repo, and what the compiler prints for each.</p>
           <div className={`stack ${s.terms}`}>
             {showcase.map((ex) => (
               <figure key={ex.id} className={s.term}>
@@ -71,9 +71,6 @@ export default function OpinionsPage() {
             <h2 id="escalate-h" className={s.h2}>
               fail again and it escalates
             </h2>
-            <p className={s.sub}>
-              <code>typeshi build</code> counts the failures in a row.
-            </p>
             <ol className={s.escalate}>
               {content.escalation.map((line) => (
                 <li key={line}>{line}</li>

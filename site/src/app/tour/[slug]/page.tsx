@@ -18,7 +18,11 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const lesson = lessons.find((l) => l.slug === slug);
   if (!lesson) return {};
   const first = lesson.body.split("\n\n")[0].replace(/[`*]/g, "");
-  return { title: `${lesson.title} · tour`, description: first };
+  return {
+    title: `${lesson.title} · tour`,
+    description: first,
+    openGraph: { title: `${lesson.title} · typeshi tour`, description: first, url: `/tour/${lesson.slug}` },
+  };
 }
 
 export default async function LessonPage({ params }: { params: Promise<{ slug: string }> }) {

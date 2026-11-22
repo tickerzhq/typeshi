@@ -21,14 +21,14 @@ export default function Home() {
           lock in <code className={s.fn}>fn</code>.
         </h1>
         <p className={s.lede}>
-          A joke language that really works. Slang over Rust that compiles to real Solana programs (Anchor 1.2), and{" "}
+          A joke language that really works: slang over Rust that compiles to real Solana programs.{" "}
           <code>rug!()</code> is a compile error.
         </p>
         <div className={s.ctas}>
           <Link href="/tour" className="button">
             take the tour <span aria-hidden="true">→</span>
           </Link>
-          <span className={s.ctaNote}>{content.tour.length} lessons in your browser. no install.</span>
+          <span className={s.ctaNote}>{content.tour.length} lessons, no install</span>
         </div>
       </section>
 
@@ -37,20 +37,12 @@ export default function Home() {
           try it: the real compiler
         </h2>
         <Playground examples={examples} words={content.editor as EditorWords} />
-        <ul className={s.facts}>
-          <li>the same Rust crate as the CLI, compiled to WebAssembly.</li>
-          <li>nothing leaves your browser.</li>
-          <li>
-            for <code>degen_desk</code> it writes the committed <code>lib.rs</code> byte for byte.
-          </li>
-        </ul>
       </section>
 
       <section className={s.band} aria-labelledby="proof-h">
         <div className="wrap">
           <h2 id="proof-h" className={s.statement}>
-            every joke is a real compile error.{" "}
-            <span>it points at your line, like rustc does. everything else is plain Anchor you can read.</span>
+            every joke is a real compile error. <span>everything else is plain Anchor.</span>
           </h2>
 
           <ul className={`grid ${s.proofs}`}>
@@ -58,9 +50,6 @@ export default function Home() {
               <h3 className={s.h3}>
                 <code className={s.ngmi}>rug!()</code> doesn&apos;t compile.
               </h3>
-              <p className={s.say}>
-                {content.banned.length} moves are banned. each one is a compile error that points at your line.
-              </p>
               <figure className={s.term}>
                 <figcaption>$ typeshi check</figcaption>
                 <pre>
@@ -79,7 +68,6 @@ export default function Home() {
 
             <li className={s.proof}>
               <h3 className={s.h3}>the rest is plain Anchor.</h3>
-              <p className={s.say}>each word becomes the Rust you would have written, in a lib.rs next to your .shi.</p>
               <figure className={s.term}>
                 <figcaption>gm_counter: lib.shi, then lib.rs</figcaption>
                 <pre>
@@ -102,9 +90,6 @@ export default function Home() {
 
             <li className={s.proof}>
               <h3 className={s.h3}>fail twice and it gets personal.</h3>
-              <p className={s.say}>
-                <code>typeshi build</code> counts the failures in a row. this is what it says each time.
-              </p>
               <figure className={s.term}>
                 <figcaption>$ typeshi build, failing</figcaption>
                 <ol className={s.strikes}>
@@ -126,7 +111,7 @@ export default function Home() {
 
       <section className={`wrap ${s.dyor}`} aria-labelledby="dyor-h">
         <h2 id="dyor-h" className={s.h2}>
-          dyor. <span>the rest of typeshi, one page each.</span>
+          dyor.
         </h2>
         <Doors />
       </section>

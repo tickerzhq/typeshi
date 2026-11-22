@@ -6,6 +6,7 @@ import type { EditorWords, Example } from "@/lib/types";
 export const metadata: Metadata = {
   title: "playground",
   description: "Write typeshi and watch it turn into Anchor Rust, live. The real compiler, running in your browser.",
+  openGraph: { title: "playground · typeshi", url: "/play" },
 };
 
 export default function PlayPage() {

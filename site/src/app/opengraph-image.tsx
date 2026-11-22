@@ -1,40 +1,30 @@
 import { ImageResponse } from "next/og";
-import { colors } from "@/lib/tokens";
-
-const c = colors.dark;
+import { Box, c, CodeLine, Frame, ogFonts, ogSize, tileSrc } from "@/lib/og";
 
 export const alt = "typeshi: lock in fn. Slang over Rust that compiles to real Solana programs.";
-export const size = { width: 1200, height: 630 };
+export const size = ogSize;
 export const contentType = "image/png";
 
-export default function OG() {
+export default async function OG() {
   return new ImageResponse(
     (
-      <div
-        style={{
-          width: "100%",
-          height: "100%",
-          background: c["surface-page"],
-          color: c["text-primary"],
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "space-between",
-          padding: 72,
-          fontFamily: "monospace",
-        }}
-      >
-        <div style={{ fontSize: 30, color: c["accent-text"] }}>typeshi</div>
-        <div style={{ display: "flex", flexDirection: "column" }}>
-          <div style={{ fontSize: 150, fontWeight: 700, letterSpacing: -8, lineHeight: 1 }}>lock in fn.</div>
-          <div style={{ fontSize: 34, color: c["text-secondary"], marginTop: 28 }}>
-            slang over Rust that compiles to real Solana programs.
+      <Frame tile={await tileSrc()}>
+        <div style={{ display: "flex", fontSize: 150, fontWeight: 700, letterSpacing: -9, lineHeight: 1 }}>
+          <span>lock in&nbsp;</span>
+          <span style={{ color: c["accent-text"] }}>fn</span>
+          <span>.</span>
+        </div>
+        <div style={{ display: "flex", fontSize: 32, color: c["text-secondary"], marginTop: 22, marginBottom: 38 }}>
+          slang over Rust that compiles to real Solana programs.
+        </div>
+        <Box>
+          <div style={{ display: "flex", gap: 36, alignItems: "center" }}>
+            <CodeLine text="rug!(pool);" size={28} />
+            <div style={{ display: "flex", fontSize: 28, color: c["state-error"] }}>error: not on our watch, anon</div>
           </div>
-        </div>
-        <div style={{ display: "flex", fontSize: 28, color: c["state-error"] }}>
-          error: not on our watch, anon · rug!() is a compile error
-        </div>
-      </div>
+        </Box>
+      </Frame>
     ),
-    size,
+    { ...size, fonts: await ogFonts() },
   );
 }

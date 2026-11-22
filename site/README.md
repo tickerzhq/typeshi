@@ -13,6 +13,8 @@ PW_CHROMIUM=/path/to/chrome npm run e2e   # or drop PW_CHROMIUM after `npx playw
 
 How it looks and why: [`DESIGN.md`](DESIGN.md). Every color, type step, space step, corner and duration is a design token in [`tokens/`](tokens) (W3C DTCG 2025.10). `npm run tokens` writes `src/app/tokens.css`, `src/lib/tokens.ts` and `src/app/icon.svg` from them; `npm test` fails if those drift or if a stylesheet sets a value by hand. The tokens are public at `/tokens/typeshi.resolver.json`, and the language is on one page for AI agents at `/llms.txt`.
 
+The favicon's `fn` tile is the only mark. `npm run icons` draws every other icon from it (favicon.ico, the iOS and web app icons, the VS Code icon), and each page's `opengraph-image.tsx` draws its link-preview card; see `DESIGN.md`, "Icons" and "Share cards".
+
 ## How it stays honest
 
 - **The compiler is the compiler.** `wasm/` wraps `typeshi::transpile` for `wasm32-unknown-unknown`. `npm run wasm` rebuilds it (needs `rustup target add wasm32-unknown-unknown` and `cargo install wasm-bindgen-cli` at the version in `wasm/Cargo.lock`). The output, `public/typeshi.wasm` and `src/wasm/`, is committed so Vercel never needs Rust.
@@ -26,4 +28,4 @@ The README's playground picture (`brand/playground-*.png`) is the real site: `BA
 
 ## Deploy
 
-Vercel, root directory `site`. Static pages, no server code. The wasm is served with long edge caching (see `next.config.ts`).
+Vercel, root directory `site`. Every page is static except shared programs (`/p/<code>`), which run the compiler on the server for their link preview and are cached at the edge. The wasm is served with long edge caching (see `next.config.ts`). Web Analytics and Speed Insights load on Vercel only; switch both on in the project's settings.

@@ -21,8 +21,8 @@ export default function Footer() {
         </div>
         <div className={s.bottom}>
           <p>
-            MIT. A parody of the name TypeScript, not affiliated with Microsoft. Nothing here is financial advice.
-            Made by <a href="https://tickerz.com">Tickerz</a>.
+            MIT · not affiliated with TypeScript or Microsoft · not financial advice · made by{" "}
+            <a href="https://tickerz.com">Tickerz</a>
           </p>
           <p className={s.moon}>wen moon? soon™</p>
         </div>

@@ -9,6 +9,7 @@ import s from "./tour.module.css";
 export const metadata: Metadata = {
   title: "tour",
   description: `Learn typeshi in ${content.tour.length} short lessons, each checked by the real compiler in your browser.`,
+  openGraph: { title: "the tour · typeshi", url: "/tour" },
 };
 
 export default function TourPage() {
@@ -23,8 +24,7 @@ export default function TourPage() {
     <>
       <div className={`wrap ${s.page}`}>
         <PageHead title="learn typeshi by breaking it.">
-          {lessons.length} short lessons in {new Set(lessons.map((l) => l.chapter)).size} chapters. Each one has a goal,
-          and the real compiler checks it as you type. No install, nothing to sign up for. About half an hour.
+          {lessons.length} lessons, about half an hour. The compiler checks each one as you type.
         </PageHead>
         <TourIndex lessons={lessons} />
       </div>

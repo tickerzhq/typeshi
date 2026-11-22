@@ -11,6 +11,10 @@ typeshi has no logo on purpose. Its look is its compiler: the name set in a mono
 | `playground-dark.png`, `playground-light.png` | 2560×1406, shown at 830 | The README's demo: the real playground compiling the starter program, retaken by `site/scripts/readme-shot.mjs` |
 | `fonts/` | | JetBrains Mono, SIL Open Font License 1.1 (`fonts/OFL.txt`) |
 
+The site's favicon, app icons, VS Code icon and link-preview cards are made from the site's tokens by
+`site/scripts/mark.mjs`, `site/scripts/icons.mjs` and each page's `opengraph-image.tsx`
+(see `site/DESIGN.md`, "Icons" and "Share cards").
+
 Colours are GitHub's own, so the header sits on the page instead of in a box:
 
 | | dark | light |

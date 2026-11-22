@@ -1,4 +1,5 @@
 import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import type { Metadata, Viewport } from "next";
 import Link from "next/link";
 import ThemeToggle from "@/components/ThemeToggle";
@@ -20,8 +21,10 @@ export const metadata: Metadata = {
     title: "typeshi: lock in fn.",
     description: "Slang over Rust that compiles to real Solana programs. rug!() is a compile error.",
     type: "website",
+    siteName: "typeshi",
   },
   twitter: { card: "summary_large_image" },
+  applicationName: "typeshi",
   alternates: { types: { "text/plain": "/llms.txt" } },
 };
 
@@ -80,7 +83,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </div>
         </header>
         <main id="main">{children}</main>
-        {process.env.VERCEL ? <Analytics /> : null}
+        {process.env.VERCEL ? (
+          <>
+            <Analytics />
+            <SpeedInsights />
+          </>
+        ) : null}
       </body>
     </html>
   );

@@ -9,6 +9,7 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { hex, inP3, inSrgb } from "./color.mjs";
+import { tileSvg } from "./mark.mjs";
 
 export const site = join(dirname(fileURLToPath(import.meta.url)), "..");
 const dir = join(site, "tokens");
@@ -218,9 +219,8 @@ export function build() {
     "",
   ].join("\n");
 
-  const icon =
-    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="${colors.dark["surface-page"]}"/>` +
-    `<text x="32" y="43" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-size="30" font-weight="700" fill="${colors.dark["accent-fill"]}">fn</text></svg>\n`;
+  // The favicon: the `fn` tile, drawn as outlines (scripts/mark.mjs) so no font is needed to show it.
+  const icon = tileSvg({ page: colors.dark["surface-page"], accent: colors.dark["accent-fill"] });
 
   return { css, ts, icon, flat, colors, semantic };
 }

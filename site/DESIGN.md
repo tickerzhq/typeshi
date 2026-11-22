@@ -18,7 +18,7 @@ Short on purpose: five beats of different weight, then the footer. Everything lo
 1. **Hero.** `lock in fn.` in Geist Sans 700 at the display step, with `fn` set as code in lime (Bun sets
    its one word, *fast*, in its one color). One lede with the punchline, `rug!()` in error red. One button.
 2. **The stage.** The real playground, full width, right under the headline, lit from behind by a soft
-   lime light (Linear puts its real product there). Three facts under it.
+   lime light (Linear puts its real product there). Nothing under it: the playground speaks for itself.
 3. **The band.** A raised band (Gleam and Deno use bands for rhythm) with a two-tone statement (Linear's:
    the claim in full ink, the rest quieter) and three proofs (Roc's three, Gleam's claim beside its
    sample). Each proof is a claim, real compiler output and one link out: the `rug!` error (red), lines of
@@ -37,6 +37,14 @@ phone. Those now live on `/opinions` and `/keywords`; the home is about 3,300 an
 bun.sh, gleam.run, ziglang.org, deno.com, roc-lang.org, astro.build, svelte.dev, biomejs.dev,
 tailwindcss.com, Geist and linear.app, is in the pull request that made the change.
 
+## Copy
+
+Every line earns its place. No all caps anywhere (no `text-transform: uppercase`, no shouted labels);
+headings are lowercase, prose is sentence case. Cut any sentence that repeats a heading, a label, a
+count already on screen, or another line on the page, and any reassurance that only describes the
+site ("nothing retyped", "straight from the README"). Counts, real compiler output, links and the
+install command stay. `tests/brand.spec.ts` fails if a page renders all-caps text outside code.
+
 ## The mark
 
 typeshi has no logo on purpose (`brand/README.md`). Every site in the research leads with a mark the
@@ -45,12 +53,44 @@ before the mono name. Nothing new is drawn: it is the icon `scripts/tokens.mjs` 
 header size. It is one commit and one class (`.tile` in `site.module.css`); drop both to go back to
 the name alone.
 
+### Icons
+
+Every icon is that same tile, drawn once in `scripts/mark.mjs` with `fn` as Geist Mono Bold outlines, so it
+looks the same whether or not the font is installed (the old favicon used `<text>`, which each OS set in its
+own monospace). `scripts/tokens.mjs` writes it as `src/app/icon.svg`; `npm run icons` rasterizes the rest
+from the tokens' colors and commits them:
+
+| file | for |
+|---|---|
+| `src/app/icon.svg` | modern browsers' tab icon |
+| `src/app/favicon.ico` | 16, 32 and 48, for old browsers, Windows and bookmarks |
+| `src/app/apple-icon.png` | 180, iOS home screens (full bleed: iOS rounds it) |
+| `public/icons/icon-192.png`, `icon-512.png` | the web app manifest (`app/manifest.ts`), full bleed |
+| `public/icons/maskable-512.png` | Android, which may crop to a circle, so `fn` stays in the middle 80% |
+| `editors/vscode/icon.png` | the VS Code extension |
+
+## Share cards
+
+Every page has its own 1200x630 card (`opengraph-image.tsx` next to the page; X uses the same image). They
+share one frame (`src/lib/og.tsx`): the tile and the name, the page's own content, and the address it lives
+at. They use the dark theme's colors from the tokens and Geist Mono (Satori, which draws them, can't read
+the site's WOFF2 files, so it reads the `geist` package's TTFs). Each lesson's card shows its place in the
+tour. A shared program's card (`/p/<code>`) runs the compiler on the server and shows the lines around the
+first error and what the compiler said, or `compiles. wagmi.`
+
+## Analytics
+
+Vercel Web Analytics and Speed Insights, on Vercel only (no cookies, nothing to consent to). Events:
+`build` (with `ok`), `share`, `example`, `lesson_passed` (with the lesson), `solution_shown`,
+`tour_finished`. Turn both on in the Vercel project, or `vercel project web-analytics enable typeshi`.
+
 ## Pages
 
 | path | what it is |
 |---|---|
 | `/` | the home, above |
 | `/play` | the playground, full screen |
+| `/p/<code>` | a shared program: the playground opened on it, with a link preview of the code and the compiler's verdict. Share makes these; old `/play#code=` links still open |
 | `/tour`, `/tour/<lesson>` | the tour index and its 25 lessons |
 | `/opinions` | banned moves (each with a try-it link), three real error transcripts, the escalation, codes 0x1 to 0x6, the confessions |
 | `/keywords` | the keyword table with search, and how the compiler works |

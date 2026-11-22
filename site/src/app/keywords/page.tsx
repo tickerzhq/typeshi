@@ -8,6 +8,7 @@ import s from "./keywords.module.css";
 export const metadata: Metadata = {
   title: "keywords",
   description: "Every typeshi keyword, and the Rust or Anchor it becomes. Plus how the compiler works.",
+  openGraph: { title: "keywords · typeshi", url: "/keywords" },
 };
 
 export default function KeywordsPage() {
@@ -15,7 +16,7 @@ export default function KeywordsPage() {
     <>
       <div className="wrap">
         <PageHead title="keywords.">
-          Every word, and the Rust or Anchor it becomes. Straight from the README, {content.keywords.length} rows.
+          Every word, and the Rust or Anchor it becomes.
         </PageHead>
         <Keywords rows={content.keywords} />
 
