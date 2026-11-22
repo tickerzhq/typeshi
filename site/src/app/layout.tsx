@@ -51,7 +51,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <header className={s.header}>
           <div className={`wrap ${s.headerIn}`}>
             <Link href="/" className={s.mark}>
-              typeshi<span className={s.ver}>v{content.version}</span>
+              <span className={s.tile} aria-hidden="true">
+                fn
+              </span>
+              <span className={s.name}>
+                typeshi<span className={s.ver}>v{content.version}</span>
+              </span>
             </Link>
             <nav aria-label="primary" className={s.nav}>
               <Link href="/tour">tour</Link>

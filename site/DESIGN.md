@@ -37,6 +37,14 @@ phone. Those now live on `/opinions` and `/keywords`; the home is about 3,300 an
 bun.sh, gleam.run, ziglang.org, deno.com, roc-lang.org, astro.build, svelte.dev, biomejs.dev,
 tailwindcss.com, Geist and linear.app, is in the pull request that made the change.
 
+## The mark
+
+typeshi has no logo on purpose (`brand/README.md`). Every site in the research leads with a mark the
+eye can find, so the header sets the favicon's `fn` (lime, the color that means wagmi) as a small tile
+before the mono name. Nothing new is drawn: it is the icon `scripts/tokens.mjs` already makes, at
+header size. It is one commit and one class (`.tile` in `site.module.css`); drop both to go back to
+the name alone.
+
 ## Pages
 
 | path | what it is |
