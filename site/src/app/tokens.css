@@ -72,6 +72,7 @@
   --step-code: clamp(0.7813rem, 0.7595rem + 0.1087vw, 0.8438rem);
   --step-small: clamp(0.875rem, 0.8533rem + 0.1087vw, 0.9375rem);
   --step-body: 1rem;
+  --step-input: 1rem;
   --step-lede: clamp(1.0625rem, 1.019rem + 0.2174vw, 1.1875rem);
   --step-subhead: clamp(1.25rem, 1.163rem + 0.4348vw, 1.5rem);
   --step-title: clamp(1.875rem, 1.5272rem + 1.7391vw, 2.875rem);

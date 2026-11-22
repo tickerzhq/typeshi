@@ -7,7 +7,7 @@
   color: var(--text-secondary);
 }
 .input {
-  font: var(--weight-regular) var(--step-body) / 1 var(--font-mono);
+  font: var(--weight-regular) var(--step-input) / 1 var(--font-mono);
   color: var(--text-primary);
   background: var(--surface-sunk);
   border: 1px solid var(--border-strong);

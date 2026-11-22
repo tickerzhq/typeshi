@@ -38,6 +38,10 @@ const style = HighlightStyle.define([
 const theme = EditorView.theme({
   "&": { height: "100%", fontSize: v("step-code"), backgroundColor: "transparent", color: v("text-primary") },
   ".cm-scroller": { fontFamily: v("font-mono"), lineHeight: v("leading-code"), overflow: "auto" },
+  // On a touch screen the code is the input step, 16 px: iOS Safari zooms the page into a focused field
+  // under 16 px, and a zoomed page scrolls sideways. A mouse keeps the code step. Lines wrap, and the
+  // scroller holds anything wider, so the editor never widens the page (tests/phone.spec.ts).
+  "@media (pointer: coarse)": { ".cm-scroller": { fontSize: v("step-input") } },
   ".cm-content": { padding: "12px 0", caretColor: v("accent-text") },
   ".cm-line": { padding: "0 16px 0 8px" },
   ".cm-gutters": {

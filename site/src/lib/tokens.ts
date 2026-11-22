@@ -81,6 +81,7 @@ export type TokenVar =
   | "step-code"
   | "step-small"
   | "step-body"
+  | "step-input"
   | "step-lede"
   | "step-subhead"
   | "step-title"
