@@ -49,6 +49,8 @@ test("a shared program opens in the playground and unfurls with its own card", a
   await expect(term).toContainText(/wagmi|ngmi/, { timeout: 15_000 });
   await page.getByLabel("example program").selectOption("friday");
   await page.getByRole("button", { name: "share" }).click();
+  // Sharing compresses the program first; read the clipboard only once it says the link is copied.
+  await expect(page.getByText("link copied")).toBeVisible();
   const url = await page.evaluate(() => navigator.clipboard.readText());
   const path = new URL(url).pathname;
 
