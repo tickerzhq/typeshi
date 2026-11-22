@@ -9,7 +9,9 @@
   margin: 0;
   font: var(--weight-heavy) var(--step-display) / var(--leading-display) var(--font-sans);
   letter-spacing: -0.06em;
-  white-space: nowrap;
+  /* One line at normal text sizes. With large system text on a small phone it wraps between words
+     instead of pushing the page sideways (WCAG 1.4.10, reflow). */
+  text-wrap: balance;
 }
 /* fn is the one word of code in the line, so it is set as code, in wagmi lime. */
 .fn {
@@ -56,23 +58,6 @@
   background: radial-gradient(closest-side, color-mix(in oklch, var(--accent-fill) 16%, transparent), transparent);
   pointer-events: none;
 }
-.facts {
-  list-style: none;
-  margin: var(--space-s) 0 0;
-  padding: 0;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0 var(--space-l);
-  font-size: var(--step-small);
-  line-height: var(--leading-snug);
-  color: var(--text-tertiary);
-}
-.facts li {
-  padding-block: var(--space-3xs);
-}
-.facts code {
-  color: var(--text-secondary);
-}
 
 /* --- the band: one statement, three proofs ----------------------------------------------------- */
 .band {
@@ -114,16 +99,6 @@
 .h3 code {
   font-size: 0.92em;
   letter-spacing: -0.03em;
-}
-.say {
-  margin: 0;
-  max-width: 40ch;
-  font-size: var(--step-small);
-  line-height: var(--leading-body);
-  color: var(--text-secondary);
-}
-.say code {
-  color: var(--text-primary);
 }
 .term {
   margin: var(--space-2xs) 0 0;

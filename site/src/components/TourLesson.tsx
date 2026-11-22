@@ -1,5 +1,6 @@
 "use client";
 
+import { track } from "@vercel/analytics";
 import type { EditorView } from "@codemirror/view";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -103,11 +104,15 @@ export default function TourLesson({
       setPassed(ok);
       if (ok) {
         const done = doneSet();
-        done.add(lesson.slug);
-        store.set(DONE_KEY, JSON.stringify([...done]));
+        if (!done.has(lesson.slug)) {
+          done.add(lesson.slug);
+          store.set(DONE_KEY, JSON.stringify([...done]));
+          track("lesson_passed", { lesson: lesson.slug, n: lesson.n });
+          if (done.size === total) track("tour_finished");
+        }
       }
     },
-    [lesson],
+    [lesson, total],
   );
 
   useEffect(() => {
@@ -188,7 +193,14 @@ export default function TourLesson({
           <button type="button" className={s.btn} onClick={() => load(lesson.start)}>
             reset
           </button>
-          <button type="button" className={s.btn} onClick={() => load(lesson.solution)}>
+          <button
+            type="button"
+            className={s.btn}
+            onClick={() => {
+              track("solution_shown", { lesson: lesson.slug });
+              load(lesson.solution);
+            }}
+          >
             show solution
           </button>
         </div>

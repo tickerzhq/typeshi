@@ -4,6 +4,7 @@ import type { EditorView } from "@codemirror/view";
 import Link from "next/link";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { compiler } from "@/lib/compiler";
+import { track } from "@vercel/analytics";
 import { codeFromHash, decode, encode } from "@/lib/share";
 import type { CompileResult, EditorWords, Example } from "@/lib/types";
 import BootCode from "./BootCode";
@@ -42,11 +43,14 @@ export default function Playground({
   examples,
   words,
   initialId = "gm_counter",
+  initialSource,
   full = false,
 }: {
   examples: Example[];
   words: EditorWords;
   initialId?: string;
+  /** A program to open with (a shared link, /p/...). Wins over drafts and examples. */
+  initialSource?: string;
   full?: boolean;
 }) {
   const srcEl = useRef<HTMLDivElement>(null);
@@ -65,7 +69,8 @@ export default function Playground({
   const fresh = useRef(true);
 
   const initial = examples.find((e) => e.id === initialId) ?? examples[0];
-  const [exampleId, setExampleId] = useState(initialId);
+  const opening = initialSource ?? initial.source;
+  const [exampleId, setExampleId] = useState(initialSource ? "" : initialId);
   const [ready, setReady] = useState(false);
   const [result, setResult] = useState<CompileResult | null>(null);
   const [lines, setLines] = useState<Line[]>([{ kind: "dim", text: "loading the compiler…" }]);
@@ -110,6 +115,7 @@ export default function Playground({
     const errors = r.diags.filter((d) => d.severity === "error").length;
     const warnings = r.diags.length - errors;
     if (mode === "build") {
+      track("build", { ok: r.ok });
       out.push({ kind: "cmd", text: `$ typeshi build${strip.current ? " --gigamaxx" : ""}` });
       out.push({ kind: "out", text: VESTING }, { kind: "out", text: VESTING_ANYWAY });
     } else {
@@ -153,9 +159,9 @@ export default function Playground({
   // Mount both editors once, after CodeMirror loads.
   useEffect(() => {
     let cancelled = false;
-    source.current = initial.source;
+    source.current = opening;
     // Start the compiler while CodeMirror downloads; neither waits for the other.
-    void check(initial.source, "check");
+    void check(opening, "check");
     (async () => {
       const ed = await import("./editor");
       if (cancelled || !srcEl.current || !outEl.current) return;
@@ -176,7 +182,9 @@ export default function Playground({
       outView.current = ed.outputEditor(outEl.current);
       setReady(true);
 
-      // A shared link wins, then (on /play) your last draft, then the example.
+      // A shared program (/p/...) opens as it is. Otherwise an old #code= link wins, then (on /play)
+      // your last draft, then the example.
+      if (initialSource) return;
       const code = codeFromHash(location.hash);
       const shared = code ? await decode(code) : null;
       const draft = full ? store.get(DRAFT_KEY) : null;
@@ -204,6 +212,7 @@ export default function Playground({
     const ex = examples.find((e) => e.id === id);
     if (!ex || !srcView.current || !cm.current) return;
     setExampleId(id);
+    track("example", { id });
     fresh.current = true;
     source.current = ex.source;
     cm.current.replaceDoc(srcView.current, ex.source);
@@ -213,8 +222,9 @@ export default function Playground({
 
   const share = async () => {
     const code = await encode(source.current);
-    const url = `${location.origin}/play#code=${code}`;
-    if (full) history.replaceState(null, "", `#code=${code}`);
+    // A real path, not a #hash, so the server can put the program in the link preview.
+    const url = `${location.origin}/p/${code}`;
+    track("share");
     try {
       await navigator.clipboard.writeText(url);
       say("link copied. ser, share responsibly.");
@@ -229,7 +239,6 @@ export default function Playground({
     void check(source.current, "check");
   };
 
-  const current = examples.find((e) => e.id === exampleId);
   const errors = result?.diags.filter((d) => d.severity === "error").length ?? 0;
   const busy = !ready || result == null;
 
@@ -256,7 +265,6 @@ export default function Playground({
                 </option>
               ))}
             </select>
-            {current && <span className={s.blurb}>{current.blurb.replace(/`/g, "")}</span>}
           </div>
           <div className={s.right}>
             <button
@@ -291,10 +299,9 @@ export default function Playground({
           <div className={s.pane} data-show={tab === "shi"} {...tabs.panel("shi")}>
             <div className={s.head}>
               <span>lib.shi</span>
-              <span className={s.muted}>you write this</span>
             </div>
             <div ref={srcEl} className={s.editor} />
-            {!ready && <BootCode code={initial.source} className={s.boot} />}
+            {!ready && <BootCode code={opening} className={s.boot} />}
           </div>
           <div className={s.pane} data-show={tab === "rs"} {...tabs.panel("rs")}>
             <div className={s.head}>
@@ -323,8 +330,7 @@ export default function Playground({
 
         <p className={s.status}>
           <span>
-            {result ? (errors ? `${errors} error${errors > 1 ? "s" : ""}` : "compiles") : "loading"} · the real
-            compiler, compiled to WebAssembly. it runs in your browser.
+            {result ? (errors ? `${errors} error${errors > 1 ? "s" : ""}` : "compiles") : "loading"}
           </span>
           <span aria-live="polite" className={s.toast}>
             {toast}

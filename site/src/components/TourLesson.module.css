@@ -111,6 +111,7 @@
   margin-top: auto;
   padding-top: var(--space-l);
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
   gap: var(--space-xs);
 }
@@ -126,6 +127,10 @@
   text-decoration: none;
   font: var(--weight-bold) var(--step-body) / 1.3 var(--font-sans);
   letter-spacing: -0.01em;
+  /* Lesson names like mark_to_market are one long word: let them break rather than push the page. */
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
   color: var(--text-primary);
   transition:
     border-color var(--dur-hover) var(--ease-out),

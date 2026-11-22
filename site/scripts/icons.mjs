@@ -82,6 +82,8 @@ export const ICONS = [
   { path: "public/icons/icon-512.png", svg: drawing(APP), sizes: [512] },
   // The safe zone is a circle of 40% radius in the middle; fn at 46% of the side sits well inside it.
   { path: "public/icons/icon-maskable-512.png", svg: drawing({ radius: 0, width: 0.46 }), sizes: [512] },
+  // The VS Code extension's icon, in the marketplace and the extensions list (editors/vscode/package.json).
+  { path: "../editors/vscode/icon.png", svg: drawing(APP), sizes: [256] },
 ];
 
 /** What a picture is drawn from: the drawing and its size. A PNG carries this in a tEXt chunk. */

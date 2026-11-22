@@ -18,7 +18,7 @@ test("the real compiler loads and compiles the starter program", async ({ page }
   const rust = page.getByRole("textbox", { name: /generated Anchor Rust/ });
   await expect(rust).toContainText('declare_id!("7PxhmDuhhe394QJgKyW1P7Ce4dPCfFPN2yKq4KCCj7Vj")');
   await expect(rust).toContainText("pub struct Counter");
-  await expect(page.getByText(/^compiles · the real compiler/)).toBeVisible();
+  await expect(page.getByText("compiles", { exact: true })).toBeVisible();
 });
 
 test("a banned move refuses to compile, with the joke and the line", async ({ page }) => {
@@ -72,7 +72,7 @@ test("a share link carries the program", async ({ page, context }) => {
   await page.getByRole("button", { name: "share" }).click();
   await expect(page.getByText("link copied")).toBeVisible();
   const url = await page.evaluate(() => navigator.clipboard.readText());
-  expect(url).toMatch(/\/play#code=[A-Za-z0-9_-]+$/);
+  expect(url).toMatch(/\/p\/[A-Za-z0-9_-]+$/);
 
   const fresh = await context.newPage();
   await fresh.goto(url);
