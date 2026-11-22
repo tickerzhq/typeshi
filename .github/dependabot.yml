@@ -15,3 +15,31 @@ updates:
     groups:
       actions-minor-and-patch:
         update-types: [minor, patch]
+
+  - package-ecosystem: cargo
+    directory: /site/wasm
+    schedule:
+      interval: weekly
+    groups:
+      wasm-minor-and-patch:
+        update-types: [minor, patch]
+
+  - package-ecosystem: npm
+    directory: /site
+    schedule:
+      interval: weekly
+    groups:
+      codemirror:
+        patterns: ["@codemirror/*", "@lezer/*"]
+      next-and-react:
+        patterns: ["next", "react", "react-dom", "@types/react"]
+      site-minor-and-patch:
+        update-types: [minor, patch]
+
+  - package-ecosystem: npm
+    directory: /brand
+    schedule:
+      interval: weekly
+    groups:
+      brand-minor-and-patch:
+        update-types: [minor, patch]
