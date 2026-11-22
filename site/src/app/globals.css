@@ -95,6 +95,76 @@ pre {
   font-variant-numeric: tabular-nums;
 }
 
+/* --- type roles ---------------------------------------------------------------------------------
+   Geist Sans is the reading and display face: headings, body, navigation, buttons. Geist Mono is for
+   what you would type or what the compiler prints: code, the terminal, the wordmark, flags. */
+
+/* The top of a reading page (PageHead): /tour, /opinions, /keywords and the 404. */
+.page-head {
+  padding-block: var(--space-2xl) var(--space-xl);
+}
+.page-head h1 {
+  margin: 0;
+  font: var(--weight-heavy) var(--step-heading) / var(--leading-heading) var(--font-sans);
+  letter-spacing: -0.045em;
+}
+.page-head h1 code {
+  font-size: 0.92em;
+  letter-spacing: -0.06em;
+}
+.page-head p {
+  margin: var(--space-s) 0 0;
+  max-width: 58ch;
+  font-size: var(--step-lede);
+  line-height: var(--leading-body);
+  color: var(--text-secondary);
+}
+
+/* The one primary action on a page: lime means go. */
+.button {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2xs);
+  min-height: var(--size-cta);
+  padding: 0 var(--space-m);
+  border: 1px solid var(--accent-fill);
+  border-radius: var(--radius-sm);
+  background: var(--accent-fill);
+  color: var(--text-on-accent);
+  font: var(--weight-bold) var(--step-body) / 1 var(--font-sans);
+  letter-spacing: -0.01em;
+  text-decoration: none;
+  white-space: nowrap;
+  transition:
+    background var(--dur-hover) var(--ease-out),
+    border-color var(--dur-hover) var(--ease-out),
+    transform var(--dur-press) var(--ease-out);
+}
+.button:hover {
+  background: var(--accent-fill-hover);
+  border-color: var(--accent-fill-hover);
+}
+.button:active {
+  transform: scale(0.97);
+}
+.button span {
+  transition: translate var(--dur-hover) var(--ease-out);
+}
+.button:hover span {
+  translate: var(--space-3xs) 0;
+}
+/* A second way in, beside the primary one. */
+.button[data-quiet] {
+  background: transparent;
+  border-color: var(--border-strong);
+  color: var(--text-primary);
+  font-weight: var(--weight-medium);
+}
+.button[data-quiet]:hover {
+  background: var(--overlay-hover);
+  border-color: var(--border-strong);
+}
+
 .visually-hidden {
   position: absolute;
   width: 1px;

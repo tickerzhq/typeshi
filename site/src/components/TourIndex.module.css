@@ -10,7 +10,7 @@
   border-radius: var(--radius-sm);
   background: var(--accent-fill);
   color: var(--text-on-accent);
-  font: var(--weight-bold) var(--step-small) / 1 var(--font-mono);
+  font: var(--weight-bold) var(--step-body) / 1 var(--font-sans);
   text-decoration: none;
   transition:
     background var(--dur-hover) var(--ease-out),
@@ -23,7 +23,7 @@
   transform: scale(0.97);
 }
 .progress {
-  font: var(--weight-regular) var(--step-code) / 1 var(--font-mono);
+  font: var(--weight-regular) var(--step-small) / 1 var(--font-sans);
   color: var(--text-tertiary);
   font-variant-numeric: tabular-nums;
 }
@@ -59,7 +59,8 @@
   min-width: 0;
 }
 .title {
-  font: var(--weight-bold) var(--step-body) / 1.4 var(--font-mono);
+  font: var(--weight-bold) var(--step-lede) / 1.35 var(--font-sans);
+  letter-spacing: -0.015em;
   color: var(--text-primary);
 }
 .blurb {
@@ -84,10 +85,10 @@
   justify-content: space-between;
   align-items: center;
   gap: var(--space-s);
-  margin: 0 0 var(--space-2xs);
-  font: var(--weight-bold) var(--step-code) / 1 var(--font-mono);
-  color: var(--accent-text);
-  letter-spacing: 0.02em;
+  margin: 0 0 var(--space-xs);
+  font: var(--weight-heavy) var(--step-subhead) / 1 var(--font-sans);
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
 }
 /* One cell per lesson, lit when done: the chapter's progress as a picture, the count beside it. */
 .meter {
@@ -95,7 +96,7 @@
   align-items: center;
   gap: var(--space-2xs);
   color: var(--text-tertiary);
-  font-weight: var(--weight-regular);
+  font: var(--weight-regular) var(--step-code) / 1 var(--font-mono);
   font-variant-numeric: tabular-nums;
 }
 .cells {

@@ -5,9 +5,56 @@ For the brand (no logo, the compiler's own output, the voice) see [`brand/README
 
 ## The idea
 
-The site is a terminal for the trenches. Its look is the compiler's: monospace type, rustc's colors on a
-near-black page, one lime accent that means it worked (wagmi) and one red that means it didn't (ngmi).
-Every number, error and code sample on it comes from the real compiler (`scripts/sync.mjs`), never typed.
+The compiler is the hero. The page around it reads like a product: Geist Sans for headings and reading,
+Geist Mono only for what you would type or what the compiler prints. The colors are rustc's, and each
+one has a job: lime means it worked (wagmi) and is the one action, red means it didn't (ngmi), amber is
+a warning, and the editor's violet marks keywords. Every number, error and code sample on the site comes
+from the real compiler or the repo (`scripts/sync.mjs`), never typed.
+
+## The home
+
+Short on purpose: five beats of different weight, then the footer. Everything longer has its own page.
+
+1. **Hero.** `lock in fn.` in Geist Sans 700 at the display step, with `fn` set as code in lime (Bun sets
+   its one word, *fast*, in its one color). One lede with the punchline, `rug!()` in error red. One button.
+2. **The stage.** The real playground, full width, right under the headline, lit from behind by a soft
+   lime light (Linear puts its real product there). Three facts under it.
+3. **The band.** A raised band (Gleam and Deno use bands for rhythm) with a two-tone statement (Linear's:
+   the claim in full ink, the rest quieter) and three proofs (Roc's three, Gleam's claim beside its
+   sample). Each proof is a claim, real compiler output and one link out: the `rug!` error (red), lines of
+   `gm_counter` beside the Rust the compiler writes for them (lime; `sync.mjs` fails the build if the
+   compiler stops writing any of them), and the escalation, colored from amber to red as the failures
+   pile up.
+4. **dyor.** Four doors in a hairline grid (Tailwind's and Geist's framed cells): tour, playground,
+   opinions, keywords, each with its real count in its color.
+5. **The close.** "still here? lock in." (Gleam ends on a joke and the one action), the button again,
+   and the install command.
+
+Before Nov 22 2026 the home also held every banned move, three error transcripts, the escalation, the
+error codes, the confessions, the keyword table and how it works: 5,879 px at 1440 and 8,412 px on a
+phone. Those now live on `/opinions` and `/keywords`; the home is about 3,300 and 4,400 px, and
+`tests/site.spec.ts` holds it under 3,800 and 5,200. The research behind this, with screenshots of
+bun.sh, gleam.run, ziglang.org, deno.com, roc-lang.org, astro.build, svelte.dev, biomejs.dev,
+tailwindcss.com, Geist and linear.app, is in the pull request that made the change.
+
+## The mark
+
+typeshi has no logo on purpose (`brand/README.md`). Every site in the research leads with a mark the
+eye can find, so the header sets the favicon's `fn` (lime, the color that means wagmi) as a small tile
+before the mono name. Nothing new is drawn: it is the icon `scripts/tokens.mjs` already makes, at
+header size. It is one commit and one class (`.tile` in `site.module.css`); drop both to go back to
+the name alone.
+
+## Pages
+
+| path | what it is |
+|---|---|
+| `/` | the home, above |
+| `/play` | the playground, full screen |
+| `/tour`, `/tour/<lesson>` | the tour index and its 25 lessons |
+| `/opinions` | banned moves (each with a try-it link), three real error transcripts, the escalation, codes 0x1 to 0x6, the confessions |
+| `/keywords` | the keyword table with search, and how the compiler works |
+| any other path | our own 404 (`not-found.tsx`): the site's header, tokens and theme, and the four doors |
 
 ## Tokens
 
@@ -73,8 +120,14 @@ Geist and Geist Mono (SIL OFL 1.1), self-hosted, variable, cut to Latin (`src/fo
 Sans has next/font's metric-matched Arial fallback; the mono fallbacks share Geist Mono's 0.6 em advance,
 so lines keep their length while the font loads.
 
+Two roles. **Geist Sans** is the reading and display face: headings at 700 (`--weight-heavy`) with tight
+tracking (-0.02 to -0.06 em, tighter as they grow), body, navigation, buttons and labels. **Geist Mono** is
+for code: code samples, the terminal, the editor, the `typeshi` wordmark, `--gigamaxx`, file names. Before
+Nov 22 2026 mono did every job and the site read as a terminal printout; Vercel's Geist, Bun, Deno and
+Biome all keep mono for what you type.
+
 A fluid scale in the manner of [Utopia](https://utopia.fyi/blog/designing-with-fluid-type-scales/): each
-step has a size at 320 px and at 1240 px, and `clamp()` moves between them. Eight steps, named for
+step has a size at 320 px and at 1240 px, and `clamp()` moves between them. Nine steps, named for
 their job:
 
 | step | 320 to 1240 px | for |
@@ -84,9 +137,10 @@ their job:
 | `--step-small` | 14 to 15 | notes, tables, the footer |
 | `--step-body` | 16 | body text and inputs (16 px, so phones never zoom into a field) |
 | `--step-lede` | 17 to 19 | the lede, the name in the header |
-| `--step-title` | 30 to 46 | section headings, lesson titles |
-| `--step-heading` | 38 to 64 | page headings |
-| `--step-display` | 48 to 132 | lock in fn., one line from 320 px up |
+| `--step-subhead` | 20 to 24 | the proofs and doors on the home, sections on a page |
+| `--step-title` | 30 to 46 | section headings, the statement, lesson titles |
+| `--step-heading` | 38 to 64 | page headings, the doors' counts |
+| `--step-display` | 60 to 132 | lock in fn., one line from 320 px up |
 
 Headings use `text-wrap: balance`; paragraphs and list items use `text-wrap: pretty` (Firefox falls back
 to normal wrapping). Numbers that change use `tabular-nums`. Body copy is held to 56 to 72 characters.
@@ -104,8 +158,24 @@ Components fit their box, not the viewport: the header and the playground use co
 the version, then the word ground and the GitHub label) so it fits at 320 px. Nothing scrolls sideways
 from 320 px up (`tests/system.spec.ts`).
 
+## Color with a job
+
+| color | token | means | where |
+|---|---|---|---|
+| lime | `accent-*` | wagmi: it worked, and go | the one button per page, `fn` in the headline, passes, the tour's door |
+| red | `state-error` | ngmi: it didn't | errors, banned moves, `rug!()` in the lede, the opinions door |
+| amber | `state-warning` | a warning | warnings, the first strike of the escalation |
+| amber to red | `color-mix` of the two | it's getting worse | the escalation on the home, one step per failure |
+| violet | `syntax-keyword` | a keyword | keywords in the editor, the keywords door |
+
+Nothing is colored for decoration. A new color needs a job first.
+
 ## Components and states
 
+- `PageHead` (the top of `/tour`, `/opinions`, `/keywords` and the 404), `Doors` (the four ways into the
+  site, with counts from `content.json`), `Footer` (every reading page; not the playground or a lesson,
+  which fill the screen) and the global `.button` (the lime primary action, and `data-quiet` for a second
+  way in).
 - One tabs primitive (`src/components/Tabs.tsx`) for the playground and the lesson, after the WAI-ARIA
   tabs pattern: one tab in the tab order, arrow keys and Home and End move, each tab names its panel.
 - Native elements first: `select`, `button`, `details` where it's enough.
@@ -136,11 +206,21 @@ Rust it becomes, the banned moves, the fixed error codes, a whole program and th
   fits sRGB (and P3 where given), no stylesheet or component sets a color, type size, corner, duration or
   space value by hand, every variable read exists and every semantic color is used, and every text pair
   passes contrast.
-- `npm run e2e`: the real compiler in the browser, axe in both themes, 320 px, 44 px targets on a phone,
-  the tabs, the light theme before the first paint, `llms.txt` and the tokens.
+- `npm run e2e`: the real compiler in the browser, axe in both themes on every page (the 404 included),
+  320 px, 44 px targets on a phone, the tabs, the light theme before the first paint, the 404 in the
+  site's colors whatever the system says, the home's proofs matching the compiler, the home's height,
+  `llms.txt` and the tokens.
 
 ## Changes
 
+- **Nov 22 2026, the redesign**: a short home (hero, the live compiler on a lit stage, a statement and
+  three proofs of real output, four doors, a close) instead of the docs on one page; `/opinions` and
+  `/keywords` are their own pages, as the nav already said; Geist Sans for headings and reading, mono only
+  for code; color with a job (lime, red, amber, violet); `--step-subhead` and `--weight-heavy`;
+  `--step-display` starts at 60 px so the headline fills a phone; the footer on every reading page; our
+  own 404, in the site's colors. Fixed: Next's built-in 404 set its own body colors from
+  `prefers-color-scheme`, so with the system in light and the site in dark it showed a dark header over a
+  white page with a black wordmark.
 - **Nov 22 2026**: tokens moved into DTCG JSON with a resolver; a light theme from the brand's light
   palette and a more-contrast mode; the fluid type and space scales; container queries, subgrid and the
   layout primitives; one tabs primitive; 44 px touch targets; fonts cut to Latin; the playground paints

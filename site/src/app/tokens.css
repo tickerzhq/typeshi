@@ -73,9 +73,10 @@
   --step-small: clamp(0.875rem, 0.8533rem + 0.1087vw, 0.9375rem);
   --step-body: 1rem;
   --step-lede: clamp(1.0625rem, 1.019rem + 0.2174vw, 1.1875rem);
+  --step-subhead: clamp(1.25rem, 1.163rem + 0.4348vw, 1.5rem);
   --step-title: clamp(1.875rem, 1.5272rem + 1.7391vw, 2.875rem);
   --step-heading: clamp(2.375rem, 1.8098rem + 2.8261vw, 4rem);
-  --step-display: clamp(3rem, 1.1739rem + 9.1304vw, 8.25rem);
+  --step-display: clamp(3.75rem, 2.1848rem + 7.8261vw, 8.25rem);
 
   /* font.leading */
   --leading-display: 0.92;
@@ -88,6 +89,7 @@
   --weight-regular: 400;
   --weight-medium: 500;
   --weight-bold: 600;
+  --weight-heavy: 700;
 
   /* space */
   --space-3xs: 0.25rem;

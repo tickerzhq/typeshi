@@ -1,85 +1,284 @@
+/* The home, in five beats of different weight: a loud hero, the compiler on a lit stage, a banded
+   statement with three proofs, the doors out, a quiet close. DESIGN.md, "The home", has the why. */
+
+/* --- hero ----------------------------------------------------------------------------------- */
 .hero {
   padding-block: var(--space-3xl) var(--space-xl);
 }
-.eyebrow {
-  margin: 0 0 var(--space-s);
-  font: var(--weight-medium) var(--step-code) / 1 var(--font-mono);
-  color: var(--accent-text);
-  letter-spacing: 0.01em;
-}
 .h1 {
   margin: 0;
-  font: var(--weight-bold) var(--step-display) / var(--leading-display) var(--font-mono);
-  letter-spacing: -0.055em;
+  font: var(--weight-heavy) var(--step-display) / var(--leading-display) var(--font-sans);
+  letter-spacing: -0.06em;
+  white-space: nowrap;
+}
+/* fn is the one word of code in the line, so it is set as code, in wagmi lime. */
+.fn {
+  font: inherit;
+  font-family: var(--font-mono);
+  font-size: 0.94em;
+  letter-spacing: -0.06em;
+  color: var(--accent-text);
 }
 .lede {
   margin: var(--space-m) 0 0;
-  max-width: 60ch;
+  max-width: 34em;
   font-size: var(--step-lede);
-  line-height: 1.55;
+  line-height: var(--leading-body);
   color: var(--text-secondary);
 }
 .lede code {
   color: var(--state-error);
+  font-weight: var(--weight-medium);
 }
 .ctas {
   margin-top: var(--space-l);
-  --cluster-gap: var(--space-xs);
-}
-.primaryCta,
-.secondaryCta {
-  display: inline-flex;
+  display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  min-height: var(--size-cta);
-  padding: 0 var(--space-m);
-  border-radius: var(--radius-sm);
-  font: var(--weight-bold) var(--step-small) / 1 var(--font-mono);
-  text-decoration: none;
-  transition:
-    background var(--dur-hover) var(--ease-out),
-    border-color var(--dur-hover) var(--ease-out),
-    transform var(--dur-press) var(--ease-out);
-}
-.primaryCta {
-  background: var(--accent-fill);
-  color: var(--text-on-accent);
-}
-.primaryCta:hover {
-  background: var(--accent-fill-hover);
-}
-.secondaryCta {
-  border: 1px solid var(--border-strong);
-  color: var(--text-primary);
-  font-weight: var(--weight-medium);
-}
-.secondaryCta:hover {
-  background: var(--overlay-hover);
-}
-.primaryCta:active,
-.secondaryCta:active {
-  transform: scale(0.97);
+  gap: var(--space-xs) var(--space-s);
 }
 .ctaNote {
   font-size: var(--step-small);
   color: var(--text-tertiary);
-  margin-left: var(--space-3xs);
 }
-.install {
+
+/* --- the stage: the real compiler, lit from behind ------------------------------------------- */
+.stage {
+  position: relative;
+  isolation: isolate;
+}
+/* closest-side: the light is gone before it reaches any edge of its box, so it never shows a seam. */
+.stage::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: calc(-1 * var(--space-3xl)) 0 35%;
+  background: radial-gradient(closest-side, color-mix(in oklch, var(--accent-fill) 16%, transparent), transparent);
+  pointer-events: none;
+}
+.facts {
+  list-style: none;
+  margin: var(--space-s) 0 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 var(--space-l);
+  font-size: var(--step-small);
+  line-height: var(--leading-snug);
+  color: var(--text-tertiary);
+}
+.facts li {
+  padding-block: var(--space-3xs);
+}
+.facts code {
+  color: var(--text-secondary);
+}
+
+/* --- the band: one statement, three proofs ----------------------------------------------------- */
+.band {
+  margin-top: var(--space-3xl);
+  padding-block: var(--space-3xl);
+  background: var(--surface-raised);
+  border-block: 1px solid var(--border-default);
+}
+/* Two tones, after Linear: the claim in full ink, the rest of the sentence quieter. */
+.statement {
+  margin: 0;
+  max-width: 26em;
+  font: var(--weight-bold) var(--step-title) / var(--leading-heading) var(--font-sans);
+  letter-spacing: -0.035em;
+}
+.statement span {
+  color: var(--text-tertiary);
+}
+.proofs {
+  list-style: none;
+  margin: var(--space-2xl) 0 0;
+  padding: 0;
+  --grid-min: 20rem;
+  --grid-gap: var(--space-xl) var(--space-l);
+}
+/* Each proof spans four rows of the list (subgrid), so headings, lines, panels and links line up. */
+.proof {
+  display: grid;
+  grid-row: span 4;
+  grid-template-rows: subgrid;
+  row-gap: var(--space-xs);
+  min-width: 0;
+}
+.h3 {
+  margin: 0;
+  font: var(--weight-heavy) var(--step-subhead) / var(--leading-snug) var(--font-sans);
+  letter-spacing: -0.025em;
+}
+.h3 code {
+  font-size: 0.92em;
+  letter-spacing: -0.03em;
+}
+.say {
+  margin: 0;
+  max-width: 40ch;
+  font-size: var(--step-small);
+  line-height: var(--leading-body);
+  color: var(--text-secondary);
+}
+.say code {
+  color: var(--text-primary);
+}
+.term {
+  margin: var(--space-2xs) 0 0;
+  min-width: 0;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  background: var(--surface-terminal);
+  overflow: hidden;
+}
+.term figcaption {
+  padding: var(--space-2xs) var(--space-xs);
+  border-bottom: 1px solid var(--border-default);
+  font: var(--weight-medium) var(--step-label) / 1.4 var(--font-mono);
+  color: var(--text-tertiary);
+}
+.term pre,
+.strikes {
+  margin: 0;
+  padding: var(--space-xs);
+  font: var(--weight-regular) var(--step-code) / var(--leading-code) var(--font-mono);
+  overflow-x: auto;
+}
+.term pre > span {
+  display: block;
+}
+.ngmi {
+  color: var(--state-error);
+}
+.verdictBad,
+.verdictGood {
+  margin-top: var(--space-2xs);
+  font-weight: var(--weight-bold);
+}
+.verdictBad {
+  color: var(--state-error);
+}
+.verdictGood {
+  color: var(--accent-text);
+}
+.pair {
+  margin-bottom: var(--space-2xs);
+}
+.pair > span {
+  display: block;
+}
+.shi {
+  color: var(--syntax-slang);
+}
+.rs {
+  color: var(--text-primary);
+}
+.rs > span {
+  color: var(--text-tertiary);
+}
+/* The escalation, as heat: each failure in a row moves from warning amber to error red. */
+.strikes {
+  list-style: none;
+  display: grid;
+  gap: var(--space-3xs);
+}
+.strikes li {
+  display: grid;
+  grid-template-columns: 4.5ch minmax(0, 1fr);
+  column-gap: var(--space-2xs);
+  color: var(--state-warning);
+}
+.strikes li[data-strike="2"] {
+  color: color-mix(in oklch, var(--state-error) 25%, var(--state-warning));
+}
+.strikes li[data-strike="3"] {
+  color: color-mix(in oklch, var(--state-error) 50%, var(--state-warning));
+}
+.strikes li[data-strike="4"] {
+  color: color-mix(in oklch, var(--state-error) 75%, var(--state-warning));
+}
+.strikes li[data-strike="5"] {
+  color: var(--state-error);
+  font-weight: var(--weight-bold);
+}
+.strike {
+  color: var(--text-tertiary);
+  font-weight: var(--weight-regular);
+  font-variant-numeric: tabular-nums;
+}
+.more {
+  justify-self: start;
+  align-self: start;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2xs);
+  min-height: var(--size-control);
+  font: var(--weight-medium) var(--step-small) / 1 var(--font-sans);
+  color: var(--text-primary);
+  text-decoration: none;
+}
+.more span {
+  color: var(--text-tertiary);
+  transition:
+    color var(--dur-hover) var(--ease-out),
+    translate var(--dur-hover) var(--ease-out);
+}
+.more:hover span {
+  color: var(--accent-text);
+  translate: var(--space-3xs) 0;
+}
+
+/* --- dyor: the doors out ----------------------------------------------------------------------- */
+.dyor {
+  padding-top: var(--space-3xl);
+}
+.h2 {
+  margin: 0 0 var(--space-l);
+  font: var(--weight-heavy) var(--step-title) / var(--leading-heading) var(--font-sans);
+  letter-spacing: -0.04em;
+}
+.h2 span {
+  color: var(--text-tertiary);
+  font-weight: var(--weight-bold);
+}
+
+/* --- the close ---------------------------------------------------------------------------------- */
+.close {
+  padding-top: var(--space-3xl);
+}
+.closeH {
+  margin: 0;
+  font: var(--weight-heavy) var(--step-heading) / var(--leading-heading) var(--font-sans);
+  letter-spacing: -0.05em;
+}
+.closeRow {
   margin-top: var(--space-l);
   display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-s);
+}
+.install {
+  flex: 0 1 36rem;
+  min-width: 0;
+  display: flex;
   align-items: stretch;
-  max-width: 640px;
+  min-height: var(--size-cta);
   border: 1px solid var(--border-strong);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-sm);
   background: var(--surface-sunk);
   overflow: hidden;
 }
 .cmd {
   flex: 1;
   min-width: 0;
-  padding: var(--space-xs) var(--space-s);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2xs);
+  padding: 0 var(--space-s);
   font-size: var(--step-code);
-  line-height: var(--leading-body);
   white-space: nowrap;
   overflow-x: auto;
   scrollbar-width: none;
@@ -96,248 +295,24 @@
   border-left: 1px solid var(--border-strong);
   background: var(--surface-raised);
   color: var(--text-primary);
-  font: var(--weight-medium) var(--step-code) / 1 var(--font-mono);
+  font: var(--weight-medium) var(--step-small) / 1 var(--font-sans);
   cursor: pointer;
   transition: background var(--dur-hover) var(--ease-out);
 }
 .copy:hover {
   background: var(--overlay-hover);
 }
-.small {
+.then {
   margin: var(--space-xs) 0 0;
   font-size: var(--step-small);
   color: var(--text-tertiary);
 }
-.small code {
+.then code {
   color: var(--text-secondary);
-}
-
-.play {
-  padding-bottom: var(--space-m);
-}
-.proof {
-  list-style: none;
-  padding: 0;
-  margin: var(--space-s) 0 0;
-  --grid-min: 15rem;
-  --grid-gap: var(--space-m);
-  font-size: var(--step-small);
-  color: var(--text-secondary);
-}
-.proof b {
-  color: var(--text-primary);
-  font-weight: var(--weight-bold);
-}
-
-.section {
-  padding-block: var(--space-3xl) 0;
-}
-.h2 {
-  margin: 0;
-  font: var(--weight-bold) var(--step-title) / var(--leading-heading) var(--font-mono);
-  letter-spacing: -0.04em;
-}
-.h3 {
-  margin: 0 0 var(--space-xs);
-  font: var(--weight-bold) var(--step-small) / var(--leading-snug) var(--font-mono);
-  color: var(--text-primary);
-}
-.sub {
-  margin: var(--space-xs) 0 var(--space-l);
-  color: var(--text-secondary);
-  max-width: 60ch;
-}
-.prose {
-  margin: var(--space-xl) 0 0;
-  max-width: 72ch;
-  color: var(--text-secondary);
-  line-height: 1.7;
-}
-.prose code {
-  color: var(--state-warning);
-}
-.muted {
-  color: var(--text-tertiary);
-}
-
-/* Banned moves: each card spans three rows of the parent grid (subgrid), so every
-   name, joke and "try it" link lines up with its neighbours, however long the joke. */
-.banned {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(250px, 100%), 1fr));
-  border-top: 1px solid var(--border-default);
-  border-left: 1px solid var(--border-default);
-}
-.banned li {
-  display: grid;
-  grid-row: span 3;
-  grid-template-rows: subgrid;
-  row-gap: var(--space-2xs);
-  padding: var(--space-s);
-  border-right: 1px solid var(--border-default);
-  border-bottom: 1px solid var(--border-default);
-}
-.banned span {
-  color: var(--text-secondary);
-}
-.try {
-  justify-self: start;
-  align-self: end;
-  display: inline-flex;
-  align-items: center;
-  min-height: var(--size-control);
-  font: var(--weight-medium) var(--step-code) / 1 var(--font-mono);
-  color: var(--text-tertiary);
-  text-decoration: none;
-}
-.try:hover {
-  color: var(--accent-text);
-}
-.move {
-  font-size: var(--step-small);
-  font-weight: var(--weight-bold);
-  color: var(--state-error);
-}
-
-.terms {
-  margin-top: var(--space-l);
-  /* one per row: rustc's carets line up under the code, so these can't wrap */
-  --stack-gap: var(--space-xs);
-}
-.term {
-  margin: 0;
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-md);
-  background: var(--surface-terminal);
-  overflow: hidden;
-  min-width: 0;
-}
-.term figcaption {
-  display: flex;
-  justify-content: space-between;
-  gap: var(--space-xs);
-  padding: var(--space-2xs) var(--space-xs);
-  border-bottom: 1px solid var(--border-default);
-  font: var(--weight-medium) var(--step-label) / 1.4 var(--font-mono);
-  color: var(--text-secondary);
-}
-.term figcaption .muted {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.term pre {
-  margin: 0;
-  padding: var(--space-xs);
-  font-size: var(--step-code);
-  line-height: var(--leading-body);
-  overflow-x: auto;
-}
-.term pre span {
-  display: block;
-}
-.err {
-  color: var(--state-error);
-}
-.warn {
-  color: var(--state-warning);
-}
-.good {
-  color: var(--accent-text);
-  font-weight: var(--weight-bold);
-}
-.bad {
-  color: var(--state-error);
-  font-weight: var(--weight-bold);
-}
-
-.split {
-  margin-top: var(--space-xl);
-  --grid-min: 20rem;
-  --grid-gap: var(--space-xl);
-}
-.escalate {
-  margin: 0;
-  padding-left: var(--space-m);
-  display: grid;
-  gap: var(--space-2xs);
-  color: var(--text-secondary);
-  font-family: var(--font-mono);
-  font-size: var(--step-small);
-}
-.escalate li::marker {
-  color: var(--text-tertiary);
-}
-.codes {
-  border-collapse: collapse;
-  width: 100%;
-  font-size: var(--step-small);
-}
-.codes th,
-.codes td {
-  text-align: left;
-  padding: var(--space-2xs) var(--space-xs) var(--space-2xs) 0;
-  border-bottom: 1px solid var(--border-default);
-  vertical-align: top;
-}
-.codes th {
-  font: var(--weight-medium) var(--step-code) / var(--leading-body) var(--font-mono);
-  color: var(--text-tertiary);
-  width: 46px;
-}
-.codes td {
-  color: var(--text-secondary);
-}
-.codes code {
-  color: var(--text-primary);
-  font-size: var(--step-code);
-  overflow-wrap: anywhere;
-}
-
-/* How it works: three columns on a subgrid, so the three titles share a baseline. */
-.steps {
-  margin: var(--space-m) 0 0;
-  padding: 0;
-  list-style: none;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(16rem, 100%), 1fr));
-  column-gap: var(--space-l);
-  row-gap: var(--space-l);
-  color: var(--text-secondary);
-}
-.steps li {
-  display: grid;
-  grid-row: span 2;
-  grid-template-rows: subgrid;
-  row-gap: var(--space-3xs);
-  border-top: 1px solid var(--border-strong);
-  padding-top: var(--space-s);
-}
-.steps b {
-  color: var(--text-primary);
-}
-
-.footer {
-  margin-top: var(--space-3xl);
-  padding-block: var(--space-l) var(--space-xl);
-  border-top: 1px solid var(--border-default);
-  font-size: var(--step-small);
-  color: var(--text-secondary);
-  display: flex;
-  justify-content: space-between;
-  gap: var(--space-m);
-  flex-wrap: wrap;
-}
-.footer p {
-  margin: 0;
-  max-width: 70ch;
 }
 
 @media (pointer: coarse) {
-  .try {
+  .more {
     min-height: var(--size-target);
   }
 }

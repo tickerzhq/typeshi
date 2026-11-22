@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import Footer from "@/components/Footer";
+import PageHead from "@/components/PageHead";
 import TourIndex from "@/components/TourIndex";
 import content from "@/generated/content.json";
 import type { Lesson } from "@/lib/types-tour";
@@ -18,14 +20,15 @@ export default function TourPage() {
     blurb: body.split("\n\n")[0].replace(/\*\*/g, ""),
   }));
   return (
-    <div className={`wrap ${s.page}`}>
-      <p className={s.eyebrow}>the tour</p>
-      <h1 className={s.h1}>learn typeshi by breaking it.</h1>
-      <p className={s.lede}>
-        {lessons.length} short lessons in {new Set(lessons.map((l) => l.chapter)).size} chapters. Each one has a goal,
-        and the real compiler checks it as you type. No install, nothing to sign up for. About half an hour.
-      </p>
-      <TourIndex lessons={lessons} />
-    </div>
+    <>
+      <div className={`wrap ${s.page}`}>
+        <PageHead title="learn typeshi by breaking it.">
+          {lessons.length} short lessons in {new Set(lessons.map((l) => l.chapter)).size} chapters. Each one has a goal,
+          and the real compiler checks it as you type. No install, nothing to sign up for. About half an hour.
+        </PageHead>
+        <TourIndex lessons={lessons} />
+      </div>
+      <Footer />
+    </>
   );
 }

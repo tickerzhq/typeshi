@@ -1,7 +1,7 @@
 import Link from "next/link";
 import CopyButton from "@/components/CopyButton";
-import Inline from "@/components/Inline";
-import Keywords from "@/components/Keywords";
+import Doors from "@/components/Doors";
+import Footer from "@/components/Footer";
 import Playground from "@/components/Playground";
 import content from "@/generated/content.json";
 import type { EditorWords, Example } from "@/lib/types";
@@ -9,182 +9,152 @@ import s from "./page.module.css";
 
 const INSTALL = "cargo install --git https://github.com/tickerzhq/typeshi";
 const examples = content.examples as Example[];
-const showcase = ["no_disclaimer", "edit_a_print", "warnings"].map((id) => examples.find((e) => e.id === id)!);
+const rug = examples.find((e) => e.id === "rug")!;
+// The escalation stops at its last line: the fifth failure and every one after it.
+const STRIKES = ["1st", "2nd", "3rd", "4th", "5th+"];
 
 export default function Home() {
   return (
     <>
-      <section className={`wrap ${s.hero}`}>
-        <p className={s.eyebrow}>a joke language that really works</p>
-        <h1 className={s.h1}>lock in fn.</h1>
+      <section className={`wrap ${s.hero}`} aria-labelledby="hero-h">
+        <h1 id="hero-h" className={s.h1}>
+          lock in <code className={s.fn}>fn</code>.
+        </h1>
         <p className={s.lede}>
-          Slang over Rust that compiles to real Solana programs (Anchor 1.2). <code>rug!()</code> is a compile error.
-          The compiler roasts you. The Rust it writes is ordinary Anchor you can read and audit.
+          A joke language that really works. Slang over Rust that compiles to real Solana programs (Anchor 1.2), and{" "}
+          <code>rug!()</code> is a compile error.
         </p>
-        <div className={`cluster ${s.ctas}`}>
-          <Link href="/tour" className={s.primaryCta}>
-            take the tour →
+        <div className={s.ctas}>
+          <Link href="/tour" className="button">
+            take the tour <span aria-hidden="true">→</span>
           </Link>
-          <Link href="/play" className={s.secondaryCta}>
-            open the playground
-          </Link>
-          <span className={s.ctaNote}>
-            {content.tour.length} lessons, checked live by the real compiler. no install.
-          </span>
+          <span className={s.ctaNote}>{content.tour.length} lessons in your browser. no install.</span>
         </div>
-        <div className={s.install}>
-          <code className={s.cmd}>
-            <span className={s.prompt} aria-hidden>
-              $
-            </span>{" "}
-            {INSTALL}
-          </code>
-          <CopyButton text={INSTALL} className={s.copy} />
-        </div>
-        <p className={s.small}>
-          then <code>typeshi new gm_counter &amp;&amp; cd gm_counter &amp;&amp; typeshi check</code>. or skip the
-          install and write some below.
-        </p>
       </section>
 
-      <section className={`wrap ${s.play}`} id="play" aria-labelledby="play-h">
+      <section className={`wrap ${s.stage}`} id="play" aria-labelledby="play-h">
         <h2 id="play-h" className="visually-hidden">
-          try it
+          try it: the real compiler
         </h2>
         <Playground examples={examples} words={content.editor as EditorWords} />
-        <ul className={`grid ${s.proof}`}>
+        <ul className={s.facts}>
+          <li>the same Rust crate as the CLI, compiled to WebAssembly.</li>
+          <li>nothing leaves your browser.</li>
           <li>
-            <b>the real compiler.</b> the same Rust crate as the CLI, compiled to WebAssembly. for{" "}
-            <code>degen_desk</code> it writes the committed <code>lib.rs</code> byte for byte.
-          </li>
-          <li>
-            <b>nothing leaves your browser.</b> no server compiles anything. share links carry the code in the URL.
-          </li>
-          <li>
-            <b>try a banned move.</b> type <code>rug!(counter);</code> inside <code>gm</code> and watch it refuse.
+            for <code>degen_desk</code> it writes the committed <code>lib.rs</code> byte for byte.
           </li>
         </ul>
       </section>
 
-      <section className={`wrap ${s.section}`} id="opinions" aria-labelledby="opinions-h">
-        <h2 id="opinions-h" className={s.h2}>
-          the compiler has opinions
-        </h2>
-        <p className={s.sub}>Banned moves don&apos;t compile. Each one is a real error with a real line number.</p>
-        <ul className={s.banned}>
-          {content.banned.map(([name, why]) => (
-            <li key={name}>
-              <code className={s.move}>{name}!</code>
-              <span>{why}</span>
-              <a className={s.try} href={`/play#code=${content.bannedTry[name as keyof typeof content.bannedTry]}`}>
-                try it<span className="visually-hidden">: {name}!</span> →
+      <section className={s.band} aria-labelledby="proof-h">
+        <div className="wrap">
+          <h2 id="proof-h" className={s.statement}>
+            every joke is a real compile error.{" "}
+            <span>it points at your line, like rustc does. everything else is plain Anchor you can read.</span>
+          </h2>
+
+          <ul className={`grid ${s.proofs}`}>
+            <li className={s.proof}>
+              <h3 className={s.h3}>
+                <code className={s.ngmi}>rug!()</code> doesn&apos;t compile.
+              </h3>
+              <p className={s.say}>
+                {content.banned.length} moves are banned. each one is a compile error that points at your line.
+              </p>
+              <figure className={s.term}>
+                <figcaption>$ typeshi check</figcaption>
+                <pre>
+                  {rug.diags.map((d, i) => (
+                    <span key={i} className={s.ngmi}>
+                      {d.rendered.trimEnd()}
+                    </span>
+                  ))}
+                  <span className={s.verdictBad}>ngmi</span>
+                </pre>
+              </figure>
+              <Link href="/opinions" className={s.more}>
+                every banned move <span aria-hidden="true">→</span>
+              </Link>
+            </li>
+
+            <li className={s.proof}>
+              <h3 className={s.h3}>the rest is plain Anchor.</h3>
+              <p className={s.say}>each word becomes the Rust you would have written, in a lib.rs next to your .shi.</p>
+              <figure className={s.term}>
+                <figcaption>gm_counter: lib.shi, then lib.rs</figcaption>
+                <pre>
+                  {content.phrasebook.map(([shi, rs]) => (
+                    <span key={shi} className={s.pair}>
+                      <span className={s.shi}>{shi}</span>
+                      <span className={s.rs}>
+                        <span aria-hidden="true">→ </span>
+                        {rs}
+                      </span>
+                    </span>
+                  ))}
+                  <span className={s.verdictGood}>wagmi</span>
+                </pre>
+              </figure>
+              <Link href="/keywords" className={s.more}>
+                all {content.keywords.length} keywords <span aria-hidden="true">→</span>
+              </Link>
+            </li>
+
+            <li className={s.proof}>
+              <h3 className={s.h3}>fail twice and it gets personal.</h3>
+              <p className={s.say}>
+                <code>typeshi build</code> counts the failures in a row. this is what it says each time.
+              </p>
+              <figure className={s.term}>
+                <figcaption>$ typeshi build, failing</figcaption>
+                <ol className={s.strikes}>
+                  {content.escalation.map((line, i) => (
+                    <li key={line} data-strike={i + 1}>
+                      <span className={s.strike}>{STRIKES[i]}</span>
+                      {line}
+                    </li>
+                  ))}
+                </ol>
+              </figure>
+              <a href={`/play#code=${content.bannedTry.rug}`} className={s.more}>
+                fail on purpose <span aria-hidden="true">→</span>
               </a>
             </li>
-          ))}
-        </ul>
-
-        <div className={`stack ${s.terms}`}>
-          {showcase.map((ex) => (
-            <figure key={ex.id} className={s.term}>
-              <figcaption>
-                <span>{ex.title}</span>
-                <span className={s.muted}>{ex.path}</span>
-              </figcaption>
-              <pre>
-                {ex.diags.map((d, i) => (
-                  <span key={i} className={d.severity === "error" ? s.err : s.warn}>
-                    {d.rendered}
-                  </span>
-                ))}
-                <span className={ex.ok ? s.good : s.bad}>{ex.ok ? "wagmi" : "ngmi"}</span>
-              </pre>
-            </figure>
-          ))}
+          </ul>
         </div>
+      </section>
 
-        <div className={`grid ${s.split}`}>
-          <div>
-            <h3 className={s.h3}>fail again and it escalates</h3>
-            <ol className={s.escalate}>
-              {content.escalation.map((line) => (
-                <li key={line}>{line}</li>
-              ))}
-            </ol>
-          </div>
-          <div>
-            <h3 className={s.h3}>codes 0x1 to 0x6, forever</h3>
-            <table className={s.codes}>
-              <caption className="visually-hidden">the six fixed error codes in every typeshi program</caption>
-              <tbody>
-                {content.fixedErrors.map(([name, msg], i) => (
-                  <tr key={name}>
-                    <th scope="row" className="num">
-                      0x{i + 1}
-                    </th>
-                    <td>
-                      <code>{name}</code>
-                    </td>
-                    <td>{msg}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+      <section className={`wrap ${s.dyor}`} aria-labelledby="dyor-h">
+        <h2 id="dyor-h" className={s.h2}>
+          dyor. <span>the rest of typeshi, one page each.</span>
+        </h2>
+        <Doors />
+      </section>
+
+      <section className={`wrap ${s.close}`} aria-labelledby="close-h">
+        <h2 id="close-h" className={s.closeH}>
+          still here? lock in.
+        </h2>
+        <div className={s.closeRow}>
+          <Link href="/tour" className="button">
+            take the tour <span aria-hidden="true">→</span>
+          </Link>
+          <div className={s.install}>
+            <code className={s.cmd}>
+              <span className={s.prompt} aria-hidden="true">
+                $
+              </span>{" "}
+              {INSTALL}
+            </code>
+            <CopyButton text={INSTALL} className={s.copy} />
           </div>
         </div>
-
-        <p className={s.prose}>
-          <Inline text={content.confessions} />
+        <p className={s.then}>
+          then <code>typeshi new gm_counter &amp;&amp; cd gm_counter &amp;&amp; typeshi check</code>
         </p>
       </section>
 
-      <section className={`wrap ${s.section}`} id="keywords" aria-labelledby="keywords-h">
-        <h2 id="keywords-h" className={s.h2}>
-          keywords
-        </h2>
-        <p className={s.sub}>Every word, and the Rust or Anchor it becomes. Straight from the README.</p>
-        <Keywords rows={content.keywords} />
-      </section>
-
-      <section className={`wrap ${s.section}`} aria-labelledby="how-h">
-        <h2 id="how-h" className={s.h2}>
-          how it works
-        </h2>
-        <ol className={s.steps}>
-          <li>
-            <b>tokens, not regex.</b>
-            <span>
-              typeshi reads <code>.shi</code> as Rust tokens with real line and column numbers, then rewrites the
-              slang into plain Anchor.
-            </span>
-          </li>
-          <li>
-            <b>printed like a human wrote it.</b>
-            <span>
-              the result is parsed with <code>syn</code> and printed with <code>prettyplease</code>.{" "}
-              <code>typeshi build</code> then runs <code>anchor build</code>.
-            </span>
-          </li>
-          <li>
-            <b>errors find their way home.</b>
-            <span>
-              every token remembers where it came from, so when rustc complains about the generated <code>.rs</code>,
-              typeshi points at the line you wrote.
-            </span>
-          </li>
-        </ol>
-        <p className={s.prose}>
-          For code that holds money on a public chain, that last part matters: the code that runs is the code you can
-          see. Read the generated Rust before you deploy anything. The confession macros really do what they say.
-        </p>
-      </section>
-
-      <footer className={`wrap ${s.footer}`}>
-        <p>
-          MIT. A parody of the name TypeScript, not affiliated with Microsoft. Nothing here is financial advice. Made by{" "}
-          <a href="https://tickerz.com">Tickerz</a>. <a href="https://github.com/tickerzhq/typeshi">Source on GitHub</a>.
-        </p>
-        <p className={s.muted}>wen moon? soon™</p>
-      </footer>
+      <Footer />
     </>
   );
 }

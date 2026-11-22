@@ -1,0 +1,6 @@
+.ngmi {
+  color: var(--state-error);
+}
+.actions {
+  margin: calc(-1 * var(--space-s)) 0 var(--space-2xl);
+}

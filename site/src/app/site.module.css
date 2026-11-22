@@ -28,6 +28,28 @@
   font: var(--weight-medium) var(--step-label) / 1 var(--font-mono);
   color: var(--text-tertiary);
 }
+/* The wordmark's one mark: the favicon's fn, in the lime that means wagmi (DESIGN.md, "The mark").
+   The tile centers on the name; the name and its version share a baseline. */
+.mark:has(.tile) {
+  align-items: center;
+}
+.name {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--space-2xs);
+}
+.tile {
+  display: inline-grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  margin-right: var(--space-3xs);
+  border-radius: var(--radius-xs);
+  background: var(--accent-fill);
+  color: var(--text-on-accent);
+  font: var(--weight-heavy) var(--step-label) / 1 var(--font-mono);
+  letter-spacing: -0.04em;
+}
 .nav {
   display: flex;
   align-items: center;
@@ -40,11 +62,11 @@
   justify-content: center;
   gap: var(--space-2xs);
   min-height: var(--size-control);
-  padding: 0 var(--space-2xs);
+  padding: 0 var(--space-xs);
   border: 0;
   border-radius: var(--radius-sm);
   background: transparent;
-  font: var(--weight-medium) var(--step-code) / 1 var(--font-mono);
+  font: var(--weight-medium) var(--step-small) / 1 var(--font-sans);
   color: var(--text-secondary);
   text-decoration: none;
   white-space: nowrap;
@@ -83,6 +105,9 @@
 @container header (max-width: 399px) {
   .long {
     display: none;
+  }
+  .nav a {
+    padding: 0 var(--space-2xs);
   }
   .icon {
     display: block;

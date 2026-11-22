@@ -56,7 +56,7 @@
 }
 .blurb {
   color: var(--text-tertiary);
-  font-size: var(--step-code);
+  font-size: var(--step-small);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -65,7 +65,7 @@
 
 .select {
   appearance: none;
-  font: var(--weight-medium) var(--step-code) / 1 var(--font-mono);
+  font: var(--weight-medium) var(--step-small) / 1 var(--font-sans);
   color: var(--text-primary);
   /* the chevron is two gradient triangles in a token color, so it follows the theme */
   background-color: var(--surface-page);
@@ -95,7 +95,7 @@
   border: 1px solid var(--border-strong);
   background: transparent;
   color: var(--text-primary);
-  font: var(--weight-medium) var(--step-code) / 1 var(--font-mono);
+  font: var(--weight-medium) var(--step-small) / 1 var(--font-sans);
   text-decoration: none;
   cursor: pointer;
   white-space: nowrap;
@@ -123,6 +123,7 @@
 }
 .flag {
   color: var(--text-secondary);
+  font: var(--weight-medium) var(--step-code) / 1 var(--font-mono);
 }
 .flag[aria-pressed="true"] {
   color: var(--text-on-state);
@@ -239,7 +240,7 @@
   gap: var(--space-xs);
   padding: var(--space-2xs) var(--space-xs);
   border-top: 1px solid var(--border-default);
-  font: var(--weight-regular) var(--step-label) / 1.4 var(--font-mono);
+  font: var(--weight-regular) var(--step-label) / 1.4 var(--font-sans);
   color: var(--text-tertiary);
 }
 .toast {
