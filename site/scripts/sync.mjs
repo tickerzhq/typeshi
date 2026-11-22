@@ -97,7 +97,13 @@ const phrasebook = [
   [`probably_nothing!("gm. we're live.");`, `msg!("gm. we're live.");`],
   ["were_so_back!()", "Ok(())"],
 ];
-for (const [shi, rs] of phrasebook) {
+// The keywords page's share card shows other words of the same program the same way.
+const keywordPairs = [
+  ["stealth_launch gm_counter {", "pub mod gm_counter {"],
+  ["cap_table Gm {", "pub struct Gm<'info> {"],
+  ["lock_in fn gm(ctx) -> W {", "pub fn gm(ctx: Context<Gm>) -> Result<()> {"],
+];
+for (const [shi, rs] of [...phrasebook, ...keywordPairs]) {
   if (!wholeLines(starter).includes(shi)) throw new Error(`sync: phrasebook: "${shi}" is not a line of the starter program`);
   if (!wholeLines(starterRust).includes(rs)) throw new Error(`sync: phrasebook: the compiler no longer writes "${rs}" for the starter`);
 }
@@ -175,6 +181,24 @@ const fud = strList("FUD");
 // Every lesson must start out failing its check and its solution must pass, through the real compiler.
 // lesson.md keys: chapter, title, check: ok|error|warning, rust: <text> (repeatable), error: <text>, warning: <text>.
 const { readdirSync } = await import("node:fs");
+
+/**
+ * The one line of real compiler output that shows a lesson's goal, for its share card: the line of
+ * lib.rs the solution makes that holds the lesson's first `rust:` text, or the first line of the error
+ * or warning it is about.
+ */
+function proof(dir, result, check) {
+  if (check.kind === "ok") {
+    const lines = result.rust.split("\n");
+    const at = lines.findIndex((l) => l.includes(check.rust[0] ?? "\0"));
+    if (at < 0) throw new Error(`sync: tour/${dir}: no line of the solution's lib.rs holds "${check.rust[0]}"`);
+    return { kind: "ok", line: at + 1, text: lines[at].trim() };
+  }
+  const want = check[check.kind];
+  const d = result.diags.find((x) => x.severity === check.kind && `${x.message} ${x.label}`.includes(want));
+  if (!d) throw new Error(`sync: tour/${dir}: the solution's ${check.kind} doesn't say "${want}"`);
+  return { kind: check.kind, line: null, text: d.rendered.split("\n")[0] };
+}
 const { passes } = await import(join(site, "src/lib/check.mjs"));
 const tourDir = join(site, "tour");
 const tour = readdirSync(tourDir)
@@ -210,6 +234,7 @@ const tour = readdirSync(tourDir)
       solution,
       check,
       startCompiles: startResult.ok,
+      proof: proof(dir, compile(solution), check),
     };
   });
 
@@ -239,11 +264,29 @@ for (const row of keywords) {
   row.lesson = lesson ? lesson.slug : null;
 }
 
-const version = read("Cargo.toml").match(/^version = "([^"]+)"/m)[1];
+const cargoToml = read("Cargo.toml");
+const version = cargoToml.match(/^version = "([^"]+)"/m)[1];
+
+// --- what /built says the compiler is made of, from Cargo.toml and the lockfiles ----------------
+const locked = (file, name) => {
+  const v = read(file).match(new RegExp(`\\nname = "${name}"\\nversion = "([^"]+)"`))?.[1];
+  if (!v) throw new Error(`sync: ${name} not found in ${file}`);
+  return v;
+};
+const stack = {
+  edition: cargoToml.match(/^edition = "([^"]+)"/m)[1],
+  msrv: cargoToml.match(/^rust-version = "([^"]+)"/m)[1],
+  crates: {
+    "proc-macro2": locked("Cargo.lock", "proc-macro2"),
+    syn: locked("Cargo.lock", "syn"),
+    prettyplease: locked("Cargo.lock", "prettyplease"),
+    "wasm-bindgen": locked("site/wasm/Cargo.lock", "wasm-bindgen"),
+  },
+};
 
 mkdirSync(dirname(out), { recursive: true });
 writeFileSync(
   out,
-  JSON.stringify({ version, banned, bannedTry, fixedErrors, escalation, fud, examples, phrasebook, keywords, confessions, cope, editor, tour }, null, 1) + "\n",
+  JSON.stringify({ version, stack, banned, bannedTry, fixedErrors, escalation, fud, examples, phrasebook, keywordPairs, keywords, confessions, cope, editor, tour }, null, 1) + "\n",
 );
 console.log(`sync: ${tour.length} tour lessons, ${examples.length} examples, ${banned.length} banned moves, ${keywords.length} keyword rows, v${version}`);

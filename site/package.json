@@ -4,6 +4,7 @@
   "type": "module",
   "scripts": {
     "tokens": "node scripts/tokens.mjs",
+    "icons": "node scripts/icons.mjs",
     "sync": "node scripts/sync.mjs",
     "predev": "node scripts/tokens.mjs && node scripts/sync.mjs",
     "dev": "next dev",

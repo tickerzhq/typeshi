@@ -4,6 +4,7 @@ import Link from "next/link";
 import ThemeToggle from "@/components/ThemeToggle";
 import content from "@/generated/content.json";
 import { headScript } from "@/lib/head";
+import { homeMeta } from "@/lib/meta";
 import { siteUrl } from "@/lib/site";
 import { colors } from "@/lib/tokens";
 import { mono, sans } from "./fonts";
@@ -13,16 +14,13 @@ import s from "./site.module.css";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl()),
-  title: { default: "typeshi: lock in fn.", template: "%s · typeshi" },
-  description:
-    "A joke language that really works: slang over Rust that compiles to real Solana programs (Anchor 1.2). rug!() is a compile error. Try the real compiler in your browser.",
-  openGraph: {
-    title: "typeshi: lock in fn.",
-    description: "Slang over Rust that compiles to real Solana programs. rug!() is a compile error.",
-    type: "website",
-  },
-  twitter: { card: "summary_large_image" },
-  alternates: { types: { "text/plain": "/llms.txt" } },
+  title: { default: homeMeta.title, template: "%s · typeshi" },
+  description: homeMeta.description,
+  applicationName: "typeshi",
+  alternates: { canonical: "/", types: homeMeta.alternates },
+  openGraph: { title: homeMeta.title, description: homeMeta.social, url: "/", siteName: "typeshi", type: "website" },
+  twitter: { card: "summary_large_image", title: homeMeta.title, description: homeMeta.social },
+  appleWebApp: { title: "typeshi" },
 };
 
 export const viewport: Viewport = { themeColor: colors.dark["surface-page"], colorScheme: "dark light" };

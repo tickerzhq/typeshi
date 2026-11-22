@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import TourLesson from "@/components/TourLesson";
 import content from "@/generated/content.json";
+import { pageMeta } from "@/lib/meta";
 import type { EditorWords } from "@/lib/types";
 import type { Lesson } from "@/lib/types-tour";
 
@@ -18,7 +19,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const lesson = lessons.find((l) => l.slug === slug);
   if (!lesson) return {};
   const first = lesson.body.split("\n\n")[0].replace(/[`*]/g, "");
-  return { title: `${lesson.title} · tour`, description: first };
+  return pageMeta({ path: `/tour/${lesson.slug}`, title: `${lesson.title} · tour`, description: first });
 }
 
 export default async function LessonPage({ params }: { params: Promise<{ slug: string }> }) {

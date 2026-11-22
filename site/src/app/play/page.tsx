@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
 import Playground from "@/components/Playground";
 import content from "@/generated/content.json";
+import { pageMeta } from "@/lib/meta";
 import type { EditorWords, Example } from "@/lib/types";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMeta({
+  path: "/play",
   title: "playground",
   description: "Write typeshi and watch it turn into Anchor Rust, live. The real compiler, running in your browser.",
-};
+});
 
 export default function PlayPage() {
   return (

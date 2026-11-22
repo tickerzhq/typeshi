@@ -3,14 +3,16 @@ import Footer from "@/components/Footer";
 import Inline from "@/components/Inline";
 import PageHead from "@/components/PageHead";
 import content from "@/generated/content.json";
+import { pageMeta } from "@/lib/meta";
 import type { Example } from "@/lib/types";
 import s from "./opinions.module.css";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMeta({
+  path: "/opinions",
   title: "opinions",
   description:
     "The compiler has opinions: banned moves that don't compile, six error codes that never change, and what typeshi build says when you fail again.",
-};
+});
 
 const examples = content.examples as Example[];
 const showcase = ["no_disclaimer", "edit_a_print", "warnings"].map((id) => examples.find((e) => e.id === id)!);
