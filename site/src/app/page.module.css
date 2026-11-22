@@ -9,7 +9,9 @@
   margin: 0;
   font: var(--weight-heavy) var(--step-display) / var(--leading-display) var(--font-sans);
   letter-spacing: -0.06em;
-  white-space: nowrap;
+  /* One line at normal text sizes. With large system text on a small phone it wraps between words
+     instead of pushing the page sideways (WCAG 1.4.10, reflow). */
+  text-wrap: balance;
 }
 /* fn is the one word of code in the line, so it is set as code, in wagmi lime. */
 .fn {

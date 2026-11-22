@@ -45,6 +45,14 @@ count already on screen, or another line on the page, and any reassurance that o
 site ("nothing retyped", "straight from the README"). Counts, real compiler output, links and the
 install command stay. `tests/brand.spec.ts` fails if a page renders all-caps text outside code.
 
+## Layout
+
+Nothing scrolls sideways, at any width from 320 px up and with large system text (125% and 150%) on
+phones. Things that can't fit give way in order: words wrap (the hero included), the header drops
+its long labels, then GitHub (it's in the footer), then the name beside the `fn` tile. The header's
+breakpoints are in em, so they move with the reader's text size. `tests/layout.spec.ts` checks every
+page at 13 width and text-size pairs and names what sticks out if anything does.
+
 ## The mark
 
 typeshi has no logo on purpose (`brand/README.md`). Every site in the research leads with a mark the

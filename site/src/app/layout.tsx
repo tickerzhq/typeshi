@@ -74,7 +74,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <Link href="/keywords" className={s.wide}>
                 keywords
               </Link>
-              <a href="https://github.com/tickerzhq/typeshi" aria-label="github">
+              <a href="https://github.com/tickerzhq/typeshi" aria-label="github" className={s.gh}>
                 <GitHubMark />
                 <span className={s.long}>github</span>
               </a>
