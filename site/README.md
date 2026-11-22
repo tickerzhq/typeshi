@@ -28,4 +28,4 @@ The README's playground picture (`brand/playground-*.png`) is the real site: `BA
 
 ## Deploy
 
-Vercel, root directory `site`. Every page is static except shared programs (`/p/<code>`), which run the compiler on the server for their link preview and are cached at the edge. The wasm is served with long edge caching (see `next.config.ts`). Web Analytics and Speed Insights load on Vercel only; switch both on in the project's settings.
+Vercel, root directory `site`. Every page is static except shared programs (`/p/<code>`), which run the compiler on the server for their link preview; the preview image is cached at the edge. The wasm is served with long edge caching (see `next.config.ts`). Web Analytics and Speed Insights load on Vercel only; switch both on in the project's settings.

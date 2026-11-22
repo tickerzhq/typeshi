@@ -5,8 +5,8 @@ import content from "@/generated/content.json";
 import { decodeShared, verdict } from "@/lib/server-compile";
 import type { EditorWords, Example } from "@/lib/types";
 
-// The program is the URL: too long to cache as a file, so it renders per request and the CDN caches
-// the response (next.config.ts). A link's program never changes.
+// The program is the URL, too long to cache as a file, so the page renders per request (it's light:
+// one compile). Its link-preview card is cached at the edge for good (opengraph-image.tsx).
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }: { params: Promise<{ code: string }> }): Promise<Metadata> {

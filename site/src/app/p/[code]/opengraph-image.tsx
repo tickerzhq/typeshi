@@ -33,6 +33,11 @@ export default async function OG({ params }: { params: Promise<{ code: string }>
         </div>
       </Frame>
     ),
-    { ...size, fonts: await ogFonts() },
+    {
+      ...size,
+      fonts: await ogFonts(),
+      // A link's program never changes, so its card can live at the edge for good.
+      headers: { "Cache-Control": "public, max-age=86400, s-maxage=31536000, immutable" },
+    },
   );
 }
