@@ -1,6 +1,6 @@
-# typeshi.dev
+# typeshi.tickerz.com
 
-The typeshi website: a short landing page, a 25-lesson tour, a playground, a page each for the compiler's opinions and the keywords, and how it's built. All of it runs the real compiler in your browser. Live at https://typeshi-blond.vercel.app until typeshi.dev points at it.
+The typeshi website: a short landing page, a 25-lesson tour, a playground, a page each for the compiler's opinions and the keywords, and how it's built. All of it runs the real compiler in your browser. Live at https://typeshi.tickerz.com.
 
 ```sh
 npm ci
