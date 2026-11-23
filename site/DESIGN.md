@@ -174,7 +174,7 @@ Nov 22 2026 mono did every job and the site read as a terminal printout; Vercel'
 Biome all keep mono for what you type.
 
 A fluid scale in the manner of [Utopia](https://utopia.fyi/blog/designing-with-fluid-type-scales/): each
-step has a size at 320 px and at 1240 px, and `clamp()` moves between them. Nine steps, named for
+step has a size at 320 px and at 1240 px, and `clamp()` moves between them. Ten steps, named for
 their job:
 
 | step | 320 to 1240 px | for |
@@ -182,7 +182,8 @@ their job:
 | `--step-label` | 11.5 to 12 | versions, counts, column heads |
 | `--step-code` | 12.5 to 13.5 | code, the terminal, the monospace interface |
 | `--step-small` | 14 to 15 | notes, tables, the footer |
-| `--step-body` | 16 | body text and inputs (16 px, so phones never zoom into a field) |
+| `--step-body` | 16 | body text |
+| `--step-input` | 16 | every field you type in or pick from on a touch screen, and the keyword search everywhere |
 | `--step-lede` | 17 to 19 | the lede, the name in the header |
 | `--step-subhead` | 20 to 24 | the proofs and doors on the home, sections on a page |
 | `--step-title` | 30 to 46 | section headings, the statement, lesson titles |
@@ -191,6 +192,18 @@ their job:
 
 Headings use `text-wrap: balance`; paragraphs and list items use `text-wrap: pretty` (Firefox falls back
 to normal wrapping). Numbers that change use `tabular-nums`. Body copy is held to 56 to 72 characters.
+
+**No zoom on a phone.** iOS Safari zooms the page into a text field under 16 px the moment it gets focus,
+and a zoomed page scrolls sideways. So on a touch screen (`pointer: coarse`) every field you type in or
+pick from is `--step-input`, 16 px: the editor (and the boot text that stands in for it while it loads),
+the example picker and the keyword search. With a mouse the editor stays at `--step-code` and the picker
+at `--step-small`. The editor's lines wrap at 16 px as they did before, and its scroller holds anything
+that can't wrap, so it never widens the page. Why the pointer and not a width: GitHub's Primer sets its
+fields to 16 px only under `@supports (-webkit-touch-callout: none)` (iOS) and goes back to 14 px from
+768 px up, which leaves an iPhone on its side (844 to 932 px wide) zooming. The pointer covers every phone
+and tablet in either orientation, and it is the media query the 44 px targets already use. The viewport
+keeps pinch zoom: no `maximum-scale`, no `user-scalable=no`. `--step-input` never drops under 16 px
+(`scripts/tokens.test.mjs`).
 
 ## Space and layout
 
@@ -205,8 +218,13 @@ Components fit their box, not the viewport: the header and the playground use co
 the version, then the word ground and the GitHub label, then the GitHub icon, which is in the footer
 too, then the name beside the `fn` tile) so it fits at 320 px. Its breakpoints are in em, so they move
 with the reader's text size. Long words wrap (the hero, lesson names like `mark_to_market` in the
-pager). Nothing scrolls sideways from 320 px up, on a touch phone (44 px targets) and with 125% and 150%
-system text (`tests/layout.spec.ts`, which names what sticks out).
+pager). On a touch screen its targets are 44 px, so below 400 px its gaps close up: with them, the row
+was 17 px too wide at 320 px and a phone widened the page by 1 px to hold it. Nothing scrolls sideways
+from 320 px up (`tests/system.spec.ts`), with 125% and 150% system text (`tests/layout.spec.ts`, which
+names what sticks out), and on a touch screen at 320, 375, 390 and 430 px no page does, on any route or
+lesson, before or after you type, build, switch tabs or pick an example (`tests/phone.spec.ts`). That
+test also fails when the phone grows its layout viewport to hold a page, which a plain `scrollWidth`
+check misses.
 
 ## Copy
 
@@ -245,7 +263,8 @@ Nothing is colored for decoration. A new color needs a job first.
 - Every control has hover, `:focus-visible` (a 2 px accent outline), active (pressed buttons scale to
   0.97) and disabled. The playground is `aria-busy` and its build button is disabled until the compiler
   and the editor are ready.
-- On a touch screen (`pointer: coarse`) every control is at least 44 px tall (`--size-target`).
+- On a touch screen (`pointer: coarse`) every control is at least 44 px tall (`--size-target`), and every
+  field is at least 16 px (`--step-input`, under Type).
 - While CodeMirror loads, the editor shows the program as plain text laid out like the editor
   (`BootCode`), so the code is the first thing a phone paints.
 
@@ -267,16 +286,25 @@ Rust it becomes, the banned moves, the fixed error codes, a whole program and th
 
 - `npm test`: the generated token files match `tokens/`, the token files have the DTCG shape, every color
   fits sRGB (and P3 where given), no stylesheet or component sets a color, type size, corner, duration or
-  space value by hand, every variable read exists and every semantic color is used, every text pair
-  passes contrast, and every icon matches its drawing.
+  space value by hand, every variable read exists and every semantic color is used, `--step-input` is at
+  least 16 px, every text pair passes contrast, and every icon matches its drawing.
 - `npm run e2e`: the real compiler in the browser, axe in both themes on every page (the 404 included),
   320 px, 44 px targets on a phone, the tabs, the light theme before the first paint, the 404 in the
   site's colors whatever the system says, the home's proofs matching the compiler, the home's height,
   `llms.txt` and the tokens, the icons and the manifest, a 1200 x 630 card and its own `og:title` on every
-  page (all 31), and `/built` from the footer.
+  page (all 31), and `/built` from the footer. On a touch screen (`tests/phone.spec.ts`): no field under
+  16 px on any page at 320 and 390 px, every lesson included; no page wider than the phone at 320, 375, 390
+  and 430 px, on load and after you focus the editor, type a line longer than the screen, build, switch
+  every tab, open the picker and load every example, or search the keywords. With a mouse, the editor and
+  the picker keep their sizes.
 
 ## Changes
 
+- **Nov 22 2026, no zoom on a phone**: the site scrolled sideways on a phone because iOS Safari zoomed in
+  when you tapped the editor (12.6 px) or the example picker (14 px). On a touch screen every field is now
+  `--step-input`, a new token at 16 px; a mouse keeps the old sizes. Fixed on the way: at 320 px on a touch
+  screen the header's 44 px targets made its row 17 px too wide, and the page came out 321 px. New checks
+  in `tests/phone.spec.ts` and `scripts/tokens.test.mjs`.
 - **Nov 22 2026, icons, cards and /built**: the `fn` tile is the app icon: `favicon.ico`, an `icon.svg`
   that adapts to a light tab bar, a 180 px `apple-icon`, and a manifest with 192, 512 and maskable 512, all
   from `scripts/icons.mjs` and Geist Mono's outlines. Every page, each lesson included, has its own share

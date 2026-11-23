@@ -42,6 +42,15 @@ test("every token file has the DTCG 2025.10 shape", () => {
   }
 });
 
+test("the input step is never under 16 px, so iOS Safari never zooms into a field", () => {
+  for (const [mode, tokens] of Object.entries(built.flat)) {
+    const t = tokens["font.step.input"];
+    assert.ok(t, `${mode}: font.step.input is missing`);
+    assert.equal(t.value.unit, "px", `${mode}: font.step.input is in px`);
+    for (const size of [t.value.value, t.ext.max?.value ?? t.value.value]) assert.ok(size >= 16, `${mode}: font.step.input is ${size} px`);
+  }
+});
+
 test("every color fits sRGB, and every P3 value fits Display P3", () => {
   const bad = gamut().filter((g) => !g.srgb || !g.p3);
   assert.deepEqual(bad, []);
