@@ -9,7 +9,7 @@
 [![license: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![try it: in your browser](https://img.shields.io/badge/try%20it-in%20your%20browser-b6f259.svg)](https://typeshi.tickerz.com/play)
 
-**lock in fn.** A joke language that really works: slang over Rust that compiles to real Solana programs (Anchor 1.2). `rug!()` is a compile error.
+**lock in fn.** A language for code that moves money. Slang over Rust that compiles to plain Solana programs (Anchor 1.2), and refuses to compile the bugs that drain them: an instruction that lets anyone write an account with an owner is a compile error, with the fix and the exploit it prevents. `rug!()` is still a compile error too.
 
 **[Try it in your browser](https://typeshi.tickerz.com/play)** · **[Take the tour](https://typeshi.tickerz.com/tour)** (25 lessons, no install) · [Keywords](#keywords) · [Contributing](CONTRIBUTING.md)
 
@@ -77,6 +77,25 @@ pub mod gm_counter {
 ```
 
 The generated `.rs` is committed next to every example [`.shi`](examples/trenches/programs/print_feed/src/lib.shi), so you can read what every keyword does. Don't edit it. Nobody can edit it.
+
+## Checks that guard money
+
+These are not jokes. Each one is a bug class that has drained real programs, and each has a stable code:
+
+```text
+error[SHI001]: anyone can write `vault`: `vault.cabal` is never checked against the `cabal` signing.
+  --> lib.shi:11:9
+   |
+11 |         vault: Account<Vault>,
+   |         ^^^^^ any signer passes for `cabal` here
+   = help: add `has_one = cabal` to `vault`'s #[account(...)], or `public` if anyone may write it
+```
+
+| code | refuses | the bug class has cost |
+|---|---|---|
+| [`SHI001`](docs/checks/SHI001.md) | an instruction that can write an account with an owner (`cabal: Pubkey`, `authority: Pubkey`, ...) when nothing ties it to a signer, directly or through another account | Cashio, $52.8M (2022) |
+
+`typeshi explain SHI001` prints the page: what it catches, the fix, what it has cost and what it doesn't catch. Every example on those pages is a test. When anyone really may write an account (a deposit, a public counter), mark it `public` and typeshi lets it through, on purpose.
 
 ## The compiler has opinions
 
@@ -181,6 +200,7 @@ Also: every successful build prints a fake market cap that is down since you sta
 | `#[tokenmaxx]` / `#[vc_backed]` | logs stripped / locked for 4 years (and slower) |
 | `ser` / `exit_liquidity` / `cabal` / `anon` / `kol` | cap_table accounts, typed for you: caller (mut signer), payer (mut signer), admin (signer), anyone (signer), fee receiver (mut). Also `system_program`, `token_program` |
 | `rent_free` / `golden_parachute = x` / `graduate = n` | `init` / `close = x` / `realloc = n` |
+| `public` (in `#[account(...)]`) | nothing: anyone may write this account, on purpose. Without it, an owned account no signer is tied to fails with SHI001 |
 | `per_my_last_email!(feed.n)` / `mark_to_market!(feed.n = v)` | read / write `ctx.accounts.feed.n` |
 | `number_go_up!(x, n)` / `aura_farm!(x, n)` / `ascend!(x)` | checked add / add and log `+n aura` / bump a layout version |
 | `trust_me_bro!` / `funds_are_safu!` / `margin_call!` / `fren!(k in list)` | `require!` / `require!` (0x3) / fails when true (0x2) / allowlist |

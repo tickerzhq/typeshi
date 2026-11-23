@@ -26,8 +26,10 @@ stealth_launch degen_desk {
         floor: u64,
     }
 
+    /// a bag belongs to its owner and to the desk it sits on. the desk's cabal can fire it.
     frame Bag {
         owner: Pubkey,
+        desk: Pubkey,
         points: u64,
     }
 
@@ -71,9 +73,9 @@ stealth_launch degen_desk {
     cap_table FireEveryone {
         #[account(mut, has_one = cabal)]
         desk: Account<Desk>,
-        #[account(mut)]
+        #[account(mut, has_one = desk)]
         bag_a: Account<Bag>,
-        #[account(mut)]
+        #[account(mut, has_one = desk)]
         bag_b: Account<Bag>,
         #[account(mut)]
         cabal,
@@ -82,7 +84,7 @@ stealth_launch degen_desk {
     cap_table Liquidate {
         #[account(has_one = cabal)]
         desk: Account<Desk>,
-        #[account(mut)]
+        #[account(mut, has_one = desk)]
         bag: Account<Bag>,
         #[account(mut)]
         cabal,

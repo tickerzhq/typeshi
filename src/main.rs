@@ -24,6 +24,7 @@ usage:
   typeshi test [dir]       build, then `cargo test`, then a verdict
   typeshi check [dir]      typeshi's own checks only. no anchor, no writes. fast, for CI
   typeshi expand <file>    print the Rust a .shi file turns into
+  typeshi explain [code]   what a check catches, the exploit behind it, the fix (e.g. SHI001)
   typeshi fud [dir]        a roast of your code (also: typeshi --fud)
   typeshi wen moon         answers the question
 
@@ -195,6 +196,7 @@ fn run() -> i32 {
                 NGMI
             }
         },
+        "explain" => cmd_explain(pos.get(1).map(|s| s.as_str())),
         "fud" => cmd_fud(&out, dir.to_str().unwrap_or(".")),
         "wen" if pos.get(1).map(|s| s == "moon").unwrap_or(false) => {
             println!("{}", typeshi::wen_moon());
@@ -659,11 +661,17 @@ fn parse_cu(line: &str) -> Option<u64> {
 fn cmd_check(out: &Out, dir: &Path, flags: &Flags) -> i32 {
     let color = stderr_color(out);
     let (mut errors, mut warnings) = (0usize, 0usize);
+    let mut codes: Vec<&'static str> = vec![];
     let mut report = |file: &str, src: &str, d: &typeshi::Diag| {
         if d.is_error() {
             errors += 1;
         } else {
             warnings += 1;
+        }
+        if let Some(c) = d.code {
+            if !codes.contains(&c) {
+                codes.push(c);
+            }
         }
         if flags.json {
             println!("{}", d.to_json(file));
@@ -759,10 +767,40 @@ fn cmd_check(out: &Out, dir: &Path, flags: &Flags) -> i32 {
         n(errors, "error"),
         n(warnings, "warning")
     ));
+    if !codes.is_empty() {
+        let list: Vec<String> = codes.iter().map(|c| format!("`typeshi explain {c}`")).collect();
+        eprintln!(
+            "these guard real money. what each one catches and why: {}",
+            list.join(", ")
+        );
+    }
     if errors > 0 {
         eprintln!("{}", out.paint("1;31", banter::escalation(1)));
     }
     out.verdict(errors == 0)
+}
+
+/// `typeshi explain SHI001`: the check's page, as text. With no code, every check.
+fn cmd_explain(code: Option<&str>) -> i32 {
+    match code {
+        None => {
+            println!("the checks that guard money. `typeshi explain <code>` for one.\n");
+            for c in typeshi::guard::CHECKS {
+                println!("  {}  {}", c.code, c.title);
+            }
+            WAGMI
+        }
+        Some(code) => match typeshi::guard::explain(code) {
+            Some(c) => {
+                print!("{}", c.doc);
+                WAGMI
+            }
+            None => {
+                eprintln!("error: no check `{code}`. `typeshi explain` lists them.");
+                NGMI
+            }
+        },
+    }
 }
 
 fn cmd_new(out: &Out, name: &str) -> i32 {

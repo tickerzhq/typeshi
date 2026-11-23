@@ -199,8 +199,10 @@ stealth_launch __NAME__ {
         system_program,
     }
 
+    /// anyone can say gm, so the counter is `public`: typeshi refuses a write that no signer
+    /// owns unless you say it's on purpose (SHI001).
     cap_table Gm {
-        #[account(mut, seeds = [b"counter"], bump)]
+        #[account(mut, public, seeds = [b"counter"], bump)]
         counter: Account<Counter>,
         anon,
     }
@@ -212,7 +214,7 @@ stealth_launch __NAME__ {
         were_so_back!()
     }
 
-    /// say gm. number go up.
+    /// say gm. number go up. anyone can.
     lock_in fn gm(ctx) -> W {
         number_go_up!(counter.gms);
         aura_farm!(counter.aura, 10);

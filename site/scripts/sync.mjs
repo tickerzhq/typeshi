@@ -53,6 +53,7 @@ const examples = [
   { id: "gm_counter", title: "gm counter", blurb: "what `typeshi new` gives you. counts gms, farms aura.", source: starter },
   { id: "print_feed", title: "print feed", blurb: "an append-only feed. prints are forever.", file: "examples/trenches/programs/print_feed/src/lib.shi" },
   { id: "degen_desk", title: "degen desk", blurb: "every keyword in one program. a toy. do not run a desk on it.", file: "examples/trenches/programs/degen_desk/src/lib.shi" },
+  { id: "open_vault", title: "open vault", blurb: "anyone can drain it. typeshi refuses (SHI001).", file: "tests/fixtures/open_vault.shi" },
   { id: "rug", title: "rug", blurb: "a banned move. it does not compile.", file: "tests/fixtures/rug.shi" },
   { id: "edit_a_print", title: "edit a print", blurb: "#[on_god] means immutable. nobody can edit it.", file: "tests/fixtures/edit_a_print.shi" },
   { id: "no_disclaimer", title: "no disclaimer", blurb: "moves money without saying `// not financial advice`.", file: "tests/fixtures/no_disclaimer.shi" },

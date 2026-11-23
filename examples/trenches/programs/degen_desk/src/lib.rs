@@ -20,10 +20,12 @@ pub struct Desk {
     pub ath: u64,
     pub floor: u64,
 }
+/// a bag belongs to its owner and to the desk it sits on. the desk's cabal can fire it.
 #[account]
 #[derive(InitSpace)]
 pub struct Bag {
     pub owner: Pubkey,
+    pub desk: Pubkey,
     pub points: u64,
 }
 #[derive(Accounts)]
@@ -83,9 +85,9 @@ pub struct Grow<'info> {
 pub struct FireEveryone<'info> {
     #[account(mut, has_one = cabal)]
     pub desk: Account<'info, Desk>,
-    #[account(mut)]
+    #[account(mut, has_one = desk)]
     pub bag_a: Account<'info, Bag>,
-    #[account(mut)]
+    #[account(mut, has_one = desk)]
     pub bag_b: Account<'info, Bag>,
     #[account(mut)]
     pub cabal: Signer<'info>,
@@ -94,7 +96,7 @@ pub struct FireEveryone<'info> {
 pub struct Liquidate<'info> {
     #[account(has_one = cabal)]
     pub desk: Account<'info, Desk>,
-    #[account(mut)]
+    #[account(mut, has_one = desk)]
     pub bag: Account<'info, Bag>,
     #[account(mut)]
     pub cabal: Signer<'info>,
