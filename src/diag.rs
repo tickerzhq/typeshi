@@ -20,6 +20,11 @@ pub struct Diag {
     pub width: usize,
     /// The punchline under the carets.
     pub label: String,
+    /// A stable code for the checks that guard real money, e.g. `SHI001`. `typeshi explain <code>`
+    /// prints what it catches, the exploit behind it and the fix.
+    pub code: Option<&'static str>,
+    /// How to fix it, printed as `= help:` under the snippet.
+    pub help: Option<String>,
 }
 
 impl Diag {
@@ -31,6 +36,8 @@ impl Diag {
             col,
             width: width.max(1),
             label: label.into(),
+            code: None,
+            help: None,
         }
     }
 
@@ -42,7 +49,21 @@ impl Diag {
             col,
             width: width.max(1),
             label: label.into(),
+            code: None,
+            help: None,
         }
+    }
+
+    /// Tags this message with a stable check code.
+    pub fn with_code(mut self, code: &'static str) -> Self {
+        self.code = Some(code);
+        self
+    }
+
+    /// Adds the fix, printed as `= help:`.
+    pub fn with_help(mut self, help: impl Into<String>) -> Self {
+        self.help = Some(help.into());
+        self
     }
 
     pub fn is_error(&self) -> bool {
@@ -64,10 +85,14 @@ impl Diag {
             Level::Error => ("error", p.red),
             Level::Warning => ("warning", p.yellow),
         };
-        let mut out = format!("{tint}{word}{}{}: {}{}\n", p.reset, p.bold, self.msg, p.reset);
+        let code = self.code.map(|c| format!("[{c}]")).unwrap_or_default();
+        let mut out = format!("{tint}{word}{code}{}{}: {}{}\n", p.reset, p.bold, self.msg, p.reset);
         if self.line == 0 {
             if !self.label.is_empty() {
                 let _ = writeln!(out, "  {}={} {}", p.blue, p.reset, self.label);
+            }
+            if let Some(help) = &self.help {
+                let _ = writeln!(out, "  {}={} {}help{}: {help}", p.blue, p.reset, p.bold, p.reset);
             }
             return out;
         }
@@ -81,6 +106,10 @@ impl Diag {
             self.level,
             color,
         ));
+        if let Some(help) = &self.help {
+            let pad = " ".repeat(self.line.to_string().len());
+            let _ = writeln!(out, "{pad} {}={} {}help{}: {help}", p.blue, p.reset, p.bold, p.reset);
+        }
         out.push('\n');
         out
     }
@@ -107,8 +136,10 @@ impl Diag {
                 (self.col + 1 + self.width).to_string(),
             )
         };
+        let code = self.code.map(json_str).unwrap_or_else(|| "null".to_string());
+        let help = self.help.as_deref().map(json_str).unwrap_or_else(|| "null".to_string());
         format!(
-            "{{\"severity\":\"{severity}\",\"message\":{},\"label\":{},\"file\":{file},\"line\":{line},\"column\":{col},\"end_column\":{end}}}",
+            "{{\"severity\":\"{severity}\",\"code\":{code},\"message\":{},\"label\":{},\"help\":{help},\"file\":{file},\"line\":{line},\"column\":{col},\"end_column\":{end}}}",
             json_str(&self.msg),
             json_str(&self.label),
         )
