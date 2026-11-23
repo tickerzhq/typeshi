@@ -54,6 +54,7 @@
   display: flex;
   align-items: center;
   gap: var(--space-3xs);
+  min-width: 0;
 }
 .nav a,
 .theme {
@@ -91,18 +92,20 @@
   display: none;
 }
 
-/* The header fits its own width, down to 320 px: words give way before anything overflows. */
-@container header (max-width: 719px) {
+/* The header fits its own width, down to 320 px: words give way before anything overflows.
+   Breakpoints are in em, not px, so they move with the text: someone with larger system text gets
+   the narrower header sooner instead of a page that scrolls sideways. (16 px text: 45em = 720 px.) */
+@container header (max-width: 44.94em) {
   .wide {
     display: none !important;
   }
 }
-@container header (max-width: 479px) {
+@container header (max-width: 29.94em) {
   .ver {
     display: none;
   }
 }
-@container header (max-width: 399px) {
+@container header (max-width: 24.94em) {
   .long {
     display: none;
   }
@@ -111,6 +114,25 @@
   }
   .icon {
     display: block;
+  }
+}
+/* The narrowest phones: GitHub is in the footer too, so it leaves the header first.
+   (.nav .gh, not .gh: .nav a sets display and would win.) */
+@container header (max-width: 22.44em) {
+  .nav .gh {
+    display: none;
+  }
+}
+/* Big system text on a small phone: the name gives way and the fn tile carries the mark alone. The
+   name stays in the link for screen readers. */
+@container header (max-width: 19.94em) {
+  .name {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
   }
 }
 

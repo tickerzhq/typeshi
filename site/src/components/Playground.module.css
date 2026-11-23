@@ -54,14 +54,6 @@
 .left {
   flex: 1 1 240px;
 }
-.blurb {
-  color: var(--text-tertiary);
-  font-size: var(--step-small);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  min-width: 0;
-}
 
 .select {
   appearance: none;
@@ -266,9 +258,6 @@
   }
   .pg > .panes {
     flex: none;
-  }
-  .blurb {
-    display: none;
   }
   .left {
     flex-basis: 100%;

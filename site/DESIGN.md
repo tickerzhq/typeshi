@@ -18,7 +18,7 @@ Short on purpose: five beats of different weight, then the footer. Everything lo
 1. **Hero.** `lock in fn.` in Geist Sans 700 at the display step, with `fn` set as code in lime (Bun sets
    its one word, *fast*, in its one color). One lede with the punchline, `rug!()` in error red. One button.
 2. **The stage.** The real playground, full width, right under the headline, lit from behind by a soft
-   lime light (Linear puts its real product there). Three facts under it.
+   lime light (Linear puts its real product there). Nothing under it: the playground speaks for itself.
 3. **The band.** A raised band (Gleam and Deno use bands for rhythm) with a two-tone statement (Linear's:
    the claim in full ink, the rest quieter) and three proofs (Roc's three, Gleam's claim beside its
    sample). Each proof is a claim, real compiler output and one link out: the `rug!` error (red), lines of
@@ -95,6 +95,7 @@ home's.
 |---|---|
 | `/` | the home, above |
 | `/play` | the playground, full screen |
+| `/p/<code>` | a shared program: the playground opened on it. Share makes these (the program is in the path, compressed), so the server can run the compiler and the link preview shows the program's first error as the CLI prints it, or its first lines and wagmi. Rendered per request, the card cached at the edge, kept out of search. Old `/play#code=` links still open |
 | `/tour`, `/tour/<lesson>` | the tour index and its 25 lessons |
 | `/opinions` | banned moves (each with a try-it link), three real error transcripts, the escalation, codes 0x1 to 0x6, the confessions |
 | `/keywords` | the keyword table with search, and how the compiler works |
@@ -214,13 +215,29 @@ and link line up with their neighbours.
 
 Components fit their box, not the viewport: the header and the playground use container queries
 (`container: header`, `container: playground`). The header gives way in order (the section links, then
-the version, then the word ground and the GitHub label) so it fits at 320 px. On a touch screen its
-targets are 44 px, so below 400 px its gaps close up: with them, the row was 17 px too wide at 320 px and
-a phone widened the page by 1 px to hold it. Nothing scrolls sideways from 320 px up
-(`tests/system.spec.ts`), and on a touch screen at 320, 375, 390 and 430 px no page does, on any route or
+the version, then the word ground and the GitHub label, then the GitHub icon, which is in the footer
+too, then the name beside the `fn` tile) so it fits at 320 px. Its breakpoints are in em, so they move
+with the reader's text size. Long words wrap (the hero, lesson names like `mark_to_market` in the
+pager). On a touch screen its targets are 44 px, so below 400 px its gaps close up: with them, the row
+was 17 px too wide at 320 px and a phone widened the page by 1 px to hold it. Nothing scrolls sideways
+from 320 px up (`tests/system.spec.ts`), with 125% and 150% system text (`tests/layout.spec.ts`, which
+names what sticks out), and on a touch screen at 320, 375, 390 and 430 px no page does, on any route or
 lesson, before or after you type, build, switch tabs or pick an example (`tests/phone.spec.ts`). That
-test also fails when the phone grows its layout viewport to hold a page, which a plain `scrollWidth` check
-misses.
+test also fails when the phone grows its layout viewport to hold a page, which a plain `scrollWidth`
+check misses.
+
+## Copy
+
+Every line earns its place. No all caps anywhere; headings are lowercase, prose is sentence case. Cut any
+sentence that repeats a heading, a label, a count already on screen, or another line on the page, and any
+reassurance that only describes the site. Counts, real compiler output, links and the install command
+stay. `tests/share.spec.ts` fails if a page renders all-caps text outside code.
+
+## Analytics
+
+Vercel Web Analytics and Speed Insights, on Vercel only (no cookies, nothing to consent to). Events:
+`build` (with `ok`), `share`, `example`, `lesson_passed` (with the lesson), `solution_shown`,
+`tour_finished`. Both have to be turned on in the Vercel project.
 
 ## Color with a job
 

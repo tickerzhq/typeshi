@@ -17,7 +17,7 @@ export default function KeywordsPage() {
     <>
       <div className="wrap">
         <PageHead title="keywords.">
-          Every word, and the Rust or Anchor it becomes. Straight from the README, {content.keywords.length} rows.
+          Every word, and the Rust or Anchor it becomes.
         </PageHead>
         <Keywords rows={content.keywords} />
 

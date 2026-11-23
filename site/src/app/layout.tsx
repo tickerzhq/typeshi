@@ -1,4 +1,5 @@
 import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import type { Metadata, Viewport } from "next";
 import Link from "next/link";
 import ThemeToggle from "@/components/ThemeToggle";
@@ -69,7 +70,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <Link href="/keywords" className={s.wide}>
                 keywords
               </Link>
-              <a href="https://github.com/tickerzhq/typeshi" aria-label="github">
+              <a href="https://github.com/tickerzhq/typeshi" aria-label="github" className={s.gh}>
                 <GitHubMark />
                 <span className={s.long}>github</span>
               </a>
@@ -78,7 +79,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </div>
         </header>
         <main id="main">{children}</main>
-        {process.env.VERCEL ? <Analytics /> : null}
+        {process.env.VERCEL ? (
+          <>
+            <Analytics />
+            <SpeedInsights />
+          </>
+        ) : null}
       </body>
     </html>
   );
