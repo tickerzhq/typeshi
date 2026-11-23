@@ -1,4 +1,4 @@
-# typeshi.dev: design
+# typeshi.tickerz.com: design
 
 The source of truth for how the site looks and why. Change it in the same pull request as the look.
 For the brand (the `fn` mark, the compiler's own output, the voice) see [`brand/README.md`](../brand/README.md).
@@ -174,8 +174,10 @@ Nov 22 2026 mono did every job and the site read as a terminal printout; Vercel'
 Biome all keep mono for what you type.
 
 A fluid scale in the manner of [Utopia](https://utopia.fyi/blog/designing-with-fluid-type-scales/): each
-step has a size at 320 px and at 1240 px, and `clamp()` moves between them. Ten steps, named for
-their job:
+step has a size at 320 px and at 1240 px, and `clamp()` moves between them. The three biggest also have
+a `fit`, the most of the screen's width they may take (title 11vw, heading 13vw, display 19vw), so with
+large system text a word still fits on a phone. It never binds at the default text size. Ten steps, named
+for their job:
 
 | step | 320 to 1240 px | for |
 |---|---|---|
@@ -217,11 +219,14 @@ Components fit their box, not the viewport: the header and the playground use co
 (`container: header`, `container: playground`). The header gives way in order (the section links, then
 the version, then the word ground and the GitHub label, then the GitHub icon, which is in the footer
 too, then the name beside the `fn` tile) so it fits at 320 px. Its breakpoints are in em, so they move
-with the reader's text size. Long words wrap (the hero, lesson names like `mark_to_market` in the
-pager). On a touch screen its targets are 44 px, so below 400 px its gaps close up: with them, the row
+with the reader's text size. Long words wrap: the body sets `overflow-wrap: break-word`, so a word longer
+than its line (a lesson name like `golden_parachute`, a move like `deploy_on_friday!`) breaks where it
+must and nowhere else, and a one-column grid is `minmax(0, 1fr)`, never `auto`, so its longest word can't
+widen it. Buttons, the lesson tabs and a chapter's progress meter wrap to a second line before they leave
+the screen. On a touch screen its targets are 44 px, so below 400 px its gaps close up: with them, the row
 was 17 px too wide at 320 px and a phone widened the page by 1 px to hold it. Nothing scrolls sideways
-from 320 px up (`tests/system.spec.ts`), with 125% and 150% system text (`tests/layout.spec.ts`, which
-names what sticks out), and on a touch screen at 320, 375, 390 and 430 px no page does, on any route or
+from 320 px up (`tests/system.spec.ts`), on every page and every lesson with 125%, 150% and 200% system
+text (`tests/layout.spec.ts`, which names what sticks out, text included), and on a touch screen at 320, 375, 390 and 430 px no page does, on any route or
 lesson, before or after you type, build, switch tabs or pick an example (`tests/phone.spec.ts`). That
 test also fails when the phone grows its layout viewport to hold a page, which a plain `scrollWidth`
 check misses.
@@ -300,6 +305,16 @@ Rust it becomes, the banned moves, the fixed error codes, a whole program and th
 
 ## Changes
 
+- **Nov 23 2026, large text**: with 200% system text (Android's largest) on a 320 px phone, 30 pages
+  scrolled sideways, and three lessons did at 150%: one-word names like `golden_parachute` didn't fit
+  their column, buttons didn't wrap, and the lesson tabs, the playground's buttons and a chapter's meter
+  stayed on one row. The layout test checked one lesson and stopped at 150%, so it never saw them. It now
+  checks every page and lesson up to 200%, 34 pages at 15 sizes. Making it fit wasn't enough: words broke
+  mid-word (`breaki` / `ng`), so the display, heading and title steps gained a `fit`, the most of the
+  screen's width they may take (19, 13 and 11vw). It never binds at the default text size on any phone.
+  Names break after an underscore (`golden_` / `parachute`, `src/lib/wbr.tsx`), the home's doors stack
+  their number above the name, and the skip link hides by its own height, since its edge showed over the
+  header. The site's home is https://typeshi.tickerz.com.
 - **Nov 22 2026, no zoom on a phone**: the site scrolled sideways on a phone because iOS Safari zoomed in
   when you tapped the editor (12.6 px) or the example picker (14 px). On a touch screen every field is now
   `--step-input`, a new token at 16 px; a mouse keeps the old sizes. Fixed on the way: at 320 px on a touch

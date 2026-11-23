@@ -40,6 +40,9 @@
   display: grid;
   grid-row: span 3;
   grid-template-rows: subgrid;
+  /* minmax(0, 1fr), not auto: a long move like deploy_on_friday! wraps inside the cell instead of
+     widening it past the screen. */
+  grid-template-columns: minmax(0, 1fr);
   row-gap: var(--space-2xs);
   padding: var(--space-s);
   border-right: 1px solid var(--border-default);

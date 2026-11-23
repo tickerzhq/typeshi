@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import Inline from "./Inline";
 import { doneSet } from "./TourLesson";
 import s from "./TourIndex.module.css";
+import { wbr } from "@/lib/wbr";
 
 type Item = { n: number; slug: string; chapter: string; title: string; blurb: string };
 
@@ -46,7 +47,7 @@ export default function TourIndex({ lessons }: { lessons: Item[] }) {
                   <Link href={`/tour/${l.slug}`} className={s.item} data-done={done.has(l.slug)}>
                     <span className={s.n}>{done.has(l.slug) ? "✓" : String(l.n).padStart(2, "0")}</span>
                     <span className={s.body}>
-                      <span className={s.title}>{l.title}</span>
+                      <span className={s.title}>{wbr(l.title)}</span>
                       <span className={s.blurb}>
                         <Inline text={l.blurb} />
                       </span>

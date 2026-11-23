@@ -103,7 +103,11 @@ function dimension(t, viewport) {
   const intercept = min - slope * viewport.min;
   const lo = Math.min(min, max);
   const hi = Math.max(min, max);
-  return `clamp(${rem(lo)}, ${num(intercept / 16)}rem + ${num(slope * 100)}vw, ${rem(hi)})`;
+  const fluid = `clamp(${rem(lo)}, ${num(intercept / 16)}rem + ${num(slope * 100)}vw, ${rem(hi)})`;
+  // fit: the most of the screen's width this size may take. It never binds at the default text size;
+  // with large system text or a zoomed phone it stops display type outgrowing the screen.
+  const fit = t.ext.fit;
+  return fit ? `min(${fluid}, ${fit.value}${fit.unit})` : fluid;
 }
 
 function literal(t) {
