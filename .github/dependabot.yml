@@ -1,9 +1,13 @@
+# Cooldown: a version update is only offered once the release is 7 days old (GitHub's default is 3 days), so a bad or
+# hijacked release has time to be pulled first. It applies to version updates only, never to security updates.
 version: 2
 updates:
   - package-ecosystem: cargo
     directory: /
     schedule:
       interval: weekly
+    cooldown:
+      default-days: 7
     groups:
       cargo-minor-and-patch:
         update-types: [minor, patch]
@@ -12,6 +16,8 @@ updates:
     directory: /
     schedule:
       interval: weekly
+    cooldown:
+      default-days: 7
     groups:
       actions-minor-and-patch:
         update-types: [minor, patch]
@@ -20,6 +26,8 @@ updates:
     directory: /site/wasm
     schedule:
       interval: weekly
+    cooldown:
+      default-days: 7
     groups:
       wasm-minor-and-patch:
         update-types: [minor, patch]
@@ -28,6 +36,8 @@ updates:
     directory: /site
     schedule:
       interval: weekly
+    cooldown:
+      default-days: 7
     groups:
       codemirror:
         patterns: ["@codemirror/*", "@lezer/*"]
@@ -40,6 +50,8 @@ updates:
     directory: /brand
     schedule:
       interval: weekly
+    cooldown:
+      default-days: 7
     groups:
       brand-minor-and-patch:
         update-types: [minor, patch]
