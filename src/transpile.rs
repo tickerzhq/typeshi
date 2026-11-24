@@ -183,7 +183,8 @@ fn loc(span: Span) -> (usize, usize) {
 
 fn toks_of(s: &str) -> Vec<TokenTree> {
     s.parse::<TokenStream>()
-        .unwrap_or_else(|e| panic!("typeshi bug: template does not tokenize: {e}: {s}"))
+        // the template is built from the user's program, so it stays out of the message
+        .unwrap_or_else(|e| panic!("typeshi bug: a generated template does not tokenize: {e}"))
         .into_iter()
         .collect()
 }
@@ -1992,17 +1993,17 @@ impl<'a> Cx<'a> {
                     self.rw_s(amount, fx),
                     self.acc(auth, fx),
                 );
-                let accounts = format!(
+                let transfer = format!(
                     "anchor_spl::token::Transfer {{ from: {f}.to_account_info(), to: {t}.to_account_info(), authority: {au}.to_account_info() }}"
                 );
                 match account {
                     Some(acct) if acct.signer => {
-                        format!("anchor_spl::token::transfer(CpiContext::new(anchor_spl::token::ID, {accounts}), {a})?")
+                        format!("anchor_spl::token::transfer(CpiContext::new(anchor_spl::token::ID, {transfer}), {a})?")
                     }
                     Some(acct) if acct.seeds.is_some() => {
                         let seeds = signer_seeds(acct.seeds.as_deref().unwrap_or_default(), &names);
                         format!(
-                            "anchor_spl::token::transfer(CpiContext::new_with_signer(anchor_spl::token::ID, {accounts}, \
+                            "anchor_spl::token::transfer(CpiContext::new_with_signer(anchor_spl::token::ID, {transfer}, \
                              &[&[{seeds}, &[ctx.bumps.{auth_name}]]]), {a})?"
                         )
                     }
@@ -2214,12 +2215,12 @@ impl<'a> Cx<'a> {
 
 /// A PDA's `seeds = [...]` from its cap_table, rewritten to run inside the instruction: an account
 /// of the same cap_table (`ser.key()`) becomes `ctx.accounts.ser.key()`.
-fn signer_seeds(seeds: &[TokenTree], accounts: &[String]) -> String {
+fn signer_seeds(seeds: &[TokenTree], fields: &[String]) -> String {
     let mut out = vec![];
     for (i, t) in seeds.iter().enumerate() {
         let after_dot = i > 0 && is_punct(seeds.get(i - 1), '.');
         if let TokenTree::Ident(id) = t {
-            if !after_dot && accounts.iter().any(|a| id == a) {
+            if !after_dot && fields.iter().any(|a| id == a) {
                 out.push(format!("ctx.accounts.{id}"));
                 continue;
             }

@@ -247,5 +247,6 @@ test("/built is linked from the footer and names what the site really ships", as
   await expect(page).toHaveURL(/\/built$/);
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("how it's built.");
   await expect(page.getByText(`typeshi v${content.version}`)).toBeVisible();
-  await expect(page.getByText(`${content.tour.length + 6} pages`)).toBeVisible();
+  // the reading pages (home, play, tour, exploits, opinions, keywords, built) and every lesson
+  await expect(page.getByText(`${content.tour.length + 7} pages`)).toBeVisible();
 });
