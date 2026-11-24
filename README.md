@@ -76,7 +76,7 @@ pub mod gm_counter {
 }
 ```
 
-The generated `.rs` is committed next to every example [`.shi`](examples/trenches/programs/print_feed/src/lib.shi), so you can read what every keyword does. Don't edit it. Nobody can edit it.
+The generated `.rs` is committed next to every example [`.shi`](examples/trenches/programs/print_feed/src/lib.shi), so you can read what every keyword does, and CI compiles all of it against the real Anchor 1.2 crates. Don't edit it. Nobody can edit it. [`vault.shi`](examples/trenches/programs/vault/src/lib.shi) is a USDC vault with a fee, where every instruction's money adds up.
 
 ## Checks that guard money
 

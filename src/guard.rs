@@ -6,8 +6,8 @@
 //! tested: its failing example must raise the code and its fixed example must compile clean.
 
 use crate::diag::Diag;
-use proc_macro2::{Delimiter, Spacing, Span, TokenTree};
-use std::collections::{BTreeMap, HashMap, HashSet};
+use proc_macro2::{Delimiter, Spacing, Span, TokenStream, TokenTree};
+use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
 
 /// One account in a `cap_table`, as the checks see it.
 #[derive(Clone, Debug)]
@@ -665,17 +665,92 @@ fn render(l: &Linear) -> String {
     out
 }
 
-/// One instruction's money, per ticker.
+/// What typeshi can't follow in one instruction.
 #[derive(Default)]
 struct Flows {
-    /// how much balances of each ticker go up (net)
-    ledger: BTreeMap<String, Linear>,
-    /// money in (+) and out (-) of the program, minted (+) and burned (-)
-    moved: BTreeMap<String, Linear>,
-    /// tickers whose changes typeshi can't follow in this instruction
+    /// tickers changed where typeshi can't sum them (a loop, a `match`, a closure)
     unknown: HashSet<String>,
     /// a transfer whose amount has no ticker: nothing can be checked
     untyped_move: bool,
+}
+
+/// An instruction's money, in order: an amount moving, or a branch with one list of steps per arm.
+#[derive(Clone)]
+enum Step {
+    /// `ledger`: how much balances of `ticker` go up. `moved`: money in (+) or out (-) of the
+    /// program, minted (+) or burned (-).
+    Effect {
+        ticker: String,
+        ledger: Linear,
+        moved: Linear,
+    },
+    /// `bull c { } bear { }`: each arm with what it takes (`` `c` ``, ``not `c` ``).
+    Choice(Vec<(String, Vec<Step>)>),
+}
+
+/// One way through an instruction, and what it does to each ticker.
+#[derive(Clone, Default)]
+struct Path {
+    when: Vec<String>,
+    ledger: BTreeMap<String, Linear>,
+    moved: BTreeMap<String, Linear>,
+}
+
+/// More ways through one instruction than this and branches are not followed.
+const MAX_PATHS: usize = 64;
+
+/// Every way through `steps`, starting from `from`, or None past MAX_PATHS.
+fn walk(steps: &[Step], from: Vec<Path>) -> Option<Vec<Path>> {
+    let mut paths = from;
+    for step in steps {
+        match step {
+            Step::Effect { ticker, ledger, moved } => {
+                for p in &mut paths {
+                    add_into(p.ledger.entry(ticker.clone()).or_default(), ledger, 1);
+                    add_into(p.moved.entry(ticker.clone()).or_default(), moved, 1);
+                }
+            }
+            Step::Choice(arms) => {
+                let mut next = vec![];
+                for (when, body) in arms {
+                    let start = paths.iter().cloned().map(|mut p| {
+                        p.when.push(when.clone());
+                        p
+                    });
+                    next.extend(walk(body, start.collect())?);
+                    if next.len() > MAX_PATHS {
+                        return None;
+                    }
+                }
+                paths = next;
+            }
+        }
+    }
+    Some(paths)
+}
+
+/// The tickers a branch changes, for when there are too many ways through to follow.
+fn in_branches(steps: &[Step], inside: bool, out: &mut HashSet<String>) {
+    for step in steps {
+        match step {
+            Step::Effect { ticker, .. } if inside => {
+                out.insert(ticker.clone());
+            }
+            Step::Effect { .. } => {}
+            Step::Choice(arms) => arms.iter().for_each(|(_, body)| in_branches(body, true, out)),
+        }
+    }
+}
+
+fn is_brace(t: &TokenTree) -> bool {
+    matches!(t, TokenTree::Group(g) if g.delimiter() == Delimiter::Brace)
+}
+
+fn word(t: Option<&TokenTree>) -> String {
+    match t {
+        Some(TokenTree::Ident(i)) => i.to_string(),
+        _ => String::new(),
+    }
 }
 
 const MONEY_MACROS: [&str; 7] = [
@@ -789,9 +864,10 @@ impl Units<'_> {
         Some((acc.to_string(), field.to_string(), ticker))
     }
 
-    /// Collect an instruction body's money. Only statements at the top of the body are followed:
-    /// a change inside a branch or a loop makes that ticker unknown, and it is not checked.
-    fn flows(&self, t: &[TokenTree], table: &Table, top: bool, f: &mut Flows) {
+    /// Collect an instruction body's money as steps. `bull`/`bear` (and `if`/`else`) chains become
+    /// choices, so each way through is checked on its own. Money changed inside a loop, a `match`
+    /// or a closure can't be summed, so its ticker becomes unknown and is not checked.
+    fn flows(&self, t: &[TokenTree], table: &Table, path: bool, f: &mut Flows, steps: &mut Vec<Step>) {
         let account = |name: &str| table.accounts.iter().find(|a| a.name == name);
         let mut i = 0;
         while i < t.len() {
@@ -804,39 +880,105 @@ impl Units<'_> {
                 _ => None,
             };
             if let Some((m, args)) = mac {
-                let parts: Vec<Vec<TokenTree>> = {
-                    let mut v = vec![vec![]];
-                    for x in &args {
-                        if matches!(x, TokenTree::Punct(p) if p.as_char() == ',') {
-                            v.push(vec![]);
-                        } else {
-                            v.last_mut().unwrap().push(x.clone());
-                        }
-                    }
-                    v
-                };
-                self.record(&m, &parts, &args, &account, top, f);
+                self.record(&m, &args, &account, path, f, steps);
                 i += 3;
                 continue;
             }
+            let w = word(t.get(i));
+            if path && (w == "if" || w == "bull") {
+                if let Some((arms, next)) = self.branch(t, i, table, f) {
+                    steps.push(Step::Choice(arms));
+                    i = next;
+                    continue;
+                }
+            }
+            if matches!(w.as_str(), "for" | "while" | "loop" | "match") {
+                if let Some(k) = (i + 1..t.len()).find(|&k| is_brace(&t[k])) {
+                    self.flows(&t[i + 1..=k], table, false, f, &mut vec![]);
+                    i = k + 1;
+                    continue;
+                }
+            }
             if let TokenTree::Group(g) = &t[i] {
                 let inner: Vec<TokenTree> = g.stream().into_iter().collect();
-                // a brace block is a branch or a loop body: its money can't be summed with the rest
-                self.flows(&inner, table, top && g.delimiter() != Delimiter::Brace, f);
+                // `bundled! { }` runs once, in order; any other block (a closure, say) may not
+                let bundled = i >= 2 && word(t.get(i - 2)) == "bundled";
+                let keep = g.delimiter() != Delimiter::Brace || bundled;
+                self.flows(&inner, table, path && keep, f, steps);
             }
             i += 1;
+        }
+    }
+
+    /// `bull c { } bear bull d { } bear { }` (or `if`/`else`) starting at `t[i]`: each arm's steps,
+    /// and the index just past the chain. None when it isn't shaped like one.
+    #[allow(clippy::type_complexity)]
+    fn branch(
+        &self,
+        t: &[TokenTree],
+        i: usize,
+        table: &Table,
+        f: &mut Flows,
+    ) -> Option<(Vec<(String, Vec<Step>)>, usize)> {
+        let block = |g: &TokenTree, f: &mut Flows| {
+            let mut body = vec![];
+            if let TokenTree::Group(g) = g {
+                self.flows(&g.stream().into_iter().collect::<Vec<_>>(), table, true, f, &mut body);
+            }
+            body
+        };
+        let none_of = |conds: &[String]| match conds {
+            [c] => format!("not `{c}`"),
+            cs => format!(
+                "none of {}",
+                cs.iter().map(|c| format!("`{c}`")).collect::<Vec<_>>().join(", ")
+            ),
+        };
+        let mut arms = vec![];
+        let mut conds: Vec<String> = vec![];
+        let mut j = i + 1;
+        loop {
+            let k = (j..t.len()).find(|&k| is_brace(&t[k]))?;
+            let cond = t[j..k].iter().cloned().collect::<TokenStream>().to_string();
+            self.flows(&t[j..k], table, false, f, &mut vec![]);
+            arms.push((format!("`{cond}`"), block(&t[k], f)));
+            conds.push(cond);
+            j = k + 1;
+            if !matches!(word(t.get(j)).as_str(), "else" | "bear") {
+                arms.push((none_of(&conds), vec![]));
+                return Some((arms, j));
+            }
+            match t.get(j + 1) {
+                Some(TokenTree::Ident(w)) if w == "if" || w == "bull" => j += 2,
+                Some(g) if is_brace(g) => {
+                    arms.push((none_of(&conds), block(g, f)));
+                    return Some((arms, j + 2));
+                }
+                _ => return None,
+            }
         }
     }
 
     fn record<'t>(
         &self,
         m: &str,
-        parts: &[Vec<TokenTree>],
         args: &[TokenTree],
         account: &dyn Fn(&str) -> Option<&'t Account>,
-        top: bool,
+        path: bool,
         f: &mut Flows,
+        steps: &mut Vec<Step>,
     ) {
+        let parts: Vec<Vec<TokenTree>> = {
+            let mut v = vec![vec![]];
+            for x in args {
+                if matches!(x, TokenTree::Punct(p) if p.as_char() == ',') {
+                    v.push(vec![]);
+                } else {
+                    v.last_mut().unwrap().push(x.clone());
+                }
+            }
+            v
+        };
         let arrow = |p: &[TokenTree]| -> Option<(String, String)> {
             let k = p.iter().position(
                 |x| matches!(x, TokenTree::Punct(q) if q.as_char() == '=' && q.spacing() == Spacing::Joint),
@@ -847,18 +989,18 @@ impl Units<'_> {
             };
             Some((name(&p[..k])?, name(&p[k + 2..])?))
         };
-        let note = |ticker: String, ledger: Option<Linear>, moved: Option<Linear>, f: &mut Flows| {
-            if !top {
-                f.unknown.insert(ticker);
-                return;
-            }
-            if let Some(l) = ledger {
-                add_into(f.ledger.entry(ticker.clone()).or_default(), &l, 1);
-            }
-            if let Some(l) = moved {
-                add_into(f.moved.entry(ticker).or_default(), &l, 1);
-            }
-        };
+        let note =
+            |ticker: String, ledger: Option<Linear>, moved: Option<Linear>, f: &mut Flows, steps: &mut Vec<Step>| {
+                if !path {
+                    f.unknown.insert(ticker);
+                    return;
+                }
+                steps.push(Step::Effect {
+                    ticker,
+                    ledger: ledger.unwrap_or_default(),
+                    moved: moved.unwrap_or_default(),
+                });
+            };
         match m {
             "number_go_up" | "aura_farm" => {
                 if let Some((_, _, ticker)) = parts.first().and_then(|p| self.target(p)) {
@@ -866,7 +1008,7 @@ impl Units<'_> {
                         .get(1)
                         .map(|p| self.linear(p))
                         .unwrap_or_else(|| Linear::from([("1".into(), 1)]));
-                    note(ticker, Some(by), None, f);
+                    note(ticker, Some(by), None, f, steps);
                 }
             }
             "mark_to_market" => {
@@ -883,9 +1025,11 @@ impl Units<'_> {
                 match rhs.get(&me).copied() {
                     Some(1) => {
                         rhs.remove(&me);
-                        note(ticker, Some(rhs), None, f);
+                        note(ticker, Some(rhs), None, f, steps);
                     }
-                    None if account(&acc).map(|a| a.created).unwrap_or(false) => note(ticker, Some(rhs), None, f),
+                    None if account(&acc).map(|a| a.created).unwrap_or(false) => {
+                        note(ticker, Some(rhs), None, f, steps)
+                    }
                     _ => {
                         f.unknown.insert(ticker);
                     }
@@ -923,7 +1067,7 @@ impl Units<'_> {
                 if dir != 0 {
                     let mut l = Linear::new();
                     add_into(&mut l, &self.linear(amount), dir);
-                    note(unit.ticker, None, Some(l), f);
+                    note(unit.ticker, None, Some(l), f, steps);
                 }
             }
             "printer_go_brrr" | "lp_burned" => {
@@ -934,7 +1078,7 @@ impl Units<'_> {
                         &self.linear(&parts[1]),
                         if m == "printer_go_brrr" { 1 } else { -1 },
                     );
-                    note(unit.ticker, None, Some(l), f);
+                    note(unit.ticker, None, Some(l), f, steps);
                 }
             }
             _ => {}
@@ -951,30 +1095,54 @@ impl Units<'_> {
             .filter(|ty| self.tickers.contains_key(*ty))
             .collect();
         let mut f = Flows::default();
-        self.flows(body, table, true, &mut f);
+        let mut steps = vec![];
+        self.flows(body, table, true, &mut f, &mut steps);
         if f.untyped_move {
             return;
         }
-        let mut tickers: Vec<&String> = f.ledger.keys().chain(f.moved.keys()).collect();
-        tickers.sort();
-        tickers.dedup();
+        let paths = walk(&steps, vec![Path::default()]).unwrap_or_else(|| {
+            // too many ways through: check what happens outside the branches, and nothing inside
+            in_branches(&steps, false, &mut f.unknown);
+            let outside: Vec<Step> = steps
+                .iter()
+                .filter(|s| matches!(s, Step::Effect { .. }))
+                .cloned()
+                .collect();
+            walk(&outside, vec![Path::default()]).unwrap_or_default()
+        });
+        let tickers: BTreeSet<&String> = paths
+            .iter()
+            .flat_map(|p| p.ledger.keys().chain(p.moved.keys()))
+            .collect();
         for ticker in tickers {
             if f.unknown.contains(ticker) || !ledgers.contains(ticker) {
                 continue;
             }
-            let ledger = f.ledger.get(ticker).cloned().unwrap_or_default();
-            let moved = f.moved.get(ticker).cloned().unwrap_or_default();
-            let mut residual = ledger.clone();
-            add_into(&mut residual, &moved, -1);
-            if residual.is_empty() {
+            let failing: Vec<(&Path, Linear)> = paths
+                .iter()
+                .filter_map(|p| {
+                    let mut residual = p.ledger.get(ticker).cloned().unwrap_or_default();
+                    add_into(&mut residual, &p.moved.get(ticker).cloned().unwrap_or_default(), -1);
+                    (!residual.is_empty()).then_some((p, residual))
+                })
+                .collect();
+            let Some((p, residual)) = failing.first() else {
                 continue;
-            }
+            };
+            let ledger = p.ledger.get(ticker).cloned().unwrap_or_default();
+            let moved = p.moved.get(ticker).cloned().unwrap_or_default();
+            // name the way through only when some other way adds up
+            let when = if failing.len() < paths.len() && !p.when.is_empty() {
+                format!("when {}: ", p.when.join(" and "))
+            } else {
+                String::new()
+            };
             let all_pos = residual.values().all(|c| *c > 0);
             let all_neg = residual.values().all(|c| *c < 0);
-            let r = render(&residual);
+            let r = render(residual);
             let abs = {
                 let mut a = Linear::new();
-                add_into(&mut a, &residual, -1);
+                add_into(&mut a, residual, -1);
                 render(&a)
             };
             let paid_out_only = ledger.is_empty() && moved.values().all(|c| *c < 0);
@@ -1010,7 +1178,7 @@ impl Units<'_> {
                     col,
                     fn_name.chars().count(),
                     format!(
-                        "balances change by {}, money in or out is {}",
+                        "{when}balances change by {}, money in or out is {}",
                         render(&ledger),
                         render(&moved)
                     ),

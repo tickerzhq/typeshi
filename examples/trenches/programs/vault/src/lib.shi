@@ -1,0 +1,133 @@
+// vault.shi: a USDC vault with a fee, written in typeshi.
+// every amount has a unit, and every instruction's money adds up (SHI006).
+
+gm!("BeT1qRvekfsCJfhv4Hg6dftzqm95UabkdhnDXvpbVx7m");
+
+stealth_launch vault {
+    ticker USDC = 6;
+
+    /// the vault's books: who runs it, which mint it holds, its fee and the fees it has earned.
+    frame Treasury {
+        cabal: Pubkey,
+        mint: Pubkey,
+        fee_bps: u64,
+        fees: USDC,
+    }
+
+    /// one depositor's balance.
+    frame Position {
+        owner: Pubkey,
+        usdc: USDC,
+    }
+
+    cap_table Launch {
+        #[account(rent_free, payer = cabal, space = 8 + Treasury::INIT_SPACE, seeds = [b"treasury"], bump)]
+        treasury: Account<Treasury>,
+        #[account(mut)]
+        cabal: Signer,
+        system_program,
+    }
+
+    cap_table Open {
+        #[account(rent_free, payer = owner, space = 8 + Position::INIT_SPACE,
+                  seeds = [b"position", owner.key().as_ref()], bump)]
+        position: Account<Position>,
+        #[account(mut)]
+        owner: Signer,
+        system_program,
+    }
+
+    cap_table Deposit {
+        #[account(mut, has_one = owner, seeds = [b"position", owner.key().as_ref()], bump)]
+        position: Account<Position>,
+        #[account(mut, public, seeds = [b"treasury"], bump)]
+        treasury: Account<Treasury>,
+        #[account(mut)]
+        from: Account<anchor_spl::token::TokenAccount>,
+        #[account(mut, constraint = vault_tokens.owner == vault.key() && vault_tokens.mint == treasury.mint)]
+        vault_tokens: Account<anchor_spl::token::TokenAccount>,
+        /// CHECK: the vault's signer, a PDA that holds no data
+        #[account(seeds = [b"vault"], bump)]
+        vault: UncheckedAccount,
+        owner: Signer,
+        token_program,
+    }
+
+    cap_table Withdraw {
+        #[account(mut, has_one = owner, seeds = [b"position", owner.key().as_ref()], bump)]
+        position: Account<Position>,
+        #[account(seeds = [b"treasury"], bump)]
+        treasury: Account<Treasury>,
+        #[account(mut)]
+        to: Account<anchor_spl::token::TokenAccount>,
+        #[account(mut, constraint = vault_tokens.owner == vault.key() && vault_tokens.mint == treasury.mint)]
+        vault_tokens: Account<anchor_spl::token::TokenAccount>,
+        /// CHECK: the vault's signer, a PDA that holds no data
+        #[account(seeds = [b"vault"], bump)]
+        vault: UncheckedAccount,
+        owner: Signer,
+        token_program,
+    }
+
+    cap_table CollectFees {
+        #[account(mut, has_one = cabal, seeds = [b"treasury"], bump)]
+        treasury: Account<Treasury>,
+        #[account(mut)]
+        to: Account<anchor_spl::token::TokenAccount>,
+        #[account(mut, constraint = vault_tokens.owner == vault.key() && vault_tokens.mint == treasury.mint)]
+        vault_tokens: Account<anchor_spl::token::TokenAccount>,
+        /// CHECK: the vault's signer, a PDA that holds no data
+        #[account(seeds = [b"vault"], bump)]
+        vault: UncheckedAccount,
+        cabal,
+        token_program,
+    }
+
+    /// set up the books once: the mint, and a fee of at most 1%.
+    lock_in fn launch(ctx, mint: Pubkey, fee_bps: u64) -> W {
+        trust_me_bro!(fee_bps <= 100, "a fee over 1% is a rug with extra steps");
+        mark_to_market!(treasury.cabal = per_my_last_email!(cabal).key());
+        mark_to_market!(treasury.mint = mint);
+        mark_to_market!(treasury.fee_bps = fee_bps);
+        mark_to_market!(treasury.fees = 0);
+        were_so_back!()
+    }
+
+    lock_in fn open(ctx) -> W {
+        mark_to_market!(position.owner = per_my_last_email!(owner).key());
+        mark_to_market!(position.usdc = 0);
+        were_so_back!()
+    }
+
+    /// the fee goes to the treasury and the rest to the depositor: together, exactly what came in.
+    // not financial advice
+    lock_in fn deposit(ctx, amount: USDC) -> W {
+        trust_me_bro!(amount mogs 0, "depositing nothing is not a strategy");
+        let fee: USDC = bps!(amount, per_my_last_email!(treasury.fee_bps));
+        send_it!(from => vault_tokens, amount, owner);
+        bull fee mogs 0 {
+            number_go_up!(position.usdc, amount - fee);
+            number_go_up!(treasury.fees, fee);
+        } bear {
+            number_go_up!(position.usdc, amount);
+        }
+        were_so_back!()
+    }
+
+    // not financial advice
+    lock_in fn withdraw(ctx, amount: USDC) -> W {
+        trust_me_bro!(amount <= per_my_last_email!(position.usdc), "you can't withdraw what you don't have");
+        mark_to_market!(position.usdc = per_my_last_email!(position.usdc) - amount);
+        send_it!(vault_tokens => to, amount, vault);
+        were_so_back!()
+    }
+
+    /// the cabal takes the fees, and only the fees.
+    // not financial advice
+    lock_in fn collect_fees(ctx) -> W {
+        let fees: USDC = per_my_last_email!(treasury.fees);
+        mark_to_market!(treasury.fees = per_my_last_email!(treasury.fees) - fees);
+        send_it!(vault_tokens => to, fees, vault);
+        were_so_back!()
+    }
+}

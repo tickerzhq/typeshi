@@ -41,3 +41,4 @@ prettyplease = "0.3"
 
 [dev-dependencies]
 serde_json = "1.0.154"
+syn = { version = "3", default-features = false, features = ["full", "parsing"] }
