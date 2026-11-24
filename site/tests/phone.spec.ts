@@ -11,7 +11,7 @@ test.describe.configure({ mode: "parallel" });
 
 const LESSONS = content.tour.map((l) => `/tour/${l.slug}`);
 /** Every route, every lesson included, and a 404. */
-const ROUTES = ["/", "/play", "/tour", "/opinions", "/keywords", "/built", ...LESSONS, "/tour/1"];
+const ROUTES = ["/", "/play", "/tour", "/exploits", "/opinions", "/keywords", "/built", ...LESSONS, "/tour/1"];
 const PLAYGROUND = new Set(["/", "/play"]);
 const EDITOR = new Set([...PLAYGROUND, ...LESSONS]);
 

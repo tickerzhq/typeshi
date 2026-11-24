@@ -220,7 +220,7 @@ export default function BuiltPage() {
           <h2 id="checks-h" className={s.h2}>
             what keeps it honest
           </h2>
-          <p className={s.sub}>on every pull request, before anything ships. a joke language, built like it isn&apos;t one.</p>
+          <p className={s.sub}>on every pull request, before anything ships. slang on top, built like it guards money, because it does.</p>
           <ol className={s.checks}>
             {CHECKS.map((c, i) => (
               <li key={i}>

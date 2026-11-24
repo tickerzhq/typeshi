@@ -13,6 +13,7 @@ export default function Footer() {
           <nav aria-label="footer" className={s.links}>
             <Link href="/tour">tour</Link>
             <Link href="/play">playground</Link>
+            <Link href="/exploits">exploits</Link>
             <Link href="/opinions">opinions</Link>
             <Link href="/keywords">keywords</Link>
             <Link href="/built">how it&apos;s built</Link>

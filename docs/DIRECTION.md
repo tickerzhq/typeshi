@@ -4,7 +4,7 @@ Decided 2026-11-23. Sources are linked inline; anything not checked says so.
 
 ## The decision
 
-typeshi becomes **the type system for money**: a language whose compiler knows two things
+typeshi becomes **the type system for money**: a language whose compiler knows three things
 about every amount and every account, on every target it compiles to.
 
 1. **Money has owners.** Nothing moves or changes an owned account unless the code ties it
@@ -12,6 +12,11 @@ about every amount and every account, on every target it compiles to.
 2. **Money has units.** An amount carries its asset and decimals, a price carries its base
    and quote. Adding USDC (6 decimals) to SOL (9), or using a cbETH/ETH ratio where a
    cbETH/USD price belongs, is a compile error.
+3. **Money is conserved.** In every instruction, each unit's balances move by exactly what
+   comes in, minus what goes out, plus what is minted. A deposit that credits money that never
+   arrived, or a payout that lowers no balance, is a compile error. Move gives coins this on
+   Sui and Aptos through linear types; typeshi checks it for the plain integers a Solana
+   program keeps its balances in.
 
 The slang stays in the keywords and the voice. The refusals are real, coded (`SHI001`),
 explained (`typeshi explain`), and every explanation's examples are tests.
@@ -61,12 +66,20 @@ explained (`typeshi explain`), and every explanation's examples are tests.
 1. **Owners on Solana.** Done: `SHI001`, `public`, `typeshi explain`, tested pages.
 2. **Units.** Done: `ticker USDC = 6;`, and `SHI002` refuses adding, comparing or writing
    two different units. Next: check conversions against a declared price.
-3. **The rest of Solana's gaps**, by money lost: unverified accounts in sysvar reads
-   (Wormhole, about $326M), unchecked raw accounts (Crema, Texture), unchecked CPI targets
-   (Loopscale).
-4. **Agent spending policies.** One typeshi policy, deny by default, refused if anything is
+3. **The rest of Solana's gaps.** Done (2026-11-24): `SHI003` unchecked raw accounts
+   (Wormhole, Crema), `SHI004` program accounts the caller picks (Loopscale), `SHI005`
+   `init_if_needed`.
+4. **Conservation.** Done (2026-11-24): `SHI006`, with `send_it!` (SPL transfers whose
+   signer seeds typeshi writes) as the way money comes in and goes out, and
+   `#[printer_go_brrr]` for an instruction that mints on purpose. Next: follow balances
+   through branches.
+5. **The proof.** Done (2026-11-24): `docs/exploits` holds seven real incidents rewritten in
+   typeshi, about $469M and 1,027 SOL of losses, each refused with the check that would have
+   stopped it. `cargo test` and the site build both fail if one ever compiles. Shown at
+   [typeshi.tickerz.com/exploits](https://typeshi.tickerz.com/exploits).
+6. **Agent spending policies.** One typeshi policy, deny by default, refused if anything is
    unlimited, compiled to Coinbase CDP, Turnkey, Privy, Stripe and AP2 mandates.
-5. **EVM**, then off-chain Rust and TypeScript, where Tickerz, trading and payments code live.
+7. **EVM**, then off-chain Rust and TypeScript, where Tickerz, trading and payments code live.
 
 ## How it fails, and what we do about it
 

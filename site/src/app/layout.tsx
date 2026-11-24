@@ -64,6 +64,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   play<span className={s.long}>ground</span>
                 </span>
               </Link>
+              <Link href="/exploits" className={s.wide}>
+                exploits
+              </Link>
               <Link href="/opinions" className={s.wide}>
                 opinions
               </Link>

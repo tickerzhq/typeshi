@@ -3,7 +3,7 @@ import { expect, type Page, test } from "@playwright/test";
 import content from "../src/generated/content.json" with { type: "json" };
 import { WASM_URL } from "../src/generated/wasm";
 
-const PAGES = ["/", "/play", "/tour", "/tour/cap-table", "/opinions", "/keywords", "/built", "/tour/1"];
+const PAGES = ["/", "/play", "/tour", "/tour/cap-table", "/exploits", "/opinions", "/keywords", "/built", "/tour/1"];
 /** The pages that run the compiler; wait for its first verdict there. */
 const LIVE = new Set(["/", "/play", "/tour/cap-table"]);
 const ready = (page: Page) =>
@@ -74,8 +74,8 @@ test("a light reader gets light before the first paint, not after hydration", as
   await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
 });
 
-test("/play, /tour, /opinions, /keywords, /built and the 404 have no accessibility violations", async ({ page }) => {
-  for (const path of ["/play", "/tour", "/opinions", "/keywords", "/built", "/tour/1"]) {
+test("/play, /tour, /exploits, /opinions, /keywords, /built and the 404 have no accessibility violations", async ({ page }) => {
+  for (const path of ["/play", "/tour", "/exploits", "/opinions", "/keywords", "/built", "/tour/1"]) {
     await page.goto(path);
     if (path === "/play") await ready(page);
     const results = await new AxeBuilder({ page }).disableRules(["scrollable-region-focusable"]).analyze();
@@ -221,7 +221,7 @@ test("the icons and the manifest are linked and served", async ({ request }, inf
 
 test("every page has its own share card, its own title, and a large-image card for X", async ({ request }, info) => {
   test.skip(info.project.name !== "desktop", "one run is enough");
-  const pages = ["/", "/play", "/tour", "/opinions", "/keywords", "/built", ...content.tour.map((l) => `/tour/${l.slug}`)];
+  const pages = ["/", "/play", "/tour", "/exploits", "/opinions", "/keywords", "/built", ...content.tour.map((l) => `/tour/${l.slug}`)];
   const images = new Set<string>();
   const titles = new Set<string>();
   for (const path of pages) {
@@ -247,5 +247,6 @@ test("/built is linked from the footer and names what the site really ships", as
   await expect(page).toHaveURL(/\/built$/);
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("how it's built.");
   await expect(page.getByText(`typeshi v${content.version}`)).toBeVisible();
-  await expect(page.getByText(`${content.tour.length + 6} pages`)).toBeVisible();
+  // the reading pages (home, play, tour, exploits, opinions, keywords, built) and every lesson
+  await expect(page.getByText(`${content.tour.length + 7} pages`)).toBeVisible();
 });

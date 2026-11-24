@@ -9,6 +9,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     page("/", 1),
     page("/tour", 0.9),
     page("/play", 0.8),
+    page("/exploits", 0.8),
     page("/opinions", 0.6),
     page("/keywords", 0.6),
     page("/built", 0.5),

@@ -135,8 +135,10 @@ test("every banned move's try-it link opens a program the compiler refuses", asy
 test("the home's proofs are the compiler's own output", async ({ page }) => {
   await page.goto("/");
   const proofs = page.getByRole("list").filter({ has: page.getByRole("heading", { name: /doesn't compile/ }) });
-  await expect(proofs).toContainText("error: not on our watch, anon");
-  await expect(proofs).toContainText("`rug!` is a banned move");
+  // the first proof is the biggest exploit in docs/exploits, refused with its check
+  const top = content.exploits[0];
+  await expect(proofs).toContainText(`error[${top.check}]`);
+  await expect(proofs).toContainText(top.rendered.split("\n")[0]);
   for (const [shi, rs] of content.phrasebook) {
     await expect(proofs).toContainText(shi);
     await expect(proofs).toContainText(rs);

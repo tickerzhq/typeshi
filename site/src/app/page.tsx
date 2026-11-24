@@ -4,12 +4,13 @@ import Doors from "@/components/Doors";
 import Footer from "@/components/Footer";
 import Playground from "@/components/Playground";
 import content from "@/generated/content.json";
-import type { EditorWords, Example } from "@/lib/types";
+import type { EditorWords, Example, Exploit } from "@/lib/types";
 import s from "./page.module.css";
 
 const INSTALL = "cargo install --git https://github.com/tickerzhq/typeshi";
 const examples = content.examples as Example[];
-const rug = examples.find((e) => e.id === "rug")!;
+const exploits = content.exploits as Exploit[];
+const top = exploits[0];
 // The escalation stops at its last line: the fifth failure and every one after it.
 const STRIKES = ["1st", "2nd", "3rd", "4th", "5th+"];
 
@@ -21,8 +22,8 @@ export default function Home() {
           lock in <code className={s.fn}>fn</code>.
         </h1>
         <p className={s.lede}>
-          A joke language that really works. Slang over Rust that compiles to real Solana programs (Anchor 1.2), and{" "}
-          <code>rug!()</code> is a compile error.
+          A language for code that moves money. Slang over Rust that compiles to real Solana programs (Anchor 1.2). The
+          bugs behind ${content.exploitTotal.usdM}M of exploits don&apos;t compile. Neither does <code>rug!()</code>.
         </p>
         <div className={s.ctas}>
           <Link href="/tour" className="button">
@@ -42,27 +43,23 @@ export default function Home() {
       <section className={s.band} aria-labelledby="proof-h">
         <div className="wrap">
           <h2 id="proof-h" className={s.statement}>
-            every joke is a real compile error. <span>everything else is plain Anchor.</span>
+            the bugs that drain programs don&apos;t compile. <span>everything else is plain Anchor.</span>
           </h2>
 
           <ul className={`grid ${s.proofs}`}>
             <li className={s.proof}>
               <h3 className={s.h3}>
-                <code className={s.ngmi}>rug!()</code> doesn&apos;t compile.
+                {top.name}&apos;s ${top.usdM}M bug doesn&apos;t compile.
               </h3>
               <figure className={s.term}>
                 <figcaption>$ typeshi check</figcaption>
                 <pre>
-                  {rug.diags.map((d, i) => (
-                    <span key={i} className={s.ngmi}>
-                      {d.rendered.trimEnd()}
-                    </span>
-                  ))}
+                  <span className={s.ngmi}>{top.rendered}</span>
                   <span className={s.verdictBad}>ngmi</span>
                 </pre>
               </figure>
-              <Link href="/opinions" className={s.more}>
-                every banned move <span aria-hidden="true">→</span>
+              <Link href="/exploits" className={s.more}>
+                all {exploits.length} exploits, refused <span aria-hidden="true">→</span>
               </Link>
             </li>
 

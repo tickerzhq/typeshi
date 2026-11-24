@@ -23,13 +23,14 @@ fn esc(s: &str) -> String {
 
 fn diag_json(d: &typeshi::Diag, src: &str, file: &str) -> String {
     format!(
-        "{{\"severity\":{},\"message\":{},\"label\":{},\"line\":{},\"column\":{},\"width\":{},\"rendered\":{}}}",
+        "{{\"severity\":{},\"message\":{},\"label\":{},\"line\":{},\"column\":{},\"width\":{},\"code\":{},\"rendered\":{}}}",
         esc(if d.is_error() { "error" } else { "warning" }),
         esc(&d.msg),
         esc(&d.label),
         d.line,
         d.col,
         d.width,
+        d.code.map(esc).unwrap_or_else(|| "null".into()),
         esc(&d.render(file, src, false)),
     )
 }
