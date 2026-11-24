@@ -10,7 +10,7 @@ import content from "../src/generated/content.json" with { type: "json" };
 const shared = deflateRawSync(readFileSync("../tests/fixtures/friday.shi")).toString("base64url");
 const pages = [
   "/", "/play", "/tour", ...content.tour.map((l) => `/tour/${l.slug}`),
-  "/opinions", "/keywords", "/built", "/tokens", `/p/${shared}`, "/not-a-page",
+  "/exploits", "/opinions", "/keywords", "/built", "/tokens", `/p/${shared}`, "/not-a-page",
 ];
 const runs: [number, number][] = [
   [320, 100], [360, 100], [375, 100], [390, 100], [414, 100], [768, 100], [1024, 100], [1440, 100], [1920, 100],

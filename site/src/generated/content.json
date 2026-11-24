@@ -174,6 +174,12 @@
    "diags": [
     {
      "severity": "error",
+     "message": "`deposit` creates `amount` USDC out of nothing: balances go up by more than comes in.",
+     "label": "balances change by amount, money in or out is 0",
+     "rendered": "error[SHI006]: `deposit` creates `amount` USDC out of nothing: balances go up by more than comes in.\n  --> lib.shi:21:16\n   |\n21 |     lock_in fn deposit(ctx, amount: SOL) -> W {\n   |                ^^^^^^^ balances change by amount, money in or out is 0\n   = help: take it in with `send_it!(from => vault, amount, payer)`, move it from another balance, or mark the fn `#[printer_go_brrr]` if it mints on purpose\n\n"
+    },
+    {
+     "severity": "error",
      "message": "this adds `vault.usdc` (USDC) and `amount` (SOL).",
      "label": "6 decimals against 9: off by 1,000x",
      "rendered": "error[SHI002]: this adds `vault.usdc` (USDC) and `amount` (SOL).\n  --> lib.shi:22:69\n   |\n22 |         mark_to_market!(vault.usdc = per_my_last_email!(vault.usdc) + amount);\n   |                                                                     ^ 6 decimals against 9: off by 1,000x\n   = help: convert one with a price first, or write `as u64` if you are converting on purpose\n\n"
@@ -463,6 +469,16 @@
    "lesson": "not-financial-advice"
   },
   {
+   "shi": "`send_it!(from => to, n, authority)`",
+   "rust": "SPL token transfer. Signed by a signer it is money in; signed by an account with `seeds` it is money out, and typeshi writes the signer seeds for you",
+   "lesson": null
+  },
+  {
+   "shi": "`#[printer_go_brrr]` (on a fn)",
+   "rust": "this instruction mints or burns balance on purpose, so SHI006 skips it",
+   "lesson": "printer-go-brrr"
+  },
+  {
    "shi": "`mint_revoked!` / `freeze_revoked!` / `liquidated!(a => d)` / `layoffs!(a, b => d)`",
    "rust": "drop mint / freeze authority / close one / close many",
    "lesson": null
@@ -517,6 +533,7 @@
    "looksmaxx",
    "full_send",
    "lp_burned",
+   "send_it",
    "bundled",
    "layoffs",
    "seethe",
@@ -535,6 +552,7 @@
    "on_god",
    "tokenmaxx",
    "vc_backed",
+   "printer_go_brrr",
    "rent_free",
    "golden_parachute",
    "graduate",
@@ -1145,5 +1163,132 @@
     "text": "error: not on our watch, anon"
    }
   }
- ]
+ ],
+ "exploits": [
+  {
+   "id": "wormhole",
+   "name": "Wormhole",
+   "note": null,
+   "date": "2022-02-02",
+   "lost": "120,000 wETH, about $320M",
+   "check": "SHI003",
+   "checkTitle": "an unchecked account nothing checks",
+   "source": "https://kudelskisecurity.com/research/quick-analysis-of-the-wormhole-attack",
+   "what": "verify_signatures read the instructions sysvar through an account it never checked, so the attacker passed their own and minted wrapped ETH with nothing behind it.",
+   "program": "gm!(\"7PxhmDuhhe394QJgKyW1P7Ce4dPCfFPN2yKq4KCCj7Vj\");\n\nstealth_launch bridge {\n    cap_table VerifySignatures {\n        /// CHECK: \"the instructions sysvar\"\n        instruction_sysvar: UncheckedAccount,\n        anon,\n    }\n\n    ape fn verify_signatures(ctx) -> W {\n        let data = ctx.accounts.instruction_sysvar.try_borrow_data()?;\n        trust_me_bro!(data.len() > 0, \"no signatures to verify\");\n        were_so_back!()\n    }\n}",
+   "rendered": "error[SHI003]: nothing checks what `instruction_sysvar` is: it's an unchecked account.\n  --> lib.shi:13:9\n   |\n13 |         instruction_sysvar: UncheckedAccount,\n   |         ^^^^^^^^^^^^^^^^^^ any account passes here, a fake one too\n   = help: give it a type (`Account<T>`, `Sysvar<T>`, `Program<T>`) or pin it with `address = ...`, `owner = ...` or `seeds = [...]`. a `/// CHECK:` comment checks nothing",
+   "usdM": 320,
+   "tryCode": "dVJhb9owEP2eX_GK9gEkQlJAQku1ThNjYkObmNqVj5HjHNgl2Kl9IURT__sUYAypmmXJ8t2753fvHEWgQ1lYzQlW1u2ULSiIIuSCKcEwHg7DuN1trLCeE9wO434cx6hnj_M-RGYrxrvRMP7eQqQiuU3wMP8ax6M24G3lJCVQzKVPomhb5VT4rfYkK6e5GUi7ixx5Ek6q6KXSchsKI4rGax_adciKwvqsKxTMQm5b2loJTrAnp9dN6vXGCK4ceTgSOVgRtPHsKsnaGg_f-L1wYOVstVEQBkJKWxmGZhjakzsJp7wPb4_1p6fIoRTe05FTO9jaQJgcO22YctROlCXlmD3OUWtWMJaVNhtkpLTJoXkQBJvdTbczWR7U7nOlFI3ej39-2yya1e1yMqVxvpyuvyx_DJvFy3gxnT5Pnp47vbsg8EyiYJUWojJSIXM63xB-BwAgRZmyyArC09GAh3_9nwDtiqII0_lsukjQ-Y8hnQv4Kpmecgl-mbMnn05e9S9oYaw53V6D4yFKwtq8HUdX8qGH8B6rK2EFcfu7BD5A8mFwnoQfvNUwYNekmXXO1mlb0e19vLvQsKs8pztKM2dvum16UJDp9nCPuI-Osbj6FmzP4lpv_zLU5Cj1Ns2E3N50e-eGXoM_"
+  },
+  {
+   "id": "qubit",
+   "name": "Qubit QBridge",
+   "note": "Ethereum to BNB Chain, in Solidity; the same mistake, written in typeshi",
+   "date": "2022-01-27",
+   "lost": "about $80M",
+   "check": "SHI006",
+   "checkTitle": "money that comes from nowhere or goes nowhere",
+   "source": "https://medium.com/@QubitFin/protocol-exploit-report-305c34540fa3",
+   "what": "a leftover deposit path credited bridged ETH without taking any in (the transfer it called was a no-op), so the attacker minted xETH from nothing and borrowed the lending market dry.",
+   "program": "gm!(\"7PxhmDuhhe394QJgKyW1P7Ce4dPCfFPN2yKq4KCCj7Vj\");\n\nstealth_launch bridge {\n    ticker WETH = 18;\n\n    frame Bridged {\n        owner: Pubkey,\n        weth: WETH,\n    }\n\n    cap_table Deposit {\n        #[account(mut, has_one = owner, seeds = [b\"bridged\", owner.key().as_ref()], bump)]\n        bridged: Account<Bridged>,\n        owner: Signer,\n    }\n\n    // not financial advice\n    lock_in fn deposit(ctx, amount: WETH) -> W {\n        number_go_up!(bridged.weth, amount);\n        were_so_back!()\n    }\n}",
+   "rendered": "error[SHI006]: `deposit` creates `amount` WETH out of nothing: balances go up by more than comes in.\n  --> lib.shi:25:16\n   |\n25 |     lock_in fn deposit(ctx, amount: WETH) -> W {\n   |                ^^^^^^^ balances change by amount, money in or out is 0\n   = help: take it in with `send_it!(from => vault, amount, payer)`, move it from another balance, or mark the fn `#[printer_go_brrr]` if it mints on purpose",
+   "usdM": 80,
+   "tryCode": "XVLfT9swEH7PX3F0e0iktCltWVk60EYBsaGhIqbxgFDkOJfaS2Jn9oU2mvjfJyeBoeXxu_P36xJFgPu61JJiuG1SSXB7ZmS2RfAvSKDBpgLScHZzBmvBpApBKrjTpcwktSsggWBZhVBJS6zAEHZGEqFya9TWaIUMvCiCjBHGMJvOZuPp4Xi2dFipLcXAUt0QvD-efncYF8iLGO6uvk6nHxxgdWM4xiCIahtHUYWZbKoJ11X0uTN8KVVUG02a63I8ZBkbrLWh8Xx6xOeLo8U0Z3NHthPMKUKJOeknNJBhra0kqBkJ4AYzSZhB2jWQwcWPK9hJEs4gsUKqLTDVumi-C06GKZujAUnAWVliBjtmgYHSY10HIVjdFcSIGC_QQCWVo9873tzoCpQm0bNmkGpj9A6z7kmJKnODipkCCTLTTjxvWx34o-VmL6rzRgicf1zcfttet_eHm-UaF9lmnV9ubmbt9e_F9Xr9a_nz1yhYeZ4lZCWJpGSN4mLIBn88AACSna97Z-gEDo9XXgfnxp30bGihX3Wf3ik0MWyatMA2fIV3SCLuSHrsuWfhrE6IpSXC-dDyP6Z3D4xz3Sjyq4ZCEMwmWiGc9BIhWMTMwgk8pKPhGKOwn00KbP1gwmxiMPeDxxDSpqqDx1fqYT-GL73CpyHHafh_jju5dWJvPUeRuwnkUjHFJSuBZU-SYzcrNS8SqSBXL7-Nz2kfAqucTF9AAONTuH8TVDVViibZ6qSpD_zB28Q19vIwWL0p0mBidZIyXhz4wWDs2fsL"
+  },
+  {
+   "id": "cashio",
+   "name": "Cashio",
+   "note": null,
+   "date": "2022-03-23",
+   "lost": "$52.8M",
+   "check": "SHI001",
+   "checkTitle": "anyone can write an account that has an owner",
+   "source": "https://www.certik.com/blog/cashio-app-incident-analysis",
+   "what": "the collateral's accounts were never tied together, so a chain of fake accounts passed every check and printed stablecoins with nothing behind them.",
+   "program": "gm!(\"7PxhmDuhhe394QJgKyW1P7Ce4dPCfFPN2yKq4KCCj7Vj\");\n\nstealth_launch cashio {\n    frame Bank {\n        authority: Pubkey,\n        collateral_mint: Pubkey,\n        cash_supply: u64,\n    }\n\n    frame Collateral {\n        mint: Pubkey,\n        value: u64,\n    }\n\n    cap_table PrintCash {\n        #[account(mut)]\n        bank: Account<Bank>,\n        collateral: Account<Collateral>,\n        ser,\n    }\n\n    lock_in fn print_cash(ctx, amount: u64) -> W {\n        trust_me_bro!(per_my_last_email!(collateral.value) >= amount, \"not enough collateral\");\n        number_go_up!(bank.cash_supply, amount);\n        were_so_back!()\n    }\n}",
+   "rendered": "error[SHI001]: anyone can write `bank`: nothing checks `bank.authority`.\n  --> lib.shi:24:9\n   |\n24 |         bank: Account<Bank>,\n   |         ^^^^ `bank` has an owner and `PrintCash` never asks for it\n   = help: add the owner as a signer and `has_one = authority`, tie `bank` to an account that is checked (`has_one = <that account>`), or mark it `public` if anyone may write it",
+   "usdM": 52.8,
+   "tryCode": "bZJvb9MwEMbf51NcBxKp1DalKwwCTIIiBEygIiT2AiHr4lxjL44d7Mu6CO27I7fdGsTyLvfnud895ywDummN05zDCoPSLskyKJEph8V8sZjOT6eL0xgzLnAOj58tZi--xH-pSNY5fP_4aT5_GgPBdV5SDoq5DXmWbbfbmSTPup5J12SFcVUmdyOm2LZTbaUuyfIULZo-6BA1tgo5B1YE0hmDTB7NkwAopessB9iSJ7B0TR5YUwnsKmJFfgLBAYJUqC24DWywpmNXiyFQCbGt33MD2hJary1TCYGxMCSdtgG2mhVYx0rbCgpS2pYRp5klSdWM0pOz9Y1q3ndK0enL5bfP1UV_-XR9tqJluV5tPqy_LvqL38uL1erq7MfVyfhVkgQmNKyEwc5KBXsD4E8CALDx2BC8Q1sfAvHDjpXzmvsc1l1RUz-5Tx09EY22_EABBiVC17amz6F7vtxnbpPBtNW9xmDmw2rXaDr6X0diK3aOwToaGF_NQOrRz4PtadPx-Nd9vEBb5_B2n3sddz5_aLFjyRF0UBjI_8NinKyFtrCx-2uK6EAq-WYC2ESZHf4YpudwOYBk3wUWDYnCu1HakhdNLwwGFtSgNqP0CDTbuTCG8zcHxQmcWMdA1nWVGpDHa9_p264pyIvKia4dpXH12eA0d2yDhviuRXCiQFmP0vFhxdvkLw"
+  },
+  {
+   "id": "crema",
+   "name": "Crema Finance",
+   "note": null,
+   "date": "2022-07-02",
+   "lost": "about $8.8M",
+   "check": "SHI003",
+   "checkTitle": "an unchecked account nothing checks",
+   "source": "https://www.coindesk.com/tech/2022/07/04/solana-defi-protocol-crema-loses-88m-in-exploit",
+   "what": "the program read prices from a tick account it never verified, so the attacker passed a fake one and claimed fees that were never earned.",
+   "program": "gm!(\"7PxhmDuhhe394QJgKyW1P7Ce4dPCfFPN2yKq4KCCj7Vj\");\n\nstealth_launch clmm {\n    frame Position {\n        owner: Pubkey,\n        fees_owed: u64,\n    }\n\n    cap_table ClaimFees {\n        #[account(mut, has_one = owner)]\n        position: Account<Position>,\n        /// CHECK: \"the pool's tick\"\n        tick: UncheckedAccount,\n        owner: Signer,\n    }\n\n    lock_in fn claim_fees(ctx) -> W {\n        let data = ctx.accounts.tick.try_borrow_data()?;\n        let fee_growth = u64::from_le_bytes(data[8..16].try_into().unwrap());\n        mark_to_market!(position.fees_owed = fee_growth);\n        were_so_back!()\n    }\n}",
+   "rendered": "error[SHI003]: nothing checks what `tick` is: it's an unchecked account.\n  --> lib.shi:20:9\n   |\n20 |         tick: UncheckedAccount,\n   |         ^^^^ any account passes here, a fake one too\n   = help: give it a type (`Account<T>`, `Sysvar<T>`, `Program<T>`) or pin it with `address = ...`, `owner = ...` or `seeds = [...]`. a `/// CHECK:` comment checks nothing",
+   "usdM": 8.8,
+   "tryCode": "XVJha9swEP3uX3HNBrMhttM0NJm7dAxvoVvYyChbP5QiFPkcq7YlTzrXCaP_fShx03b6cuhx9-69u4tjwG1TaUkJpAZrDgupuBLoxTFknDCB8Wg8DkfTcDR2WKUtJcDXuiV4O4tm3x0oChRlAtdXX0ejMwdY3RqBCRREjU3iuOu6SGipMrRlJHQdE4oidszxaBqPJrHVFVc8zDCXYWM0aaGrUDhBYaUt2nA2q0Opwl6s69EVnBKgAqExemN4DQZ5Bo2RAi3kRtfAgaQogQuhW0UgCRQ-oIEHNDKXmA3B6j0DJ-KiRAMNtxYz4JDzEkErBK4yEBWXNWaQI1qgghN0aLAnQ24UZpHnbeoTfzBdbYv6c1sUePZ-8vPbZrm7OV1NU5xkqzRfrH6Md8s_k2Wa3k9_3w-CC8-zhLyiglW8VaIAUdU1_PUAAHLDa4SVtpKkVj3onu4UmgRW7brE3fAIO3VMd5gl0J5PDvijtw-CN4z4ukJInZWF8_HM9-a2n5BftzSEglvmnM8PjYK7Y2LTa0ng06Hgw5O6y2cZcRxDevUlXSYw2G9H6-qd3W9icExyvwR-qf3lYNbTDf-3eC03Cs0rK5UWJZMKcnVYC3O2fUHbAMJLuHlhq0JyJ8xhDoK2Ue_RRq53RGbH1toY3TGX4wcfL14V5ohsY3RHBczdOJPEXRSrkK13hNZ3RbezKDo9v9tzSUXaD6JWdYY3fhA8s9XclIw0cxHpxH8aYnTcF8xftHtR6Y6MWc3WXJQnftBP4dH7Bw"
+  },
+  {
+   "id": "loopscale",
+   "name": "Loopscale",
+   "note": null,
+   "date": "2025-04-26",
+   "lost": "about $5.8M (later recovered)",
+   "check": "SHI004",
+   "checkTitle": "a program to call that can be any program",
+   "source": "https://blog.loopscale.com/posts/postmortem",
+   "what": "the program ids of the RateX programs used to price collateral were not checked on one path, so a spoofed program returned an inflated price.",
+   "program": "gm!(\"7PxhmDuhhe394QJgKyW1P7Ce4dPCfFPN2yKq4KCCj7Vj\");\n\nstealth_launch lender {\n    frame Loan {\n        borrower: Pubkey,\n        collateral_value: u64,\n    }\n\n    cap_table PriceCollateral {\n        #[account(mut, has_one = borrower)]\n        loan: Account<Loan>,\n        /// CHECK: \"the RateX program\"\n        rate_program: UncheckedAccount,\n        borrower: Signer,\n    }\n\n    lock_in fn price_collateral(ctx, quoted: u64) -> W {\n        probably_nothing!(\"priced by {}\", ctx.accounts.rate_program.key());\n        mark_to_market!(loan.collateral_value = quoted);\n        were_so_back!()\n    }\n}",
+   "rendered": "error[SHI004]: `rate_program` can be any program, and whatever it does or returns is trusted.\n  --> lib.shi:20:9\n   |\n20 |         rate_program: UncheckedAccount,\n   |         ^^^^^^^^^^^^ a program the attacker wrote passes here\n   = help: name the program (`Program<Token>`, `Program<System>`), or pin it: `address = <program id>`",
+   "usdM": 5.8,
+   "tryCode": "bVJdb9NAEHz3r9gEHmwptUNIW3BpJWSoCikoUEGRELLW503s5nzr3q2bRFX_O3LiJuXDD3fS7N7szKyjCGhVay4lhkvm2inU5EUR5CgUw2g4OjwYjg9GRy2m2UkMmHEj8PwwfPUJfI1CFiwpviNLedC2qYLUIoariw_D4bgFHDdWUQyFSO3iKMo0z0P9OC1UXEU1O3Gbs2IrVLXPlgVKDFIQ1JbnFisocwc820BfUejHY8FB4ygHYahtqQgU640w1LAkS2BYtqooBzbAhqBGKQbgGBBczTyjfDfFkjTWUA5ooDSzlinfEoeeN696fv94uiqqd01R0MvX4y8f55P19YvpcULjfJrMzqefR-vJ7XiSJDfH32_6wYnnOSHUUqQaG6MK0GRysnDvAQDMLFYEl4ymA9ovY2t5STaGaZMtaD3YVfbe0jvUDcXQHI235QdvcymsU8FME0xb0ck-jD3_s5-oFDdG_KqRARTo0jaV093g4NeuVzOaGN5u-9-0Qs_2cqIoguTifTKJof_PXvq7NotCaYfG8M102-hIB__xfVXODdk_jGlWi7Q0MDPbdaT7LHwlqwHcNiyUbxIJ4OAMrp84ri1nmOl1aliK0sx7fn9DkkO2hvuH_gCUrMIuFRc-FRwuaO0HwcmOq0K7SIXT9ibp-W1C4d-LgdNOz5OH7d-YOk4zVIueH3TmHrzf"
+  },
+  {
+   "id": "moonwell",
+   "name": "Moonwell",
+   "note": "on Base, in Solidity; the same mistake, written in typeshi",
+   "date": "2026-02-15",
+   "lost": "$1.78M of bad debt",
+   "check": "SHI002",
+   "checkTitle": "two different money units in one sum, comparison or write",
+   "source": "https://forum.moonwell.fi/t/mip-x43-cbeth-oracle-incident-summary/2068",
+   "what": "the oracle used the raw cbETH/ETH exchange rate as cbETH's USD price, so cbETH was priced at about $1.12 instead of about $2,200 and liquidators took the collateral.",
+   "program": "gm!(\"7PxhmDuhhe394QJgKyW1P7Ce4dPCfFPN2yKq4KCCj7Vj\");\n\nstealth_launch market {\n    ticker CBETH_ETH = 18;\n    ticker CBETH_USD = 8;\n\n    frame Market {\n        admin: Pubkey,\n        cbeth_price: CBETH_USD,\n    }\n\n    cap_table SetPrice {\n        #[account(mut, has_one = admin)]\n        market: Account<Market>,\n        admin: Signer,\n    }\n\n    lock_in fn set_price(ctx, cbeth_eth: CBETH_ETH) -> W {\n        mark_to_market!(market.cbeth_price = cbeth_eth);\n        were_so_back!()\n    }\n}",
+   "rendered": "error[SHI002]: this writes `cbeth_eth` (CBETH_ETH) into `market.cbeth_price` (CBETH_USD).\n  --> lib.shi:26:44\n   |\n26 |         mark_to_market!(market.cbeth_price = cbeth_eth);\n   |                                            ^ 8 decimals against 18: off by 10,000,000,000x\n   = help: convert one with a price first, or write `as u64` if you are converting on purpose",
+   "usdM": 1.78,
+   "tryCode": "ZZFRb9owFIXf8ytuu0kDKSEhZYWFUWmlrdiqTkx068M0RY5zwW4cm9o3AjT1v08mqGVbXqKcc3Pud-w4BtyulZGUwZ0xeoNKQcdouGQOQ5AaFkbJUtJuDCQQHKsRaumIVRjCxkoi1H6Mdmt0QnaDOIaSEWaQJul5lKRR_73XlHGUwdt-bzi6A7OEgpVQYkHe4wJ5lcFi9jlJUi8401iOGQiitcvieGlsU_fqA19vKWOKa7mOtoOziBdIIjKWcYWR1FyWqClyTV0zu4vT5HzkEzeCUbZv0E5C47Dcf1u2AV5c38_i6_sZ4JYLpldeJgTmWuudg--LK1hbyTEEZ1oVNsy1WgmMgBWmId-wn4LUjpCVvuhBTsM0SYDpEpR8amTJyFgHZEy1p-BGKUZomeoFwao-6ZwO51tRXzVC4NmHwbcvq9vdQ38-nOKgnE-XN_Ov6e72aXA7nT4OfzyedsdB4DcqErlijeYCamYrJPgdAACQ5BVamF5e389yjz6B_mj8v-VbTmA0DvbW0vrbvjsO8g8ra6kzmDdFhbvwRd5fRL4_j-w1rvWf20DO1jmxQiEskOZ-8ij2zU_GuWk0deqGQhDM5UYjTNp93V8vg22zDD614x9bwIvwX8CFXGm0fwEow6tcalhqcEgtbIfTNjzQI4ns9ZS6EF3AwxGi35yTyVuCk0777h01h8lrUnf88uMGLebO5AXj1Umne0B6Dv4A"
+  },
+  {
+   "id": "candy-machine",
+   "name": "Metaplex Candy Machine v1",
+   "note": null,
+   "date": "2022-01-04",
+   "lost": "3,470 machines drained, 1,027 SOL cashed out",
+   "check": "SHI005",
+   "checkTitle": "init_if_needed lets a second call reset an account",
+   "source": "https://jonlu.ca/posts/candy-machine",
+   "what": "the program accepted accounts that were already initialized, so an attacker rewrote a machine's state and took its funds (reported by an independent researcher).",
+   "program": "gm!(\"7PxhmDuhhe394QJgKyW1P7Ce4dPCfFPN2yKq4KCCj7Vj\");\n\nstealth_launch candy {\n    frame Machine {\n        authority: Pubkey,\n        price: u64,\n    }\n\n    cap_table Initialize {\n        #[account(init_if_needed, payer = ser, space = 8 + Machine::INIT_SPACE,\n                  seeds = [b\"machine\", ser.key().as_ref()], bump)]\n        machine: Account<Machine>,\n        ser,\n        system_program,\n    }\n\n    lock_in fn initialize(ctx, price: u64) -> W {\n        mark_to_market!(machine.authority = per_my_last_email!(ser).key());\n        mark_to_market!(machine.price = price);\n        were_so_back!()\n    }\n}",
+   "rendered": "error[SHI005]: `init_if_needed` lets a second call reset `machine`.\n  --> lib.shi:17:19\n   |\n17 |         #[account(init_if_needed, payer = ser, space = 8 + Machine::INIT_SPACE,\n   |                   ^^^^^^^^^^^^^^ on a later call the account already holds state\n   = help: create it with `rent_free` in its own instruction, and write it with `mut` everywhere else",
+   "usdM": 0,
+   "tryCode": "hVLBbtNAEL37KybhgC2c2EkDAZdUQgFEKC1BRfRQVavJelK7tnfN7pjGoP472sRNwom9jP08--a954kioE1d6pwTuCDGuqQNzFGlLVygzHJF8GvkRRGkyJTAOB6PB_FoEE8cVmrLCZyEk2kM1a7bQmowV5SGMArj8RSuvn4BiTajFHTD7pbMSBYJXH1axPFLB1jdGEkJZMy1TaLoXquyGUqMam3ZRtKpGXT8rv8hQ06AM4La6DuDFaCUVDOl7kE3ii1whgwPZAiwNIRpC7nKOccy_-20WQ2oAJlRFmTA0IPRTIBPNp5bsIwOUSmw1gXkbGHdqNSCb6jWxk1btY4lVynVpFJSDIYsoZEZmWDoeXdVz-9Pl5uset9kGZ28mXz7fHfeXo-W0zlN0uV8_XF5OW7Pf07O5_P76Y_7fnDqeZYJS85EiY2SGWztwx8PAGBtsKL9j9lh7mDDmTY5twksm1VBbbj_VJvcZdu8muywR29bJNaCcVUSLPa5HBE-u-mS9F1sIl8LRZS65GpsycAMLJkQbI2SYAav4cWTqiRZXC6-i6vlu_mHg4rDsUSphRncrPpd1v3QkQ0Lav1giFYYWvvBbQirpqqD2z1F153Au52yt93As8MUp-nw0lqmSnQr8o_5UstC5ArW6mgrfMmb8CiuAAZncH2USYWmEKyFq8Q9vxM03IcPM6jJiKoVJVoWVGFe9nzrdmFrLjj9L9d2vONx9ajfbbKwWqxQFj0_6Mw8en8B"
+  }
+ ],
+ "exploitTotal": {
+  "usdM": 469,
+  "sol": 1027,
+  "checks": [
+   "SHI001",
+   "SHI002",
+   "SHI003",
+   "SHI004",
+   "SHI005",
+   "SHI006"
+  ]
+ },
+ "checkTitles": {
+  "SHI001": "anyone can write an account that has an owner",
+  "SHI002": "two different money units in one sum, comparison or write",
+  "SHI003": "an unchecked account nothing checks",
+  "SHI004": "a program to call that can be any program",
+  "SHI005": "init_if_needed lets a second call reset an account",
+  "SHI006": "money that comes from nowhere or goes nowhere"
+ }
 }

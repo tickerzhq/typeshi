@@ -75,7 +75,7 @@
       "patterns": [
         {
           "name": "keyword.other.attribute.typeshi",
-          "match": "\\b(on_god|tokenmaxx|vc_backed)\\b"
+          "match": "\\b(on_god|tokenmaxx|vc_backed|printer_go_brrr)\\b"
         },
         {
           "name": "keyword.other.constraint.typeshi",
@@ -144,7 +144,7 @@
         },
         {
           "name": "support.function.macro.typeshi",
-          "match": "\\b(per_my_last_email|probably_nothing|hostile_takeover|printer_go_brrr|funds_are_safu|mark_to_market|freeze_revoked|bonding_curve|this_is_fine|were_so_back|trust_me_bro|number_go_up|mint_revoked|its_so_over|margin_call|touch_grass|liquidated|aura_farm|looksmaxx|full_send|lp_burned|bundled|layoffs|seethe|ascend|fired|rekt|hodl|fren|bags|wen|bps|mew|gm)!"
+          "match": "\\b(per_my_last_email|probably_nothing|hostile_takeover|printer_go_brrr|funds_are_safu|mark_to_market|freeze_revoked|bonding_curve|this_is_fine|were_so_back|trust_me_bro|number_go_up|mint_revoked|its_so_over|margin_call|touch_grass|liquidated|aura_farm|looksmaxx|full_send|lp_burned|send_it|bundled|layoffs|seethe|ascend|fired|rekt|hodl|fren|bags|wen|bps|mew|gm)!"
         },
         {
           "name": "entity.name.function.macro.typeshi",

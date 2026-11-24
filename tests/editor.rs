@@ -102,6 +102,7 @@ fn grammar_knows_the_slang() {
         "bonding_curve",
         "bundled",
         "full_send",
+        "send_it",
         "printer_go_brrr",
         "lp_burned",
         "mint_revoked",

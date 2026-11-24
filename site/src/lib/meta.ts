@@ -22,7 +22,7 @@ export function pageMeta({ path, title, description }: { path: string; title: st
 export const homeMeta = {
   title: "typeshi: lock in fn.",
   description:
-    "A joke language that really works: slang over Rust that compiles to real Solana programs (Anchor 1.2). rug!() is a compile error. Try the real compiler in your browser.",
-  social: "Slang over Rust that compiles to real Solana programs. rug!() is a compile error.",
+    "A language for code that moves money: slang over Rust that compiles to real Solana programs (Anchor 1.2). The bugs behind real exploits are compile errors, and so is rug!(). Try the real compiler in your browser.",
+  social: "Slang over Rust that compiles to real Solana programs. The bugs that drain them don't compile.",
   alternates: LLMS,
 };

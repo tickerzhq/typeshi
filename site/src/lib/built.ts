@@ -26,5 +26,5 @@ export const fontKB = kb(["Geist-Latin.woff2", "GeistMono-Latin.woff2"].reduce((
 /** The CSS variables tokens.css defines (each `--name:` in its :root). */
 export const tokenCount = new Set(readFileSync(join(site, "src/app/tokens.css"), "utf8").match(/--[a-z0-9-]+(?=:)/g)).size;
 
-/** Every page with a share card: the five reading pages, this one, and each lesson. */
-export const PAGES = ["/", "/play", "/tour", "/opinions", "/keywords", "/built", ...content.tour.map((l) => `/tour/${l.slug}`)];
+/** Every page with a share card: the six reading pages, this one, and each lesson. */
+export const PAGES = ["/", "/play", "/tour", "/exploits", "/opinions", "/keywords", "/built", ...content.tour.map((l) => `/tour/${l.slug}`)];

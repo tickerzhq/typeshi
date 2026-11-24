@@ -42,6 +42,17 @@ fn a_rug_is_an_error_with_a_location() {
     assert_eq!(d["severity"], "error");
     assert!(d["line"].as_u64().unwrap() > 0);
     assert!(d["rendered"].as_str().unwrap().contains("not on our watch, anon"));
+    assert!(d["code"].is_null(), "a banned move has no check code");
+}
+
+#[test]
+fn a_check_error_carries_its_code() {
+    let src = include_str!("../../../docs/exploits/qubit.shi");
+    let v = parse(&typeshi_wasm::transpile(src, false));
+    assert_eq!(v["ok"], false);
+    let d = &v["diags"][0];
+    assert_eq!(d["code"], "SHI006");
+    assert!(d["rendered"].as_str().unwrap().starts_with("error[SHI006]"));
 }
 
 #[test]

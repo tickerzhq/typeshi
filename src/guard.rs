@@ -7,7 +7,7 @@
 
 use crate::diag::Diag;
 use proc_macro2::{Delimiter, Spacing, Span, TokenTree};
-use std::collections::HashMap;
+use std::collections::{BTreeMap, HashMap, HashSet};
 
 /// One account in a `cap_table`, as the checks see it.
 #[derive(Clone, Debug)]
@@ -30,6 +30,10 @@ pub struct Account {
     pub constraints: Vec<String>,
     /// Where `init_if_needed` was written, if it was.
     pub reinit: Option<Span>,
+    /// The inside of its `seeds = [...]`, as written, if it is a PDA. `send_it!` signs with it.
+    pub seeds: Option<Vec<TokenTree>>,
+    /// Created by this instruction (`rent_free`/`init`): its balances start at zero.
+    pub created: bool,
 }
 
 /// The kinds of account the checks tell apart.
@@ -108,6 +112,11 @@ pub const CHECKS: &[Check] = &[
         code: "SHI005",
         title: "init_if_needed lets a second call reset an account",
         doc: include_str!("../docs/checks/SHI005.md"),
+    },
+    Check {
+        code: "SHI006",
+        title: "money that comes from nowhere or goes nowhere",
+        doc: include_str!("../docs/checks/SHI006.md"),
     },
 ];
 
@@ -619,4 +628,396 @@ fn group_thousands(s: &str) -> String {
         out.push(c);
     }
     out
+}
+
+// ---------------------------------------------------------------------------------------------
+// SHI006: conservation. Money in a balance comes from somewhere and goes somewhere.
+
+/// A sum of named quantities: `amount - fee` is {amount: 1, fee: -1}. `"1"` is the constant.
+type Linear = BTreeMap<String, i64>;
+
+fn add_into(a: &mut Linear, b: &Linear, k: i64) {
+    for (t, c) in b {
+        *a.entry(t.clone()).or_insert(0) += c * k;
+    }
+    a.retain(|_, c| *c != 0);
+}
+
+fn render(l: &Linear) -> String {
+    if l.is_empty() {
+        return "0".into();
+    }
+    let mut out = String::new();
+    for (i, (t, c)) in l.iter().enumerate() {
+        let (sign, n) = if *c < 0 { ("-", -c) } else { ("+", *c) };
+        let term = match (t.as_str(), n) {
+            ("1", n) => n.to_string(),
+            (t, 1) => t.to_string(),
+            (t, n) => format!("{n} * {t}"),
+        };
+        if i == 0 {
+            out.push_str(if sign == "-" { "-" } else { "" });
+        } else {
+            out.push_str(&format!(" {sign} "));
+        }
+        out.push_str(&term);
+    }
+    out
+}
+
+/// One instruction's money, per ticker.
+#[derive(Default)]
+struct Flows {
+    /// how much balances of each ticker go up (net)
+    ledger: BTreeMap<String, Linear>,
+    /// money in (+) and out (-) of the program, minted (+) and burned (-)
+    moved: BTreeMap<String, Linear>,
+    /// tickers whose changes typeshi can't follow in this instruction
+    unknown: HashSet<String>,
+    /// a transfer whose amount has no ticker: nothing can be checked
+    untyped_move: bool,
+}
+
+const MONEY_MACROS: [&str; 7] = [
+    "number_go_up",
+    "aura_farm",
+    "mark_to_market",
+    "send_it",
+    "full_send",
+    "printer_go_brrr",
+    "lp_burned",
+];
+
+impl Units<'_> {
+    /// Read an amount as a sum of named quantities. Anything that isn't `+`/`-` of names, fields
+    /// and whole numbers (a product, a call) becomes one opaque quantity, named by its text.
+    fn linear(&self, t: &[TokenTree]) -> Linear {
+        let mut out = Linear::new();
+        let mut sign = 1i64;
+        let mut term: Vec<TokenTree> = vec![];
+        let flush = |term: &mut Vec<TokenTree>, sign: i64, out: &mut Linear| {
+            if !term.is_empty() {
+                let l = self.term(term);
+                add_into(out, &l, sign);
+                term.clear();
+            }
+        };
+        let mut i = 0;
+        while i < t.len() {
+            match &t[i] {
+                TokenTree::Punct(p) if (p.as_char() == '+' || p.as_char() == '-') && p.spacing() == Spacing::Alone => {
+                    flush(&mut term, sign, &mut out);
+                    sign = if p.as_char() == '-' { -1 } else { 1 };
+                }
+                tok => term.push(tok.clone()),
+            }
+            i += 1;
+        }
+        flush(&mut term, sign, &mut out);
+        out
+    }
+
+    fn term(&self, t: &[TokenTree]) -> Linear {
+        let mut t: Vec<TokenTree> = t.to_vec();
+        // drop what doesn't change the amount: `?`, `.unwrap()`, `as u64`
+        loop {
+            let n = t.len();
+            if matches!(t.last(), Some(TokenTree::Punct(p)) if p.as_char() == '?') {
+                t.pop();
+            } else if n >= 3
+                && matches!(&t[n - 3], TokenTree::Punct(p) if p.as_char() == '.')
+                && matches!(&t[n - 2], TokenTree::Ident(i) if i == "unwrap" || i == "expect" || i == "ok_or")
+                && matches!(&t[n - 1], TokenTree::Group(_))
+            {
+                t.truncate(n - 3);
+            } else if n >= 2 && matches!(&t[n - 2], TokenTree::Ident(i) if i == "as") {
+                t.truncate(n - 2);
+            } else {
+                break;
+            }
+        }
+        let one = |name: String| Linear::from([(name, 1)]);
+        // x.checked_add(y), x.checked_sub(y), and the saturating_ / wrapping_ ones
+        if let Some(k) = t.iter().rposition(|x| {
+            matches!(x, TokenTree::Ident(i) if matches!(i.to_string().as_str(),
+                "checked_add" | "checked_sub" | "saturating_add" | "saturating_sub" | "wrapping_add" | "wrapping_sub"))
+        }) {
+            if k >= 1 && matches!(&t[k - 1], TokenTree::Punct(p) if p.as_char() == '.') {
+                if let Some(TokenTree::Group(g)) = t.get(k + 1) {
+                    let mut l = self.term(&t[..k - 1]);
+                    let arg: Vec<TokenTree> = g.stream().into_iter().collect();
+                    let sign = if t[k].to_string().ends_with("_sub") { -1 } else { 1 };
+                    add_into(&mut l, &self.linear(&arg), sign);
+                    return l;
+                }
+            }
+        }
+        match t.as_slice() {
+            [TokenTree::Literal(lit)] => {
+                let s = lit.to_string().replace('_', "");
+                let digits: String = s.chars().take_while(|c| c.is_ascii_digit()).collect();
+                match digits.parse::<i64>() {
+                    Ok(n) => Linear::from([("1".to_string(), n)]),
+                    Err(_) => one(s),
+                }
+            }
+            [TokenTree::Group(g)] if g.delimiter() == Delimiter::Parenthesis => {
+                self.linear(&g.stream().into_iter().collect::<Vec<_>>())
+            }
+            [TokenTree::Ident(m), TokenTree::Punct(b), TokenTree::Group(g)]
+                if m == "per_my_last_email" && b.as_char() == '!' =>
+            {
+                self.term(&g.stream().into_iter().collect::<Vec<_>>())
+            }
+            _ => {
+                // ctx.accounts.acc.field and acc.field are one quantity, `acc.field`
+                let text: String = t.iter().map(|x| x.to_string()).collect::<Vec<_>>().join("");
+                one(text.strip_prefix("ctx.accounts.").map(str::to_string).unwrap_or(text))
+            }
+        }
+    }
+
+    /// The ticker of `acc.field` (or `ctx.accounts.acc.field`, or `per_my_last_email!(acc.field)`).
+    fn target(&self, t: &[TokenTree]) -> Option<(String, String, String)> {
+        let l = self.term(t);
+        let (name, c) = l.iter().next()?;
+        if l.len() != 1 || *c != 1 {
+            return None;
+        }
+        let (acc, field) = name.split_once('.')?;
+        let ticker = self.field_ticker(acc, field)?;
+        Some((acc.to_string(), field.to_string(), ticker))
+    }
+
+    /// Collect an instruction body's money. Only statements at the top of the body are followed:
+    /// a change inside a branch or a loop makes that ticker unknown, and it is not checked.
+    fn flows(&self, t: &[TokenTree], table: &Table, top: bool, f: &mut Flows) {
+        let account = |name: &str| table.accounts.iter().find(|a| a.name == name);
+        let mut i = 0;
+        while i < t.len() {
+            let mac = match (&t[i], t.get(i + 1), t.get(i + 2)) {
+                (TokenTree::Ident(m), Some(TokenTree::Punct(b)), Some(TokenTree::Group(g)))
+                    if b.as_char() == '!' && MONEY_MACROS.contains(&m.to_string().as_str()) =>
+                {
+                    Some((m.to_string(), g.stream().into_iter().collect::<Vec<TokenTree>>()))
+                }
+                _ => None,
+            };
+            if let Some((m, args)) = mac {
+                let parts: Vec<Vec<TokenTree>> = {
+                    let mut v = vec![vec![]];
+                    for x in &args {
+                        if matches!(x, TokenTree::Punct(p) if p.as_char() == ',') {
+                            v.push(vec![]);
+                        } else {
+                            v.last_mut().unwrap().push(x.clone());
+                        }
+                    }
+                    v
+                };
+                self.record(&m, &parts, &args, &account, top, f);
+                i += 3;
+                continue;
+            }
+            if let TokenTree::Group(g) = &t[i] {
+                let inner: Vec<TokenTree> = g.stream().into_iter().collect();
+                // a brace block is a branch or a loop body: its money can't be summed with the rest
+                self.flows(&inner, table, top && g.delimiter() != Delimiter::Brace, f);
+            }
+            i += 1;
+        }
+    }
+
+    fn record<'t>(
+        &self,
+        m: &str,
+        parts: &[Vec<TokenTree>],
+        args: &[TokenTree],
+        account: &dyn Fn(&str) -> Option<&'t Account>,
+        top: bool,
+        f: &mut Flows,
+    ) {
+        let arrow = |p: &[TokenTree]| -> Option<(String, String)> {
+            let k = p.iter().position(
+                |x| matches!(x, TokenTree::Punct(q) if q.as_char() == '=' && q.spacing() == Spacing::Joint),
+            )?;
+            let name = |s: &[TokenTree]| match s {
+                [TokenTree::Ident(i)] => Some(i.to_string()),
+                _ => None,
+            };
+            Some((name(&p[..k])?, name(&p[k + 2..])?))
+        };
+        let note = |ticker: String, ledger: Option<Linear>, moved: Option<Linear>, f: &mut Flows| {
+            if !top {
+                f.unknown.insert(ticker);
+                return;
+            }
+            if let Some(l) = ledger {
+                add_into(f.ledger.entry(ticker.clone()).or_default(), &l, 1);
+            }
+            if let Some(l) = moved {
+                add_into(f.moved.entry(ticker).or_default(), &l, 1);
+            }
+        };
+        match m {
+            "number_go_up" | "aura_farm" => {
+                if let Some((_, _, ticker)) = parts.first().and_then(|p| self.target(p)) {
+                    let by = parts
+                        .get(1)
+                        .map(|p| self.linear(p))
+                        .unwrap_or_else(|| Linear::from([("1".into(), 1)]));
+                    note(ticker, Some(by), None, f);
+                }
+            }
+            "mark_to_market" => {
+                let Some(eq) = args.iter().position(
+                    |x| matches!(x, TokenTree::Punct(p) if p.as_char() == '=' && p.spacing() == Spacing::Alone),
+                ) else {
+                    return;
+                };
+                let Some((acc, field, ticker)) = self.target(&args[..eq]) else {
+                    return;
+                };
+                let mut rhs = self.linear(&args[eq + 1..]);
+                let me = format!("{acc}.{field}");
+                match rhs.get(&me).copied() {
+                    Some(1) => {
+                        rhs.remove(&me);
+                        note(ticker, Some(rhs), None, f);
+                    }
+                    None if account(&acc).map(|a| a.created).unwrap_or(false) => note(ticker, Some(rhs), None, f),
+                    _ => {
+                        f.unknown.insert(ticker);
+                    }
+                }
+            }
+            "send_it" | "full_send" => {
+                let (Some((from, to)), Some(amount)) = (parts.first().and_then(|p| arrow(p)), parts.get(1)) else {
+                    return;
+                };
+                let Some(unit) = self.unit_of(amount) else {
+                    f.untyped_move = true;
+                    return;
+                };
+                let program = |name: &str| {
+                    account(name)
+                        .map(|a| a.seeds.is_some() || a.frame.is_some())
+                        .unwrap_or(false)
+                };
+                // who signs decides the direction: the user paying in, or the program paying out
+                let signer = |name: &str| account(name).map(|a| a.signer).unwrap_or(false);
+                let dir = if m == "send_it" {
+                    match parts.get(2).and_then(|p| match p.as_slice() {
+                        [TokenTree::Ident(i)] => Some(i.to_string()),
+                        _ => None,
+                    }) {
+                        Some(a) if signer(&a) => 1,
+                        Some(a) if account(&a).map(|x| x.seeds.is_some()).unwrap_or(false) => -1,
+                        _ => 0,
+                    }
+                } else if program(&to) && !program(&from) {
+                    1
+                } else {
+                    0
+                };
+                if dir != 0 {
+                    let mut l = Linear::new();
+                    add_into(&mut l, &self.linear(amount), dir);
+                    note(unit.ticker, None, Some(l), f);
+                }
+            }
+            "printer_go_brrr" | "lp_burned" => {
+                if let Some(unit) = parts.get(1).and_then(|p| self.unit_of(p)) {
+                    let mut l = Linear::new();
+                    add_into(
+                        &mut l,
+                        &self.linear(&parts[1]),
+                        if m == "printer_go_brrr" { 1 } else { -1 },
+                    );
+                    note(unit.ticker, None, Some(l), f);
+                }
+            }
+            _ => {}
+        }
+    }
+
+    /// SHI006: for every ticker the program keeps balances in, an instruction's balances must change
+    /// by exactly what comes in, minus what goes out, plus what is minted, minus what is burned.
+    pub fn conservation(&self, body: &[TokenTree], table: &Table, fn_name: &str, at_fn: Span, out: &mut Vec<Diag>) {
+        let ledgers: HashSet<&String> = self
+            .frame_fields
+            .values()
+            .flat_map(|fields| fields.values())
+            .filter(|ty| self.tickers.contains_key(*ty))
+            .collect();
+        let mut f = Flows::default();
+        self.flows(body, table, true, &mut f);
+        if f.untyped_move {
+            return;
+        }
+        let mut tickers: Vec<&String> = f.ledger.keys().chain(f.moved.keys()).collect();
+        tickers.sort();
+        tickers.dedup();
+        for ticker in tickers {
+            if f.unknown.contains(ticker) || !ledgers.contains(ticker) {
+                continue;
+            }
+            let ledger = f.ledger.get(ticker).cloned().unwrap_or_default();
+            let moved = f.moved.get(ticker).cloned().unwrap_or_default();
+            let mut residual = ledger.clone();
+            add_into(&mut residual, &moved, -1);
+            if residual.is_empty() {
+                continue;
+            }
+            let all_pos = residual.values().all(|c| *c > 0);
+            let all_neg = residual.values().all(|c| *c < 0);
+            let r = render(&residual);
+            let abs = {
+                let mut a = Linear::new();
+                add_into(&mut a, &residual, -1);
+                render(&a)
+            };
+            let paid_out_only = ledger.is_empty() && moved.values().all(|c| *c < 0);
+            let (msg, help) = if all_pos && paid_out_only {
+                (
+                    format!("`{fn_name}` pays out `{r}` {ticker} and no balance goes down."),
+                    "lower the balance it's paid from by the same amount, \
+                     e.g. `mark_to_market!(acc.field = per_my_last_email!(acc.field) - amount)`",
+                )
+            } else if all_pos {
+                (
+                    format!("`{fn_name}` creates `{r}` {ticker} out of nothing: balances go up by more than comes in."),
+                    "take it in with `send_it!(from => vault, amount, payer)`, move it from another balance, \
+                     or mark the fn `#[printer_go_brrr]` if it mints on purpose",
+                )
+            } else if all_neg {
+                (
+                    format!("`{fn_name}` loses track of `{abs}` {ticker}: it ends up in no balance."),
+                    "credit it to a balance (a fee account, say), or take in only what you credit; \
+                     mark the fn `#[printer_go_brrr]` if it burns on purpose",
+                )
+            } else {
+                (
+                    format!("`{fn_name}` doesn't add up: its {ticker} balances are off by `{r}`."),
+                    "make what balances gain equal what comes in, and what they lose equal what goes out",
+                )
+            };
+            let (line, col) = at(at_fn);
+            out.push(
+                Diag::error(
+                    msg,
+                    line,
+                    col,
+                    fn_name.chars().count(),
+                    format!(
+                        "balances change by {}, money in or out is {}",
+                        render(&ledger),
+                        render(&moved)
+                    ),
+                )
+                .with_code("SHI006")
+                .with_help(help),
+            );
+        }
+    }
 }

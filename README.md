@@ -9,7 +9,7 @@
 [![license: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![try it: in your browser](https://img.shields.io/badge/try%20it-in%20your%20browser-b6f259.svg)](https://typeshi.tickerz.com/play)
 
-**lock in fn.** A language for code that moves money. Slang over Rust that compiles to plain Solana programs (Anchor 1.2), and refuses to compile the bugs that drain them: an instruction that lets anyone write an account with an owner is a compile error, with the fix and the exploit it prevents. `rug!()` is still a compile error too.
+**lock in fn.** A language for code that moves money. Slang over Rust that compiles to plain Solana programs (Anchor 1.2), and refuses to compile the bugs that drain them: an account anyone can write, USDC added to SOL, a deposit that credits money that never arrived. Each is a compile error with the fix and the exploit it prevents. Seven real exploits, about $469M of losses, are rewritten in typeshi in [`docs/exploits`](docs/exploits), and the build fails if the compiler ever accepts one. `rug!()` is still a compile error too.
 
 **[Try it in your browser](https://typeshi.tickerz.com/play)** · **[Take the tour](https://typeshi.tickerz.com/tour)** (25 lessons, no install) · [Keywords](#keywords) · [Contributing](CONTRIBUTING.md)
 
@@ -95,8 +95,12 @@ error[SHI001]: anyone can write `vault`: `vault.cabal` is never checked against 
 |---|---|---|
 | [`SHI001`](docs/checks/SHI001.md) | an instruction that can write an account with an owner (`cabal: Pubkey`, `authority: Pubkey`, ...) when nothing ties it to a signer, directly or through another account | Cashio, $52.8M (2022) |
 | [`SHI002`](docs/checks/SHI002.md) | adding, subtracting, comparing or writing two different money units: USDC into SOL (off by 1,000x), a cbETH/ETH ratio where a cbETH/USD price belongs | Moonwell, $1.78M (2026) |
+| [`SHI003`](docs/checks/SHI003.md) | a raw `UncheckedAccount` or `AccountInfo` that nothing pins down: no owner, address, seeds or constraint | Wormhole, about $320M (2022); Crema, about $8.8M (2022) |
+| [`SHI004`](docs/checks/SHI004.md) | calling a program the caller picked: a bare `Program`, or a `*_program` account with no `address` | Loopscale, about $5.8M (2025, recovered) |
+| [`SHI005`](docs/checks/SHI005.md) | `init_if_needed`, which lets a second call reset an account | Candy Machine v1, 1,027 SOL (2022) |
+| [`SHI006`](docs/checks/SHI006.md) | money from nowhere or into nowhere: balances that go up by more than comes in, or a payout that lowers no balance | Qubit, about $80M (2022) |
 
-Give each money unit a name with `ticker USDC = 6;` (a plain `u64` in the Rust, so it costs nothing at run time) and typeshi tracks it through fields, params, sums and writes. `typeshi explain SHI001` prints a check's page: what it catches, the fix, what it has cost and what it doesn't catch. Every example on those pages is a test. When anyone really may write an account (a deposit, a public counter), mark it `public` and typeshi lets it through, on purpose.
+Give each money unit a name with `ticker USDC = 6;` (a plain `u64` in the Rust, so it costs nothing at run time) and typeshi tracks it through fields, params, sums and writes, then checks that every instruction's balances move by exactly what comes in through `send_it!`, minus what goes out, plus what is minted. That is the guarantee Move gives Sui and Aptos coins, for the balances a Solana program keeps. `typeshi explain SHI001` prints a check's page: what it catches, the fix, what it has cost and what it doesn't catch. Every example on those pages is a test. When anyone really may write an account (a deposit, a public counter), mark it `public` and typeshi lets it through, on purpose.
 
 ## The compiler has opinions
 
@@ -210,6 +214,8 @@ Also: every successful build prints a fake market cap that is down since you sta
 | `probably_nothing!("fmt", ..)` / `probably_nothing!(Event { .. })` | `msg!` / `emit!` |
 | `bags!(acc)` / `looksmaxx!(n)` / `bps!(a, r)` / `bonding_curve!(s, b, m)` | lamports / `"1.23M"` / `a * r / 10_000` / `b + m * s`, all checked |
 | `full_send!(a => b, n)` / `printer_go_brrr!` / `lp_burned!` | System transfer (0x6 when broke) / SPL `mint_to` / `burn` |
+| `send_it!(from => to, n, authority)` | SPL token transfer. Signed by a signer it is money in; signed by an account with `seeds` it is money out, and typeshi writes the signer seeds for you |
+| `#[printer_go_brrr]` (on a fn) | this instruction mints or burns balance on purpose, so SHI006 skips it |
 | `mint_revoked!` / `freeze_revoked!` / `liquidated!(a => d)` / `layoffs!(a, b => d)` | drop mint / freeze authority / close one / close many |
 | `hostile_takeover!(x.cabal => k)` / `bundled! { }` / `mew!()` / `wen_moon()` | hand over authority / one atomic block / nothing / `"soon™"` |
 

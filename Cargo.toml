@@ -16,6 +16,7 @@ include = [
     "tests/**/*.rs",
     "tests/fixtures/**",
     "docs/checks/**",
+    "docs/exploits/**",
     "editors/vscode/**",
     "hooks/commit-msg",
     ".gitattributes",

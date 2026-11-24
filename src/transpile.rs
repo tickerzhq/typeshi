@@ -35,8 +35,9 @@ pub const BANNED: [(&str, &str); 7] = [
 ];
 
 /// Macros that move lamports or tokens. A fn that uses one must say `// not financial advice`.
-const MOVES_MONEY: [&str; 7] = [
+const MOVES_MONEY: [&str; 8] = [
     "full_send",
+    "send_it",
     "printer_go_brrr",
     "vc_unlock",
     "kol_promo",
@@ -46,7 +47,8 @@ const MOVES_MONEY: [&str; 7] = [
 ];
 
 /// Macros that read or write `ctx.accounts`, so they only work inside an instruction.
-const NEEDS_CTX: [&str; 18] = [
+const NEEDS_CTX: [&str; 19] = [
+    "send_it",
     "per_my_last_email",
     "mark_to_market",
     "number_go_up",
@@ -368,7 +370,10 @@ impl RawItem {
         for a in &self.attrs {
             if let Some(TokenTree::Group(g)) = a.get(1) {
                 let t = inner(g);
-                if is_ident(t.first(), "on_god") || is_ident(t.first(), "tokenmaxx") || is_ident(t.first(), "vc_backed")
+                if is_ident(t.first(), "on_god")
+                    || is_ident(t.first(), "tokenmaxx")
+                    || is_ident(t.first(), "vc_backed")
+                    || is_ident(t.first(), "printer_go_brrr")
                 {
                     continue;
                 }
@@ -532,6 +537,8 @@ pub(crate) fn item_key(t: &[TokenTree]) -> (String, String) {
 
 struct FnCx {
     name: String,
+    /// The cap_table an instruction runs with; empty outside instructions.
+    table: String,
     instruction: bool,
     strip_logs: bool,
     moves_money: bool,
@@ -1146,6 +1153,7 @@ impl<'a> Cx<'a> {
             let mut binds: Vec<String> = vec![];
             let mut constraints: Vec<String> = vec![];
             let mut reinit: Option<Span> = None;
+            let mut seeds: Option<Vec<TokenTree>> = None;
             for a in attrs.chunks(2) {
                 let g = match a.get(1) {
                     Some(TokenTree::Group(g)) => g,
@@ -1172,6 +1180,9 @@ impl<'a> Cx<'a> {
                             constraints.push(first.clone());
                             if first == "init_if_needed" {
                                 reinit = arg.first().map(|t| t.span());
+                            }
+                            if first == "seeds" && is_punct(arg.get(1), '=') {
+                                seeds = group_of(arg.get(2), Delimiter::Bracket).map(inner);
                             }
                             match first.as_str() {
                                 "rent_free" | "init" | "init_if_needed" | "zero" => {
@@ -1259,6 +1270,8 @@ impl<'a> Cx<'a> {
                     kind: guard::Kind::Typed,
                     constraints: constraints.clone(),
                     reinit,
+                    seeds: seeds.clone(),
+                    created: is_init,
                 });
                 self.hint(&rest, &mut fh);
                 h.append(&mut fh);
@@ -1298,6 +1311,8 @@ impl<'a> Cx<'a> {
                 kind: guard::Kind::of(&ty),
                 constraints: constraints.clone(),
                 reinit,
+                seeds: seeds.clone(),
+                created: is_init,
             });
             // #[on_god] accounts are written once, at init
             if !is_init {
@@ -1468,11 +1483,18 @@ impl<'a> Cx<'a> {
             };
             let mut found = vec![];
             units.check(&inner(&body), &mut found);
+            // SHI006: conservation, unless the fn says it mints or burns on purpose
+            if !it.has_attr("printer_go_brrr") {
+                if let Some(table) = self.tables.iter().find(|t| t.name == cap) {
+                    units.conservation(&inner(&body), table, &name, name_span, &mut found);
+                }
+            }
             found.sort_by_key(|d| (d.line, d.col));
             self.diags.extend(found);
         }
         let mut fx = FnCx {
             name: name.clone(),
+            table: cap.clone(),
             instruction: true,
             strip_logs: self.opts.strip_logs || it.has_attr("tokenmaxx"),
             moves_money: false,
@@ -1554,6 +1576,7 @@ impl<'a> Cx<'a> {
         let (name, name_span, params, ret, body) = self.fn_parts(&b[fn_idx..])?;
         let mut fx = FnCx {
             name: name.clone(),
+            table: String::new(),
             instruction: false,
             strip_logs: self.opts.strip_logs,
             moves_money: false,
@@ -1937,6 +1960,63 @@ impl<'a> Cx<'a> {
                      __typeshi_amount)?; }}"
                 )
             }
+            "send_it" => {
+                // send_it!(from => to, amount, authority): an SPL token transfer. A signer authority
+                // signs as itself; a PDA authority signs with its own seeds from the cap_table.
+                let first = args.first().cloned().unwrap_or_default();
+                let (Some((from, to)), Some(amount), Some(auth)) = (split_arrow(&first), args.get(1), args.get(2))
+                else {
+                    self.err_at(
+                        span,
+                        8,
+                        "send_it! reads like `send_it!(from => to, amount, authority)`.",
+                        "send it properly",
+                    );
+                    return Some(toks_of("()"));
+                };
+                let auth_name = ident_str(auth.first()).unwrap_or_default();
+                let account = self
+                    .tables
+                    .iter()
+                    .find(|t| t.name == fx.table)
+                    .and_then(|t| t.accounts.iter().find(|a| a.name == auth_name).cloned());
+                let names: Vec<String> = self
+                    .tables
+                    .iter()
+                    .find(|t| t.name == fx.table)
+                    .map(|t| t.accounts.iter().map(|a| a.name.clone()).collect())
+                    .unwrap_or_default();
+                let (f, t, a, au) = (
+                    self.acc(&from, fx),
+                    self.acc(&to, fx),
+                    self.rw_s(amount, fx),
+                    self.acc(auth, fx),
+                );
+                let accounts = format!(
+                    "anchor_spl::token::Transfer {{ from: {f}.to_account_info(), to: {t}.to_account_info(), authority: {au}.to_account_info() }}"
+                );
+                match account {
+                    Some(acct) if acct.signer => {
+                        format!("anchor_spl::token::transfer(CpiContext::new(anchor_spl::token::ID, {accounts}), {a})?")
+                    }
+                    Some(acct) if acct.seeds.is_some() => {
+                        let seeds = signer_seeds(acct.seeds.as_deref().unwrap_or_default(), &names);
+                        format!(
+                            "anchor_spl::token::transfer(CpiContext::new_with_signer(anchor_spl::token::ID, {accounts}, \
+                             &[&[{seeds}, &[ctx.bumps.{auth_name}]]]), {a})?"
+                        )
+                    }
+                    _ => {
+                        self.err_at(
+                            auth.first().map(|t| t.span()).unwrap_or(span),
+                            auth_name.len().max(1),
+                            format!("`{auth_name}` can't sign for this transfer."),
+                            "it isn't a signer, and it has no `seeds` to sign with",
+                        );
+                        "()".into()
+                    }
+                }
+            }
             "printer_go_brrr" | "lp_burned" | "vc_unlock" => {
                 let first = args.first().cloned().unwrap_or_default();
                 let (a, b) = match split_arrow(&first) {
@@ -2132,6 +2212,23 @@ impl<'a> Cx<'a> {
     }
 }
 
+/// A PDA's `seeds = [...]` from its cap_table, rewritten to run inside the instruction: an account
+/// of the same cap_table (`ser.key()`) becomes `ctx.accounts.ser.key()`.
+fn signer_seeds(seeds: &[TokenTree], accounts: &[String]) -> String {
+    let mut out = vec![];
+    for (i, t) in seeds.iter().enumerate() {
+        let after_dot = i > 0 && is_punct(seeds.get(i - 1), '.');
+        if let TokenTree::Ident(id) = t {
+            if !after_dot && accounts.iter().any(|a| id == a) {
+                out.push(format!("ctx.accounts.{id}"));
+                continue;
+            }
+        }
+        out.push(t.to_string());
+    }
+    out.join(" ")
+}
+
 #[allow(non_snake_case)]
 fn MACRO_ITEM_BANNED(s: &str) -> bool {
     BANNED.iter().any(|(n, _)| *n == s)
@@ -2141,6 +2238,7 @@ impl FnCx {
     fn item() -> Self {
         FnCx {
             name: String::new(),
+            table: String::new(),
             instruction: false,
             strip_logs: false,
             moves_money: false,

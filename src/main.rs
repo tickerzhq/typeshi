@@ -270,6 +270,12 @@ impl State {
 // build
 
 fn find_shi(dir: &Path, found: &mut Vec<PathBuf>) {
+    if dir.is_file() {
+        if dir.extension().map(|x| x == "shi").unwrap_or(false) {
+            found.push(dir.to_path_buf());
+        }
+        return;
+    }
     let rd = match fs::read_dir(dir) {
         Ok(r) => r,
         Err(_) => return,
@@ -287,6 +293,14 @@ fn find_shi(dir: &Path, found: &mut Vec<PathBuf>) {
         } else if p.extension().map(|x| x == "shi").unwrap_or(false) {
             found.push(p);
         }
+    }
+}
+
+/// A file's path relative to the project; a file checked on its own shows as typed.
+fn shown_path(f: &Path, dir: &Path) -> String {
+    match f.strip_prefix(dir) {
+        Ok(p) if !p.as_os_str().is_empty() => p.display().to_string(),
+        _ => f.display().to_string(),
     }
 }
 
@@ -362,7 +376,7 @@ fn transpile_all(out: &Out, dir: &Path, flags: &Flags) -> Transpiled {
             strip_logs: flags.gigamaxx,
             source_name: name,
         };
-        let shown = f.strip_prefix(dir).unwrap_or(&f).display().to_string();
+        let shown = shown_path(&f, dir);
         match typeshi::transpile(&src, &opts) {
             Ok(o) => {
                 for d in &o.diags {
@@ -423,7 +437,7 @@ fn build(out: &Out, dir: &Path, flags: &Flags, st: &mut State) -> (bool, Vec<Gen
         }
     }
     let t = transpile_all(out, dir, flags);
-    if !t.tests && !has_rust_tests(dir) {
+    if !t.tests && dir.is_dir() && !has_rust_tests(dir) {
         let w = typeshi::Diag::warning("no tests found. the trenches are proud of you.", 0, 0, 1, "");
         eprint!("{}", w.render("", "", out.color));
     }
@@ -432,6 +446,10 @@ fn build(out: &Out, dir: &Path, flags: &Flags, st: &mut State) -> (bool, Vec<Gen
         return (false, t.generated);
     }
     if flags.emit_only {
+        return (true, t.generated);
+    }
+    if dir.is_file() {
+        out.say("one file, so the Rust is written next to it. build the project folder to compile it.");
         return (true, t.generated);
     }
     let mut cmd = if dir.join("Anchor.toml").is_file() && on_path("anchor") {
@@ -687,7 +705,7 @@ fn cmd_check(out: &Out, dir: &Path, flags: &Flags) -> i32 {
     }
     let mut tests = false;
     for f in &files {
-        let shown = f.strip_prefix(dir).unwrap_or(f).display().to_string();
+        let shown = shown_path(f, dir);
         let src = match fs::read_to_string(f) {
             Ok(s) => s,
             Err(e) => {
@@ -744,7 +762,7 @@ fn cmd_check(out: &Out, dir: &Path, flags: &Flags) -> i32 {
             }
         }
     }
-    if !files.is_empty() && !tests && !has_rust_tests(dir) {
+    if !files.is_empty() && !tests && dir.is_dir() && !has_rust_tests(dir) {
         report(
             "",
             "",

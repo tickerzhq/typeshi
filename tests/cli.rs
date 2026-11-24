@@ -85,6 +85,23 @@ fn check_fails_on_a_banned_move() {
 }
 
 #[test]
+fn check_takes_a_single_file() {
+    let tmp = scratch("check-one");
+    std::fs::write(tmp.join("rug.shi"), fixture("rug.shi")).unwrap();
+    std::fs::write(tmp.join("other.shi"), "this is not typeshi").unwrap();
+    let o = typeshi(&tmp, &["check", "rug.shi"]);
+    assert_eq!(o.status.code(), Some(1));
+    let err = text(&o.stderr);
+    assert!(err.contains(" --> rug.shi:13:9"), "{err}");
+    assert!(!err.contains("no tests found"), "one file is not a project: {err}");
+    assert!(
+        text(&o.stdout).contains("checked 1 file. 1 error, 0 warnings."),
+        "{}",
+        text(&o.stdout)
+    );
+}
+
+#[test]
 fn check_json_is_one_object_per_line() {
     let tmp = scratch("check-json");
     std::fs::write(tmp.join("lib.shi"), fixture("rug.shi")).unwrap();

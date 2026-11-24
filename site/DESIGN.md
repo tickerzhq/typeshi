@@ -16,12 +16,15 @@ from the real compiler or the repo (`scripts/sync.mjs`), never typed.
 Short on purpose: five beats of different weight, then the footer. Everything longer has its own page.
 
 1. **Hero.** `lock in fn.` in Geist Sans 700 at the display step, with `fn` set as code in lime (Bun sets
-   its one word, *fast*, in its one color). One lede with the punchline, `rug!()` in error red. One button.
+   its one word, *fast*, in its one color). One lede: what it is for (code that moves money), the claim
+   with its number (the bugs behind about $469M of exploits don't compile, added up by `sync.mjs` from
+   `docs/exploits`), and the punchline, `rug!()` in error red. One button.
 2. **The stage.** The real playground, full width, right under the headline, lit from behind by a soft
    lime light (Linear puts its real product there). Nothing under it: the playground speaks for itself.
 3. **The band.** A raised band (Gleam and Deno use bands for rhythm) with a two-tone statement (Linear's:
    the claim in full ink, the rest quieter) and three proofs (Roc's three, Gleam's claim beside its
-   sample). Each proof is a claim, real compiler output and one link out: the `rug!` error (red), lines of
+   sample). Each proof is a claim, real compiler output and one link out: the biggest exploit in
+   `docs/exploits` refused with its check (red, linking to `/exploits`), lines of
    `gm_counter` beside the Rust the compiler writes for them (lime; `sync.mjs` fails the build if the
    compiler stops writing any of them), and the escalation, colored from amber to red as the failures
    pile up.
@@ -78,6 +81,7 @@ share one with `generateStaticParams`, so every card is a static file.
 | `/` | `typeshi check` refusing `rug!(pool)`, the whole rustc-style error, ngmi |
 | `/play`, `/keywords` | lines of `gm_counter` beside the Rust the compiler writes for them (the phrasebook and `keywordPairs`, both checked by `sync.mjs`) |
 | `/tour` | the five chapters and their lesson counts |
+| `/exploits` | `typeshi check` refusing the biggest exploit, with its name and loss in the caption |
 | `/opinions` | `typeshi check` on a Friday deploy |
 | `/tour/<lesson>` | the line of `lib.rs` the solution writes that the lesson checks for, or the error or warning it is about (`proof` in `content.json`, from `sync.mjs`) |
 | `/built` | `.shi` to `lib.rs` to the wasm, its gzipped size, and the page count |
@@ -97,6 +101,7 @@ home's.
 | `/play` | the playground, full screen |
 | `/p/<code>` | a shared program: the playground opened on it. Share makes these (the program is in the path, compressed), so the server can run the compiler and the link preview shows the program's first error as the CLI prints it, or its first lines and wagmi. Rendered per request, the card cached at the edge, kept out of search. Old `/play#code=` links still open |
 | `/tour`, `/tour/<lesson>` | the tour index and its 25 lessons |
+| `/exploits` | the exploit benchmark: every file in `docs/exploits`, biggest loss first. A hairline ledger (name, loss in red, year, check), then one case per exploit: the facts and the source beside the error the compiler prints for it, and a try-it link. `sync.mjs` fails the build if the wasm accepts one or refuses it with another check. It ends on what no compiler stops (stolen keys, prices) |
 | `/opinions` | banned moves (each with a try-it link), three real error transcripts, the escalation, codes 0x1 to 0x6, the confessions |
 | `/keywords` | the keyword table with search, and how the compiler works |
 | `/built` | how it's built: from `.shi` to the screen, the stack with versions read at build, the design system, the checks, the open files |

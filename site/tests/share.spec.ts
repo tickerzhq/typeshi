@@ -33,12 +33,12 @@ test("robots.txt points at a sitemap that lists every page and lesson", async ({
   expect(robots).toContain("sitemap.xml");
   expect(robots).toContain("Disallow: /p/");
   const sitemap = await (await request.get("/sitemap.xml")).text();
-  for (const path of ["/tour", "/play", "/opinions", "/keywords", "/built"]) expect(sitemap).toContain(`${path}</loc>`);
+  for (const path of ["/tour", "/play", "/exploits", "/opinions", "/keywords", "/built"]) expect(sitemap).toContain(`${path}</loc>`);
   for (const l of content.tour) expect(sitemap).toContain(`/tour/${l.slug}</loc>`);
 });
 
 test("no page shouts: nothing renders in all caps outside code", async ({ page }) => {
-  for (const path of ["/", "/play", "/tour", `/tour/${content.tour[0].slug}`, "/opinions", "/keywords", "/built"]) {
+  for (const path of ["/", "/play", "/tour", `/tour/${content.tour[0].slug}`, "/exploits", "/opinions", "/keywords", "/built"]) {
     await page.goto(path);
     const shouting = await page.evaluate(() => {
       const out: string[] = [];
