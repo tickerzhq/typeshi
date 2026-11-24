@@ -5,27 +5,31 @@ For the brand (the `fn` mark, the compiler's own output, the voice) see [`brand/
 
 ## The idea
 
-The compiler is the hero. The page around it reads like a product: Geist Sans for headings and reading,
-Geist Mono only for what you would type or what the compiler prints. The colors are rustc's, and each
-one has a job: lime means it worked (wagmi) and is the one action, red means it didn't (ngmi), amber is
-a warning, and the editor's violet marks keywords. Every number, error and code sample on the site comes
-from the real compiler or the repo (`scripts/sync.mjs`), never typed.
+The compiler is the hero, and typeshi is a Tickerz project, so the page around it wears Tickerz's live
+system: Petrol (the teal-black ground, its text tones and lines, one teal accent, its down red), Geist
+for words and Geist Mono for what you would type or what the compiler prints, headlines light (weight
+400 at -0.03em), pill buttons, 12 px cards, a solid bar with a hairline, and no glows, gradients or
+blur. The values are read from tickerz.com's own tokens (`palette.petrol` and `palette.paper` in
+`tokens/tokens.json` say which variable each came from), not redrawn. What stays typeshi's is the
+register: the slang, the `fn` mark, and the compiler's colors, each with a job: teal means it worked
+(wagmi) and is the one action, red means it didn't (ngmi), amber is a warning. Every number, error and
+code sample on the site comes from the real compiler or the repo (`scripts/sync.mjs`), never typed.
 
 ## The home
 
 Short on purpose: five beats of different weight, then the footer. Everything longer has its own page.
 
-1. **Hero.** `lock in fn.` in Geist Sans 700 at the display step, with `fn` set as code in lime (Bun sets
+1. **Hero.** `lock in fn.` in Geist at weight 400 and -0.03em, as Tickerz sets its headlines, at the display step, with `fn` set as code in the brand teal (Bun sets
    its one word, *fast*, in its one color). One lede: what it is for (code that moves money), the claim
    with its number (the bugs behind about $469M of exploits don't compile, added up by `sync.mjs` from
    `docs/exploits`), and the punchline, `rug!()` in error red. One button.
-2. **The stage.** The real playground, full width, right under the headline, lit from behind by a soft
-   lime light (Linear puts its real product there). Nothing under it: the playground speaks for itself.
+2. **The stage.** The real playground, full width, right under the headline, on the plain ground, no light behind it
+   (Linear puts its real product there; Tickerz allows no glows). Nothing under it: the playground speaks for itself.
 3. **The band.** A raised band (Gleam and Deno use bands for rhythm) with a two-tone statement (Linear's:
    the claim in full ink, the rest quieter) and three proofs (Roc's three, Gleam's claim beside its
    sample). Each proof is a claim, real compiler output and one link out: the biggest exploit in
    `docs/exploits` refused with its check (red, linking to `/exploits`), lines of
-   `gm_counter` beside the Rust the compiler writes for them (lime; `sync.mjs` fails the build if the
+   `gm_counter` beside the Rust the compiler writes for them (teal; `sync.mjs` fails the build if the
    compiler stops writing any of them), and the escalation, colored from amber to red as the failures
    pile up.
 4. **dyor.** Four doors in a hairline grid (Tailwind's and Geist's framed cells): tour, playground,
@@ -42,7 +46,7 @@ tailwindcss.com, Geist and linear.app, is in the pull request that made the chan
 
 ## The mark
 
-The mark is the header's `fn` tile: `fn` in Geist Mono Bold, dark (`text-on-accent`) on a lime tile
+The mark is the header's `fn` tile: `fn` in Geist Mono Bold, dark (`text-on-accent`) on a brand-teal tile
 (`accent-fill`) with corners a sixth of its side, before the mono name (`.tile` in `site.module.css`).
 Every site in the research leads with a mark the eye can find. Since Nov 22 2026 it is also every icon
 and the corner of every share card (below), so a tab, a home screen and a link preview all show the
@@ -57,7 +61,7 @@ the pull request that added them.
 
 | file | size | why |
 |---|---|---|
-| `src/app/icon.svg` | any | the tab. Linear's filled tile: it holds on a dark or a light tab bar. With a light scheme it gets a hairline in the light theme's green, because lime on white has about 1.2:1 of edge |
+| `src/app/icon.svg` | any | the tab. Linear's filled tile: it holds on a dark or a light tab bar. With a light scheme it gets a hairline in the light theme's dark teal, because teal on white has about 1.5:1 of edge |
 | `src/app/favicon.ico` | 16, 32, 48 | for crawlers, feed readers and anything that asks for `/favicon.ico` without reading the page |
 | `src/app/apple-icon.png` | 180 | iOS reads neither SVG nor the manifest. Full bleed: iOS rounds the corners and paints transparent ones black |
 | `public/icons/icon-192.png`, `icon-512.png` | 192, 512 | the manifest (`src/app/manifest.ts`), the tile as the tab shows it |
@@ -73,7 +77,7 @@ the same drawing a pixel differently.
 Every page has its own 1200 x 630 card, drawn at build by `next/og` (Satori and resvg) from one template,
 `src/lib/card.tsx`, the way Linear and Bun template theirs: the mark and wordmark with the version, the
 page's path, where you are (`tour · basics · lesson 2 of 25`), the title in Geist 700, and real compiler
-output in a terminal under the home's stage light. Each route has an `opengraph-image.tsx`; the 25 lessons
+output in a terminal on the ground. Each route has an `opengraph-image.tsx`; the 25 lessons
 share one with `generateStaticParams`, so every card is a static file.
 
 | card | the terminal shows |
@@ -149,8 +153,8 @@ build on the same values.
 - **Light** is the brand's light palette (the README header's light colors), for reading in daylight. The
   half-filled circle in the header turns it on and the choice is remembered (`localStorage`
   `typeshi:theme`). A script in `<head>` applies it before the first paint, so there is no flash.
-  Accent text turns dark green in light, because the lime fails contrast as text on white; the lime
-  stays as the button fill.
+  Light is Tickerz's paper ground; accent text turns its dark teal (`palette.paper.brand`), because the
+  bright teal fails contrast as text on paper; the bright teal stays as the button fill.
 - **More contrast** follows the system (`prefers-contrast: more`): secondary and tertiary text move to
   near-primary, borders darken, the error red lightens.
 - **Display P3**: `red-290` (ngmi) is mapped into sRGB as its token value; screens with P3 get its full
@@ -253,11 +257,11 @@ Vercel Web Analytics and Speed Insights, on Vercel only (no cookies, nothing to 
 
 | color | token | means | where |
 |---|---|---|---|
-| lime | `accent-*` | wagmi: it worked, and go | the one button per page, `fn` in the headline, passes, the tour's door |
-| red | `state-error` | ngmi: it didn't | errors, banned moves, `rug!()` in the lede, the opinions door |
+| teal (Tickerz's brand) | `accent-*` | wagmi: it worked, and go | the one button per page, `fn` in the headline, passes, the slang in the editor, the tour's door |
+| red (Tickerz's down) | `state-error` | ngmi: it didn't | errors, banned moves, `rug!()` in the lede, the opinions door |
 | amber | `state-warning` | a warning | warnings, the first strike of the escalation |
 | amber to red | `color-mix` of the two | it's getting worse | the escalation on the home, one step per failure |
-| violet | `syntax-keyword` | a keyword | keywords in the editor, the keywords door |
+| plain text | `syntax-keyword` | a Rust keyword | keywords stay plain so the slang carries the color. No violet: Tickerz has no purple (Nov 6 2026) |
 
 Nothing is colored for decoration. A new color needs a job first.
 
@@ -265,7 +269,7 @@ Nothing is colored for decoration. A new color needs a job first.
 
 - `PageHead` (the top of `/tour`, `/opinions`, `/keywords` and the 404), `Doors` (the four ways into the
   site, with counts from `content.json`), `Footer` (every reading page; not the playground or a lesson,
-  which fill the screen) and the global `.button` (the lime primary action, and `data-quiet` for a second
+  which fill the screen) and the global `.button` (the brand-teal pill, the primary action, and `data-quiet` for a second
   way in).
 - One tabs primitive (`src/components/Tabs.tsx`) for the playground and the lesson, after the WAI-ARIA
   tabs pattern: one tab in the tab order, arrow keys and Home and End move, each tab names its panel.
@@ -344,3 +348,11 @@ Rust it becomes, the banned moves, the fixed error codes, a whole program and th
   its program before the editor loads; cross-document slides in the tour; `/llms.txt` and `/tokens/`.
   Fixed on the way: the header overflowed at 320 px, and on phones a lesson's terminal and lib.rs panes
   were 0 px tall.
+- **Nov 24 2026, the Tickerz look**: typeshi lives at typeshi.tickerz.com and is a Tickerz project, so it
+  wears the parent's live system instead of its own. The source was tickerz.com as served (measured in
+  a browser: Petrol ground, Geist with 400-weight headlines, teal pill primary, outline pill secondary,
+  12 px cards, a plain bar), not Tickerz's DESIGN.md, which still described square corners. Lime and
+  violet left the palette (lime is a color other brands own; Tickerz has no purple); the stage light,
+  the card's glow and the bar's blur went; buttons, the select and the theme toggle are pills; the
+  primary button's APCA floor is Lc 60, the job's floor for a 16 px label, which Tickerz's own button
+  (Lc 69.5) clears.

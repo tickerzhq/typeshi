@@ -82,7 +82,7 @@ pre {
   background: var(--accent-fill);
   color: var(--text-on-accent);
   padding: var(--space-xs) var(--space-s);
-  border-radius: var(--radius-sm);
+  border-radius: 999px;
   font-weight: var(--weight-bold);
   text-decoration: none;
 }
@@ -111,8 +111,8 @@ pre {
 }
 .page-head h1 {
   margin: 0;
-  font: var(--weight-heavy) var(--step-heading) / var(--leading-heading) var(--font-sans);
-  letter-spacing: -0.045em;
+  font: var(--weight-regular) var(--step-heading) / var(--leading-heading) var(--font-sans);
+  letter-spacing: -0.03em;
 }
 .page-head h1 code {
   font-size: 0.92em;
@@ -137,10 +137,11 @@ pre {
   max-width: 100%;
   padding: var(--space-2xs) var(--space-m);
   border: 1px solid var(--accent-fill);
-  border-radius: var(--radius-sm);
+  /* Tickerz's buttons are pills */
+  border-radius: 999px;
   background: var(--accent-fill);
   color: var(--text-on-accent);
-  font: var(--weight-bold) var(--step-body) / var(--leading-snug) var(--font-sans);
+  font: var(--weight-medium) var(--step-body) / var(--leading-snug) var(--font-sans);
   letter-spacing: -0.01em;
   text-decoration: none;
   text-wrap: balance;

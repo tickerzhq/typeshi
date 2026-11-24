@@ -54,10 +54,10 @@ test("every PNG and the .ico were drawn from today's drawing, at their sizes (ru
   }
 });
 
-test("the mark is the header's: lime tile, dark fn, colors from the tokens", () => {
+test("the mark is the header's: brand-teal tile, dark fn, colors from the tokens", () => {
   assert.equal(INK.tile, colors.dark["accent-fill"]);
   assert.equal(INK.fn, colors.dark["text-on-accent"]);
-  assert.equal(INK.tile, colors.light["accent-fill"], "the tile is lime in both themes");
+  assert.equal(INK.tile, colors.light["accent-fill"], "the tile is the brand teal in both themes");
   const svg = drawing({ radius: 1 / 6, width: 0.66 });
   assert.match(svg, /^<svg [^>]*viewBox="0 0 512 512"><rect [^>]*fill="#[0-9a-f]{6}"\/><g fill="#[0-9a-f]{6}"><path /);
   assert.doesNotMatch(svg, /<text|font-family/, "the letters are outlines, not text that depends on the reader's fonts");

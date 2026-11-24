@@ -3,40 +3,138 @@
   "$description": "The light theme: the brand's light palette (brand/README.md), the same names as the dark one.",
   "color": {
     "surface": {
-      "page": { "$value": "{palette.gray.0}" },
-      "raised": { "$value": "{palette.gray.15}" },
-      "sunk": { "$value": "{palette.gray.25}" },
-      "terminal": { "$value": "{palette.gray.35}" }
+      "page": {
+        "$value": "{palette.paper.ground}"
+      },
+      "raised": {
+        "$value": "{palette.paper.panel}"
+      },
+      "sunk": {
+        "$value": "{palette.paper.sunk}"
+      },
+      "terminal": {
+        "$value": "{palette.paper.panel-2}"
+      }
     },
     "text": {
-      "primary": { "$value": "{palette.gray.780}" },
-      "secondary": { "$value": "{palette.gray.560}" },
-      "tertiary": { "$value": "{palette.gray.470}" }
+      "primary": {
+        "$value": "{palette.paper.text}"
+      },
+      "secondary": {
+        "$value": "{palette.paper.text-2}"
+      },
+      "tertiary": {
+        "$value": "{palette.paper.mute}"
+      }
     },
-    "border": { "default": {"$value": "{palette.gray.80}"}, "strong": {"$value": "{palette.gray.140}"} },
+    "border": {
+      "default": {
+        "$value": "{palette.paper.line}"
+      },
+      "strong": {
+        "$value": "{palette.paper.line-strong}"
+      }
+    },
     "accent": {
-      "text": { "$value": "{palette.lime.480}" },
-      "selection": { "$value": {"colorSpace": "oklch", "components": [0.52, 0.15, 135], "alpha": 0.2} }
+      "text": {
+        "$value": "{palette.paper.brand}"
+      },
+      "selection": {
+        "$value": {
+          "colorSpace": "oklch",
+          "components": [
+            0.4818,
+            0.082,
+            197.0
+          ],
+          "alpha": 0.2
+        }
+      }
     },
-    "state": { "error": {"$value": "{palette.red.460}"}, "warning": {"$value": "{palette.amber.470}"} },
+    "state": {
+      "error": {
+        "$value": "{palette.paper.down}"
+      },
+      "warning": {
+        "$value": "{palette.amber.470}"
+      }
+    },
     "syntax": {
-      "keyword": { "$value": "{palette.violet.500}" },
-      "string": { "$value": "{palette.sand.500}" },
-      "number": { "$value": "{palette.orange.470}" },
-      "type": { "$value": "{palette.sky.500}" },
-      "function": { "$value": "{palette.teal.500}" },
-      "macro": { "$value": "{palette.mint.500}" }
+      "keyword": {
+        "$value": "{color.text.primary}"
+      },
+      "string": {
+        "$value": "{palette.sand.500}"
+      },
+      "number": {
+        "$value": "{palette.orange.470}"
+      },
+      "type": {
+        "$value": "{palette.sky.500}"
+      },
+      "function": {
+        "$value": "{palette.teal.500}"
+      },
+      "macro": {
+        "$value": "{palette.mint.500}"
+      }
     },
     "overlay": {
-      "subtle": { "$value": {"colorSpace": "oklch", "components": [0, 0, 0], "alpha": 0.025} },
-      "hover": { "$value": {"colorSpace": "oklch", "components": [0, 0, 0], "alpha": 0.04} },
-      "chip": { "$value": {"colorSpace": "oklch", "components": [0, 0, 0], "alpha": 0.05} },
-      "strong": { "$value": {"colorSpace": "oklch", "components": [0, 0, 0], "alpha": 0.07} }
+      "subtle": {
+        "$value": {
+          "colorSpace": "oklch",
+          "components": [
+            0,
+            0,
+            0
+          ],
+          "alpha": 0.025
+        }
+      },
+      "hover": {
+        "$value": {
+          "colorSpace": "oklch",
+          "components": [
+            0,
+            0,
+            0
+          ],
+          "alpha": 0.04
+        }
+      },
+      "chip": {
+        "$value": {
+          "colorSpace": "oklch",
+          "components": [
+            0,
+            0,
+            0
+          ],
+          "alpha": 0.05
+        }
+      },
+      "strong": {
+        "$value": {
+          "colorSpace": "oklch",
+          "components": [
+            0,
+            0,
+            0
+          ],
+          "alpha": 0.07
+        }
+      }
     },
     "contrast": {
-      "text": { "$value": "{palette.gray.670}" },
-      "border": { "$value": "{palette.gray.470}" },
-      "error": { "$value": "{palette.red.460}" }
+      "text": {
+        "$value": "{palette.paper.text}"
+      },
+      "border": {
+        "$value": "{palette.paper.mute}"
+      },
+      "error": {
+        "$value": "{palette.paper.down}"
+      }
     }
   }
 }

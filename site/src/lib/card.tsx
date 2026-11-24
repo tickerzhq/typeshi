@@ -6,7 +6,7 @@ import { colors } from "@/lib/tokens";
 
 // The share card every page gets: 1200 x 630, rendered at build time by next/og (Satori and resvg), one
 // template like Linear's and Bun's (research in the PR). The mark and the wordmark, where you are, the page's
-// title big in Geist, and real compiler output in a terminal under a soft lime light, like the home's stage.
+// title big in Geist, light as Tickerz sets it, and real compiler output in a terminal on the ground.
 // Every color is a token; every line in the terminal comes from content.json, which scripts/sync.mjs fills
 // from the real compiler.
 
@@ -44,7 +44,7 @@ const TONE: Record<Tone, string> = {
   code: c["text-primary"],
 };
 
-/** The header's mark: fn on a lime tile, the corner 1/6 of the side (DESIGN.md, "The mark"). */
+/** The header's mark: fn on a brand-teal tile, the corner 1/6 of the side (DESIGN.md, "The mark"). */
 function Mark() {
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
@@ -171,8 +171,6 @@ export async function card({ path, kicker, title, titleLength, titleSize: fixed,
           flexDirection: "column",
           padding: `52px ${PAD}px ${PAD - 8}px`,
           background: c["surface-page"],
-          // The home's stage light: lime, soft, from behind the terminal.
-          backgroundImage: `radial-gradient(ellipse 720px 260px at 50% 78%, ${c["accent-fill"]}24, ${c["accent-fill"]}00)`,
           color: c["text-primary"],
           fontFamily: SANS,
         }}
@@ -188,10 +186,10 @@ export async function card({ path, kicker, title, titleLength, titleSize: fixed,
               display: "flex",
               flexWrap: "wrap",
               alignItems: "baseline",
-              fontWeight: 700,
+              fontWeight: 400,
               fontSize: size,
               lineHeight: 1,
-              letterSpacing: "-0.045em",
+              letterSpacing: "-0.03em",
               maxWidth: CARD.width - 2 * PAD,
             }}
           >
@@ -217,7 +215,7 @@ export function pairLines(pairs: string[][]): Line[] {
   }));
 }
 
-/** The home's headline: lock in, then fn as code in lime, as in the hero. */
+/** The home's headline: lock in, then fn as code in the brand teal, as in the hero. */
 export function LockInFn() {
   return (
     <>

@@ -3,9 +3,8 @@
   top: 0;
   z-index: 20;
   container: header / inline-size;
-  background: color-mix(in oklch, var(--surface-page) 82%, transparent);
-  backdrop-filter: saturate(140%) blur(12px);
-  -webkit-backdrop-filter: saturate(140%) blur(12px);
+  /* solid ground and a hairline, as tickerz.com's bar: no blur */
+  background: var(--surface-page);
   border-bottom: 1px solid var(--border-default);
 }
 .headerIn {
@@ -47,7 +46,7 @@
   border-radius: var(--radius-xs);
   background: var(--accent-fill);
   color: var(--text-on-accent);
-  font: var(--weight-heavy) var(--step-label) / 1 var(--font-mono);
+  font: var(--weight-mark) var(--step-label) / 1 var(--font-mono);
   letter-spacing: -0.04em;
 }
 .nav {
@@ -65,7 +64,7 @@
   min-height: var(--size-control);
   padding: 0 var(--space-xs);
   border: 0;
-  border-radius: var(--radius-sm);
+  border-radius: 999px;
   background: transparent;
   font: var(--weight-medium) var(--step-small) / 1 var(--font-sans);
   color: var(--text-secondary);

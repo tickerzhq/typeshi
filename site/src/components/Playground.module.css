@@ -70,7 +70,7 @@
   background-size: 5px 5px;
   background-repeat: no-repeat;
   border: 1px solid var(--border-strong);
-  border-radius: var(--radius-sm);
+  border-radius: 999px;
   padding: 0 var(--space-l) 0 var(--space-xs);
   height: var(--size-control);
   min-width: 0;
@@ -93,7 +93,7 @@
   gap: var(--space-2xs);
   height: var(--size-control);
   padding: 0 var(--space-xs);
-  border-radius: var(--radius-sm);
+  border-radius: 999px;
   border: 1px solid var(--border-strong);
   background: transparent;
   color: var(--text-primary);

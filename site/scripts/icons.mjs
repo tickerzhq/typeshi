@@ -1,4 +1,4 @@
-// Draws every icon the site serves from one drawing: the header's mark, `fn` in Geist Mono Bold on a lime
+// Draws every icon the site serves from one drawing: the header's mark, `fn` in Geist Mono Bold on a brand-teal
 // tile (DESIGN.md, "The mark"). The letters are Geist Mono's own outlines (scripts/glyphs.mjs reads them out of
 // the font), and every color is a token (src/lib/tokens.ts), so nothing depends on fonts the reader has.
 //
@@ -50,14 +50,14 @@ function fn(width) {
 /**
  * The drawing. `radius` is the tile's corner as a share of its side (the header's 4 px on 24 px is 1/6;
  * 0 is a full-bleed square for platforms that round it themselves). `width` is how much of the tile
- * `fn` spans. `adaptive` adds the edge a lime tile needs on a light tab bar, behind a media query.
+ * `fn` spans. `adaptive` adds the edge a teal tile needs on a light tab bar, behind a media query.
  */
 export function drawing({ radius, width, adaptive = false }) {
   const rx = radius ? ` rx="${n(VIEW * radius)}"` : "";
   const parts = [`<rect width="${VIEW}" height="${VIEW}"${rx} fill="${INK.tile}"/>`, `<g fill="${INK.fn}">${fn(width)}</g>`];
   if (adaptive) {
-    // On a light tab bar a lime tile has almost no edge (about 1.2:1 against white), so there it gets a
-    // hairline in the light theme's dark green. On a dark tab bar the lime is the edge.
+    // On a light tab bar a teal tile has little edge (about 1.5:1 against white), so there it gets a
+    // hairline in the light theme's dark teal. On a dark tab bar the teal is the edge.
     const w = EDGE;
     parts.unshift(`<style>.edge{stroke:${INK.edge}}@media (prefers-color-scheme:dark){.edge{stroke:none}}</style>`);
     parts.push(`<rect class="edge" x="${w / 2}" y="${w / 2}" width="${VIEW - w}" height="${VIEW - w}" rx="${n(VIEW * radius - w / 2)}" fill="none" stroke-width="${w}"/>`);
