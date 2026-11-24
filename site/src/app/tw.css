@@ -1,0 +1,80 @@
+/* Tailwind, as tickerz.com runs it (Tailwind 4, the same version), on typeshi's tokens. Only the theme and the
+   utilities are loaded: no preflight, so the pages still styled by CSS modules keep their own element styles.
+   Every value below is a name for a token from tokens/*.json (tokens.css, written by npm run tokens); none is set
+   here. Tailwind's own colors, sizes, corners and breakpoints are cleared so a class can only reach the tokens.
+
+   Spacing is Tailwind's 4px step (p-4 is 16px, mt-20 is 80px): the same 4px scale the tokens use, so the layout
+   math is whole steps. The numbers used are tickerz.com's own, read from its source (tk-home.css): a section is
+   80px of space, a hairline, 32px, its heading (48px and 24px on a phone); a hero starts 88px under the bar (40px on
+   a phone); cards are 16px apart with 16px inside; a row is 20px above and below. DESIGN.md, "Structure". */
+
+@layer theme, base, components, utilities;
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities);
+
+@theme {
+  --color-*: initial;
+  --color-page: var(--surface-page);
+  --color-raised: var(--surface-raised);
+  --color-sunk: var(--surface-sunk);
+  --color-terminal: var(--surface-terminal);
+  --color-line: var(--border-default);
+  --color-line-strong: var(--border-strong);
+  --color-ink: var(--text-primary);
+  --color-ink-2: var(--text-secondary);
+  --color-ink-3: var(--text-tertiary);
+  --color-brand: var(--accent-fill);
+  --color-brand-hover: var(--accent-fill-hover);
+  --color-brand-text: var(--accent-text);
+  --color-on-brand: var(--text-on-accent);
+  --color-error: var(--state-error);
+  --color-warn: var(--state-warning);
+  --color-hover: var(--overlay-hover);
+  --color-slang: var(--syntax-slang);
+  --color-transparent: transparent;
+
+  /* The type steps (tokens.json font.step) as Tailwind sizes: text-display, text-section, text-lede ... */
+  --text-*: initial;
+  --text-display: var(--step-display);
+  --text-heading: var(--step-heading);
+  --text-title: var(--step-title);
+  --text-section: var(--step-section);
+  --text-subhead: var(--step-subhead);
+  --text-lede: var(--step-lede);
+  --text-body: var(--step-body);
+  --text-small: var(--step-small);
+  --text-label: var(--step-label);
+  --text-code: var(--step-code);
+
+  /* The grid's three widths, and nothing else (tickerz.com: "a component never switches at 640, 768 or 1024"). */
+  --breakpoint-*: initial;
+  --breakpoint-sm: 600px;
+  --breakpoint-md: 900px;
+  --breakpoint-lg: 1100px;
+
+  /* Corners: the card's 12px, the control's 8px, and pills. */
+  --radius-*: initial;
+  --radius-card: var(--radius-md);
+  --radius-control: var(--radius-sm);
+  --radius-tag: var(--radius-xs);
+
+  --ease-*: initial;
+  --ease-snap: var(--ease-out);
+  --default-transition-duration: var(--dur-hover);
+  --default-transition-timing-function: var(--ease-out);
+}
+
+/* The page grid as a utility, the same as tickerz.com's tk-grid: 4, 8 or 12 columns (--cols, globals.css), 16px apart.
+   Put a block on it with spans: <div class="grid-page"><div class="col-span-4 lg:col-span-6">. */
+@utility grid-page {
+  display: grid;
+  grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
+  column-gap: var(--size-gap);
+}
+/* The page frame: 1440px at most, centred, the gutter at each edge (tickerz.com's tk-frame). */
+@utility frame {
+  width: 100%;
+  max-width: var(--size-page);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
