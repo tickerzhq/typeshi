@@ -203,3 +203,44 @@ fn build_points_rustc_errors_at_the_shi() {
     assert_eq!(err.matches("lib.shi:").count(), 3, "{err}");
     assert!(text(&o.stdout).contains("ngmi"));
 }
+
+#[test]
+fn allowance_prints_a_wallet_policy_and_refuses_a_blank_check() {
+    let tmp = scratch("allowance");
+    let good = "pocket_money bot {
+        ticker USDC = 6;
+        mint USDC = \"EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v\";
+        cap USDC = 250;
+        pay USDC => [\"7h44au9S2DwyKgAbsepUv459K59cEHBqE9EjSCtC15bi\"];
+    }";
+    std::fs::write(tmp.join("bot.shi"), good).unwrap();
+    let o = typeshi(&tmp, &["allowance", "bot.shi", "--to", "turnkey"]);
+    assert_eq!(o.status.code(), Some(0), "{}", text(&o.stderr));
+    let v: serde_json::Value = serde_json::from_str(&text(&o.stdout)).expect("JSON on stdout");
+    assert_eq!(v["effect"], "EFFECT_ALLOW");
+    let all = typeshi(&tmp, &["allowance", "bot.shi"]);
+    let v: serde_json::Value = serde_json::from_str(&text(&all.stdout)).expect("JSON on stdout");
+    assert!(
+        v["cdp"].is_object() && v["turnkey"].is_object() && v["privy"].is_object(),
+        "{v}"
+    );
+    assert!(
+        text(&all.stderr).contains("note (cdp): CDP accepts any operation"),
+        "{}",
+        text(&all.stderr)
+    );
+
+    std::fs::write(tmp.join("bad.shi"), good.replace("cap USDC = 250;", "")).unwrap();
+    let o = typeshi(&tmp, &["allowance", "bad.shi"]);
+    assert_eq!(o.status.code(), Some(1));
+    assert!(
+        text(&o.stderr).contains("error[SHI008]: `USDC` has no cap: that is a blank check."),
+        "{}",
+        text(&o.stderr)
+    );
+    assert!(
+        text(&o.stdout).is_empty(),
+        "nothing a wallet could take: {}",
+        text(&o.stdout)
+    );
+}

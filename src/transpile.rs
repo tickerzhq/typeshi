@@ -682,6 +682,12 @@ impl<'a> Cx<'a> {
         let mut items = vec![];
         let mut declare_id: Option<String> = None;
         for it in split_items(toks) {
+            // an agent's allowance: checked here (SHI008), compiled by `typeshi allowance`, no Rust
+            if it.keyword() == "pocket_money" {
+                let (_, found) = crate::policy::check_item(it.after_vis());
+                self.diags.extend(found);
+                continue;
+            }
             if it.keyword() == "stealth_launch" {
                 let b = it.after_vis();
                 let name = ident_str(b.get(1));
@@ -697,7 +703,14 @@ impl<'a> Cx<'a> {
                             );
                         }
                         self.program = Some(n);
-                        items.extend(split_items(&inner(g)));
+                        for inner_it in split_items(&inner(g)) {
+                            if inner_it.keyword() == "pocket_money" {
+                                let (_, found) = crate::policy::check_item(inner_it.after_vis());
+                                self.diags.extend(found);
+                            } else {
+                                items.push(inner_it);
+                            }
+                        }
                     }
                     _ => self.err_at(
                         b[0].span(),

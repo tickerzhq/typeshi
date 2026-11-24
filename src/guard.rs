@@ -123,6 +123,11 @@ pub const CHECKS: &[Check] = &[
         title: "a conversion that comes out in the wrong unit or off by a power of ten",
         doc: include_str!("../docs/checks/SHI007.md"),
     },
+    Check {
+        code: "SHI008",
+        title: "an agent allowance that is a blank check",
+        doc: include_str!("../docs/checks/SHI008.md"),
+    },
 ];
 
 /// The check with this code, any case (`shi001` works).

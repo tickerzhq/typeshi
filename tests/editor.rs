@@ -46,6 +46,7 @@ fn grammar_knows_the_slang() {
     for word in [
         // items
         "stealth_launch",
+        "pocket_money",
         "frame",
         "term_sheet",
         "cap_table",

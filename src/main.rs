@@ -25,12 +25,16 @@ usage:
   typeshi check [dir]      typeshi's own checks only. no anchor, no writes. fast, for CI
   typeshi expand <file>    print the Rust a .shi file turns into
   typeshi explain [code]   what a check catches, the exploit behind it, the fix (e.g. SHI001)
+  typeshi allowance <file> an agent's pocket_money as wallet policy JSON: Coinbase CDP, Turnkey, Privy
   typeshi fud [dir]        a roast of your code (also: typeshi --fud)
   typeshi wen moon         answers the question
 
 check flags:
   --json                   one JSON diagnostic per line on stdout, for editors and CI
   --locked                 also fail if a generated .rs is missing or stale
+
+allowance flags:
+  --to <cdp|turnkey|privy> just that wallet's policy, ready to send to its API
 
 build flags:
   --emit-only              write the .rs files and stop
@@ -54,6 +58,7 @@ struct Flags {
     arch: Option<String>,
     json: bool,
     locked: bool,
+    to: Option<String>,
 }
 
 struct Out {
@@ -110,6 +115,7 @@ fn run() -> i32 {
         arch: None,
         json: false,
         locked: false,
+        to: None,
     };
     let mut pos: Vec<String> = vec![];
     let mut args = env::args().skip(1);
@@ -131,6 +137,13 @@ fn run() -> i32 {
             },
             "--fud" => flags.fud = true,
             "--json" => flags.json = true,
+            "--to" => match args.next() {
+                Some(t) if matches!(t.as_str(), "cdp" | "turnkey" | "privy") => flags.to = Some(t),
+                _ => {
+                    eprintln!("error: --to takes cdp, turnkey or privy");
+                    return NGMI;
+                }
+            },
             "--locked" => flags.locked = true,
             "--leverage" => match args.next().as_deref().and_then(banter::parse_leverage) {
                 Some(n) => flags.leverage = Some(n),
@@ -197,6 +210,13 @@ fn run() -> i32 {
             }
         },
         "explain" => cmd_explain(pos.get(1).map(|s| s.as_str())),
+        "allowance" => match pos.get(1) {
+            Some(f) => cmd_allowance(Path::new(f), &flags),
+            None => {
+                eprintln!("error: allowance for what, ser? `typeshi allowance agent.shi --to turnkey`");
+                NGMI
+            }
+        },
         "fud" => cmd_fud(&out, dir.to_str().unwrap_or(".")),
         "wen" if pos.get(1).map(|s| s == "moon").unwrap_or(false) => {
             println!("{}", typeshi::wen_moon());
@@ -944,5 +964,69 @@ fn cmd_fud(out: &Out, dir: &str) -> i32 {
     }
     let (_, nanos) = now();
     out.say(&banter::fud(nanos, longest.as_ref().map(|(n, l)| (n.as_str(), *l))));
+    WAGMI
+}
+
+/// `typeshi allowance <file>`: every pocket_money in a file, as the policy JSON each wallet takes.
+/// JSON goes to stdout, so it can be piped into a wallet's API; notes and errors go to stderr.
+fn cmd_allowance(file: &Path, flags: &Flags) -> i32 {
+    let src = match fs::read_to_string(file) {
+        Ok(s) => s,
+        Err(e) => {
+            eprintln!("error: can't read {}: {e}", file.display());
+            return NGMI;
+        }
+    };
+    let shown = file.display().to_string();
+    let color = std::io::stderr().is_terminal() && env::var_os("NO_COLOR").is_none();
+    let all = match typeshi::policy::from_source(&src) {
+        Ok(a) => a,
+        Err(diags) => {
+            for d in &diags {
+                eprint!("{}", d.render(&shown, &src, color));
+            }
+            eprintln!("ngmi");
+            return NGMI;
+        }
+    };
+    let formats: Vec<&str> = match flags.to.as_deref() {
+        Some(f) => vec![f],
+        None => vec!["cdp", "turnkey", "privy"],
+    };
+    let one = |a: &typeshi::policy::Allowance, f: &str| match f {
+        "cdp" => typeshi::policy::cdp(a),
+        "turnkey" => typeshi::policy::turnkey(a),
+        _ => typeshi::policy::privy(a),
+    };
+    let indent = |s: &str| s.trim_end().replace('\n', "\n  ");
+    if all.len() == 1 && formats.len() == 1 {
+        print!("{}", one(&all[0], formats[0]));
+    } else {
+        let per = |a: &typeshi::policy::Allowance| {
+            if formats.len() == 1 {
+                indent(&one(a, formats[0]))
+            } else {
+                let parts: Vec<String> = formats
+                    .iter()
+                    .map(|f| format!("  \"{f}\": {}", indent(&indent(&one(a, f)))))
+                    .collect();
+                format!("{{\n{}\n}}", parts.join(",\n"))
+            }
+        };
+        if all.len() == 1 {
+            println!("{}", per(&all[0]));
+        } else {
+            let parts: Vec<String> = all
+                .iter()
+                .map(|a| format!("  \"{}\": {}", a.name, indent(&per(a))))
+                .collect();
+            println!("{{\n{}\n}}", parts.join(",\n"));
+        }
+    }
+    for f in &formats {
+        if let Some(n) = typeshi::policy::notes(f) {
+            eprintln!("note ({f}): {n}");
+        }
+    }
     WAGMI
 }

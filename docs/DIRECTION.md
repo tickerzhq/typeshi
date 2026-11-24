@@ -79,8 +79,10 @@ explained (`typeshi explain`), and every explanation's examples are tests.
    typeshi, about $469M and 1,027 SOL of losses, each refused with the check that would have
    stopped it. `cargo test` and the site build both fail if one ever compiles. Shown at
    [typeshi.tickerz.com/exploits](https://typeshi.tickerz.com/exploits).
-6. **Agent spending policies.** One typeshi policy, deny by default, refused if anything is
-   unlimited, compiled to Coinbase CDP, Turnkey, Privy, Stripe and AP2 mandates.
+6. **Agent spending policies.** Started (2026-11-24): `pocket_money` compiles one allowance
+   (per-transfer caps in whole units, recipients) to Coinbase CDP, Turnkey and Privy policies,
+   and `SHI008` refuses a blank check. Next: rolling limits where a wallet has them (Privy),
+   EVM, and Stripe and AP2 mandates.
 7. **EVM**, then off-chain Rust and TypeScript, where Tickerz, trading and payments code live.
 
 ## How it fails, and what we do about it

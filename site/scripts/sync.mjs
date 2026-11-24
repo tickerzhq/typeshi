@@ -164,7 +164,7 @@ const editor = {
   macros: words("support.function.macro.typeshi"),
   attributes: [...words("keyword.other.attribute.typeshi"), ...words("keyword.other.constraint.typeshi")],
   accounts: words("variable.language.typeshi"),
-  control: ["bull", "bear", "mogs", "cuz", "cope", "stealth_launch", "frame", "term_sheet", "cap_table", "alpha_leak", "type_shi", "deadass", "ticker", "lock_in", "ape", "few_understand"],
+  control: ["bull", "bear", "mogs", "cuz", "cope", "stealth_launch", "pocket_money", "frame", "term_sheet", "cap_table", "alpha_leak", "type_shi", "deadass", "ticker", "lock_in", "ape", "few_understand"],
   values: ["diamond_hands", "paper_hands", "W", "ebitda", "L", "wen_moon"],
 };
 // The grammar and the compiler must agree on what's banned.

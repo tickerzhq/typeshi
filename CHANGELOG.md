@@ -18,7 +18,7 @@ The first release. Binaries for Linux x86_64, macOS (Apple silicon and Intel) an
 
 ### Checks that guard money
 
-Seven checks refuse the bug classes that have drained real programs. Each error names the fix and the exploit it prevents, and `typeshi explain SHI00N` prints the check's page: what it catches, the fix, what it has cost and what it does not catch. Every example on those pages is a test.
+Eight checks refuse the bug classes that have drained real programs. Each error names the fix and the exploit it prevents, and `typeshi explain SHI00N` prints the check's page: what it catches, the fix, what it has cost and what it does not catch. Every example on those pages is a test.
 
 - `SHI001`: an instruction that can write an account with an owner when nothing ties it to a signer (Cashio, $52.8M, 2022). `public` lets an account through on purpose.
 - `SHI002`: money has units. `ticker USDC = 6;` declares one, and adding, comparing or writing two different units is a compile error (Moonwell, $1.78M, 2026).
@@ -27,12 +27,14 @@ Seven checks refuse the bug classes that have drained real programs. Each error 
 - `SHI005`: `init_if_needed`, which lets a second call reset an account (Candy Machine v1, 1,027 SOL, 2022).
 - `SHI006`: money is conserved through every branch. A balance that rises by more than comes in, or a payout that lowers no balance, does not compile, and a debt marked `#[iou]` counts the other way, so a loan adds up (Qubit, about $80M, 2022).
 - `SHI007`: a conversion that comes out in the wrong unit or off by a power of ten. typeshi follows every `*`, `/` and `10u128.pow(...)` to the unit and decimals a conversion comes out in, and the error names the power of ten that fixes it (Morpho PAXG/USDC, about $230K, 2024, off by 10^12).
+- `SHI008`: an AI agent's allowance that is a blank check. `pocket_money` declares what an agent may spend (a cap per transfer in whole units, and who it may pay), and a token with no cap or no recipients, a cap finer than the token, or an address that isn't a Solana address does not compile.
 - Eight real exploits are kept as examples that must fail to compile, and every example (a vault and a lending market among them) compiles against real Anchor 1.2 in CI.
 
 ### Commands
 
 - `typeshi new <name>`: a project with a program, a LiteSVM test and `Anchor.toml`.
 - `typeshi check [dir]`: typeshi's own checks, no Anchor needed, writes nothing. `--json --locked` for CI.
+- `typeshi allowance <file>`: every `pocket_money` in a file as policy JSON for Coinbase CDP, Turnkey and Privy (`--to` for one), with what each wallet leaves open.
 - `typeshi build [dir]`: every `.shi` to Anchor Rust, then `anchor build`. rustc errors point at the `.shi` line, not the generated Rust.
 
 ### Editors
