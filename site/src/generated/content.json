@@ -394,6 +394,11 @@
    "lesson": null
   },
   {
+   "shi": "`pocket_money name { ticker, mint, cap, pay, signer }`",
+   "rust": "no Rust: an AI agent's allowance, compiled by `typeshi allowance` to Coinbase CDP, Turnkey and Privy policies. A blank check fails with SHI008",
+   "lesson": null
+  },
+  {
    "shi": "`#[on_god]`",
    "rust": "immutable: any `mut` on that account fails to compile",
    "lesson": "on-god"
@@ -603,6 +608,7 @@
    "cuz",
    "cope",
    "stealth_launch",
+   "pocket_money",
    "frame",
    "term_sheet",
    "cap_table",
@@ -1345,6 +1351,7 @@
   "SHI004": "a program to call that can be any program",
   "SHI005": "init_if_needed lets a second call reset an account",
   "SHI006": "money that comes from nowhere or goes nowhere",
-  "SHI007": "a conversion that comes out in the wrong unit or off by a power of ten"
+  "SHI007": "a conversion that comes out in the wrong unit or off by a power of ten",
+  "SHI008": "an agent allowance that is a blank check"
  }
 }

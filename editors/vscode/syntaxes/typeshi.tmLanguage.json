@@ -166,6 +166,17 @@
           }
         },
         {
+          "match": "\\b(pocket_money)\\s+([A-Za-z_][A-Za-z0-9_]*)",
+          "captures": {
+            "1": {
+              "name": "keyword.declaration.allowance.typeshi"
+            },
+            "2": {
+              "name": "entity.name.namespace.typeshi"
+            }
+          }
+        },
+        {
           "match": "\\b(frame|term_sheet|cap_table|alpha_leak)\\s+([A-Za-z_][A-Za-z0-9_]*)",
           "captures": {
             "1": {

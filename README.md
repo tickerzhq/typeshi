@@ -100,8 +100,24 @@ error[SHI001]: anyone can write `vault`: `vault.cabal` is never checked against 
 | [`SHI005`](docs/checks/SHI005.md) | `init_if_needed`, which lets a second call reset an account | Candy Machine v1, 1,027 SOL (2022) |
 | [`SHI006`](docs/checks/SHI006.md) | money from nowhere or into nowhere: balances that go up by more than comes in, or a payout that lowers no balance | Qubit, about $80M (2022) |
 | [`SHI007`](docs/checks/SHI007.md) | a conversion that comes out in the wrong unit or off by a power of ten: SOL times a price divided by 10^9 instead of 10^11, or divided by a price it should multiply by | Morpho PAXG/USDC, about $230K (2024), off by 10^12 |
+| [`SHI008`](docs/checks/SHI008.md) | an agent allowance that is a blank check: a token with no cap or no recipients, a cap finer than the token, an address that isn't a Solana address | AIXBT, 55.5 ETH (2025), no cap where it signed |
 
 Give each money unit a name with `ticker USDC = 6;` (a plain `u64` in the Rust, so it costs nothing at run time) and typeshi tracks it through fields, params, sums and writes, then checks that every instruction's balances move by exactly what comes in through `send_it!`, minus what goes out, plus what is minted. That is the guarantee Move gives Sui and Aptos coins, for the balances a Solana program keeps. Prices say what they are a price of (`ticker SOL_USDC = 8 USDC / SOL;`), so every `*` and `/` in a conversion is followed through to its unit and its decimals, and a debt marked `#[iou]` counts as money owed, so a loan adds up. `typeshi explain SHI001` prints a check's page: what it catches, the fix, what it has cost and what it doesn't catch. Every example on those pages is a test. When anyone really may write an account (a deposit, a public counter), mark it `public` and typeshi lets it through, on purpose.
+
+## Pocket money for agents
+
+An AI agent that pays for things holds a wallet key, and the wallet's policy is all that stands between a hijacked agent and an empty wallet. Write what it may spend once, in whole units:
+
+```text
+pocket_money trader {
+    ticker USDC = 6;
+    mint USDC = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v";
+    cap USDC = 250;                                         // per transfer, in USDC
+    pay USDC => ["7h44au9S2DwyKgAbsepUv459K59cEHBqE9EjSCtC15bi"];
+}
+```
+
+`typeshi allowance agent.shi --to turnkey` prints the policy for that wallet's API: Coinbase CDP, Turnkey and Privy all write policies differently, in raw units (250 USDC is `250000000`), and CDP accepts what no rule mentions where the other two deny it. typeshi writes all three, says what each leaves open, and refuses a blank check at compile time (SHI008). [`docs/checks/SHI008.md`](docs/checks/SHI008.md) shows exactly what each wallet gets.
 
 ## The compiler has opinions
 
@@ -166,6 +182,7 @@ That is real rustc output against Anchor 1.2, kept in [`tests/fixtures/rustc`](t
 | `typeshi test [dir]` | build, `cargo test`, then a verdict |
 | `typeshi check [dir]` | typeshi's own checks. No Anchor, writes nothing. Built for CI |
 | `typeshi expand <file>` | print the Rust a `.shi` turns into |
+| `typeshi allowance <file>` | every `pocket_money` in the file as wallet policy JSON. `--to cdp`, `turnkey` or `privy` for one |
 | `typeshi fud [dir]` | a roast of your code |
 | `typeshi wen moon` | soon™ |
 
@@ -196,6 +213,7 @@ Also: every successful build prints a fake market cap that is down since you sta
 | `ticker USDC = 6;` | a money unit: `pub type USDC = u64;` and `USDC_DECIMALS`. Mixing two units fails with SHI002 |
 | `ticker SOL_USDC = 8 USDC / SOL;` | a price: 8 decimals of USDC per whole SOL, a `u64`. A conversion that comes out in the wrong unit or decimals fails with SHI007 |
 | `#[iou]` (on a frame field) | nothing in the Rust: this balance is money owed to the program, so SHI006 counts it the other way |
+| `pocket_money name { ticker, mint, cap, pay, signer }` | no Rust: an AI agent's allowance, compiled by `typeshi allowance` to Coinbase CDP, Turnkey and Privy policies. A blank check fails with SHI008 |
 | `#[on_god]` | immutable: any `mut` on that account fails to compile |
 | `this_is_fine!();` | the program's panic handler (behind the `custom-panic` feature) |
 | `lock_in fn` / `ape fn` / `few_understand fn` | an instruction that writes (or it fails to compile) / any instruction / a private helper |
