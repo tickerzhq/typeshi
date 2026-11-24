@@ -64,3 +64,7 @@ Every cargo step uses `--locked`, so commit `Cargo.lock` (and `site/wasm/Cargo.l
 - Commit messages start with `gm`, `wagmi` or `it's so over` (`hooks/commit-msg` enforces it once copied into `.git/hooks/`). No em dashes, no exclamation marks.
 - `rustfmt.toml` sets `max_width = 120`.
 - Security problems are reported privately as `SECURITY.md` says, never in a public issue.
+
+## Agent permissions
+
+`CLAUDE.md` imports this file. `.claude/settings.json` lets a session run the checks above, `git status`, `diff`, `log`, `add`, `commit` and a push to a `claude/` branch, and read-only `gh pr`, `gh run` and `gh api` calls without asking. It still asks before a push with anything after the branch name, a `gh api` call with a method or a body, a merge or a production deploy, and it never reads `.env` files or pulls Vercel's environment.
