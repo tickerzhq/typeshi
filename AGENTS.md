@@ -31,6 +31,8 @@ npm run wasm        # rebuild the browser compiler, then sync
 
 `npm run e2e` needs `npm run build` first and a Chromium (`npx playwright install chromium`, or point `PW_CHROMIUM` at one). `npm run wasm` needs `rustup target add wasm32-unknown-unknown` and `wasm-bindgen-cli` at the version in `site/wasm/Cargo.lock`.
 
+The repo's `.mcp.json` adds next-devtools, the Next.js DevTools MCP: with `npm run dev` running in `site/`, an agent reads the dev server's errors, routes, logs and compile checks at `/_next/mcp`. If `nextjs_index` finds no server (a container without `ss` or `netstat`), pass it the dev port (3000).
+
 ## What CI checks on a pull request
 
 `.github/workflows/ci.yml`, on every PR to main and every push to main:
