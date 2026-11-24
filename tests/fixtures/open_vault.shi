@@ -1,0 +1,22 @@
+// a vault anyone can drain: `vault.cabal` is never checked against the signer.
+// typeshi refuses it (SHI001). run `typeshi explain SHI001`.
+
+gm!("7PxhmDuhhe394QJgKyW1P7Ce4dPCfFPN2yKq4KCCj7Vj");
+
+stealth_launch vault {
+    frame Vault {
+        cabal: Pubkey,
+        balance: u64,
+    }
+
+    cap_table Withdraw {
+        #[account(mut)]
+        vault: Account<Vault>,
+        cabal,
+    }
+
+    lock_in fn withdraw(ctx, amount: u64) -> W {
+        mark_to_market!(vault.balance = per_my_last_email!(vault.balance) - amount);
+        were_so_back!()
+    }
+}

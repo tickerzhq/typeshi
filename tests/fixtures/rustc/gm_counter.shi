@@ -20,7 +20,7 @@ stealth_launch gm_counter {
     }
 
     cap_table Gm {
-        #[account(mut, seeds = [b"counter"], bump)]
+        #[account(mut, public, seeds = [b"counter"], bump)]
         counter: Account<Counter>,
         anon,
     }

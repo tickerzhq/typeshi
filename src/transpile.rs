@@ -5,6 +5,7 @@
 //! `prettyplease`. The output is ordinary Rust that `anchor build` compiles.
 
 use crate::diag::Diag;
+use crate::guard;
 use crate::sourcemap::{self, Chunk, SourceMap, Tok};
 use proc_macro2::{Delimiter, Group, Spacing, Span, TokenStream, TokenTree};
 use std::collections::{BTreeSet, HashMap, HashSet};
@@ -546,6 +547,10 @@ struct Cx<'a> {
     on_god_frames: HashSet<String>,
     /// cap_table name -> does it write anything
     cap_tables: HashMap<String, bool>,
+    /// frame name -> its `Pubkey` fields, the keys that can own it
+    frame_keys: HashMap<String, Vec<String>>,
+    /// every cap_table account, for the checks that guard money (src/guard.rs)
+    tables: Vec<guard::Table>,
     rust_structs: HashSet<String>,
     uses_bps: bool,
     declares_bps: bool,
@@ -570,6 +575,8 @@ impl<'a> Cx<'a> {
             helpers: BTreeSet::new(),
             on_god_frames: HashSet::new(),
             cap_tables: HashMap::new(),
+            frame_keys: HashMap::new(),
+            tables: vec![],
             rust_structs: HashSet::new(),
             uses_bps: false,
             declares_bps: false,
@@ -694,6 +701,20 @@ impl<'a> Cx<'a> {
                             self.on_god_frames.insert(n);
                         }
                     }
+                    if let (Some(n), Some(g)) = (ident_str(b.get(1)), group_of(b.get(2), Delimiter::Brace)) {
+                        let keys = split_fields(&inner(g))
+                            .iter()
+                            .filter_map(|f| {
+                                let (_, rest) = take_attrs(f);
+                                let rest = strip_vis(&rest);
+                                match (ident_str(rest.first()), is_punct(rest.get(1), ':'), rest.len()) {
+                                    (Some(field), true, 3) if is_ident(rest.get(2), "Pubkey") => Some(field),
+                                    _ => None,
+                                }
+                            })
+                            .collect();
+                        self.frame_keys.insert(n, keys);
+                    }
                 }
                 "cope" => {
                     if let Some(g) = group_of(b.get(1), Delimiter::Brace) {
@@ -746,6 +767,8 @@ impl<'a> Cx<'a> {
                 cap_out.insert(idx, self.gen_cap_table(it));
             }
         }
+        let found = guard::check(&self.tables, &self.frame_keys);
+        self.diags.extend(found);
 
         // pass 3: generate
         let mut inner_attrs = String::new();
@@ -1056,6 +1079,10 @@ impl<'a> Cx<'a> {
         let mut writes = false;
         let mut fields = String::new();
         let mut fx = FnCx::item();
+        let mut table = guard::Table {
+            name: name.clone(),
+            accounts: vec![],
+        };
         for f in split_fields(&inner(&group)) {
             let (attrs, rest) = take_attrs(&f);
             let rest = strip_vis(&rest);
@@ -1065,6 +1092,8 @@ impl<'a> Cx<'a> {
             let mut field_writes = false;
             let mut mut_span: Option<Span> = None;
             let mut is_init = false;
+            let mut public = false;
+            let mut binds: Vec<String> = vec![];
             for a in attrs.chunks(2) {
                 let g = match a.get(1) {
                     Some(TokenTree::Group(g)) => g,
@@ -1080,6 +1109,14 @@ impl<'a> Cx<'a> {
                         let mut new_args = vec![];
                         for arg in split_commas(&inner(args)) {
                             let first = ident_str(arg.first()).unwrap_or_default();
+                            // `public`: anyone may write this account, on purpose. typeshi's word, not Anchor's.
+                            if first == "public" && arg.len() == 1 {
+                                public = true;
+                                continue;
+                            }
+                            if matches!(first.as_str(), "has_one" | "constraint" | "seeds" | "address") {
+                                guard::idents(&arg[1..], &mut binds);
+                            }
                             match first.as_str() {
                                 "rent_free" | "init" | "init_if_needed" | "zero" => {
                                     field_writes = true;
@@ -1155,6 +1192,15 @@ impl<'a> Cx<'a> {
                 } else {
                     attr_s.clone()
                 };
+                table.accounts.push(guard::Account {
+                    name: short.clone(),
+                    span: rest[0].span(),
+                    frame: None,
+                    signer: ty.starts_with("Signer"),
+                    writes: false,
+                    public,
+                    binds: binds.clone(),
+                });
                 self.hint(&rest, &mut fh);
                 h.append(&mut fh);
                 fields.push_str(&format!("{a}\npub {short}: {ty},\n"));
@@ -1182,6 +1228,15 @@ impl<'a> Cx<'a> {
             if field_writes && !is_signer {
                 writes = true;
             }
+            table.accounts.push(guard::Account {
+                name: field_name.clone(),
+                span: rest[0].span(),
+                frame: guard::frame_of(&ty),
+                signer: is_signer,
+                writes: field_writes && !is_init,
+                public,
+                binds: binds.clone(),
+            });
             // #[on_god] accounts are written once, at init
             if !is_init {
                 if let Some(ms) = mut_span {
@@ -1205,6 +1260,7 @@ impl<'a> Cx<'a> {
         self.hint_at("}", group.span_close(), &mut h);
         self.chunk(false, "struct", &name, h, b[0].span());
         self.cap_tables.insert(name.clone(), writes);
+        self.tables.push(table);
         let attrs = to_s(&item_attrs);
         format!("#[derive(Accounts)]\n{attrs}\npub struct {name}<'info> {{\n{fields}}}\n")
     }

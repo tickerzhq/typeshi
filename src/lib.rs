@@ -28,6 +28,7 @@
 
 pub mod banter;
 pub mod diag;
+pub mod guard;
 pub mod remap;
 pub mod scaffold;
 pub mod sourcemap;
