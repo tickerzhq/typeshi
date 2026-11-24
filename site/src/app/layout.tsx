@@ -82,7 +82,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </div>
         </header>
         <main id="main">{children}</main>
-        {process.env.VERCEL ? (
+        {/* Vercel builds of this project do not see the VERCEL system variable, so the project sets
+            TYPESHI_ANALYTICS=1 for production and preview. Local `next start` (the e2e run) has neither,
+            so no /_vercel script is requested there. */}
+        {process.env.VERCEL || process.env.TYPESHI_ANALYTICS ? (
           <>
             <Analytics />
             <SpeedInsights />
