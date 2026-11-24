@@ -448,7 +448,7 @@ fn split_items(t: &[TokenTree]) -> Vec<RawItem> {
         let kw = ident_str(t.get(j)).unwrap_or_default();
         let until_semi = matches!(
             kw.as_str(),
-            "use" | "const" | "static" | "type" | "type_shi" | "deadass" | "extern"
+            "use" | "const" | "static" | "type" | "type_shi" | "deadass" | "extern" | "ticker"
         );
         let mut end = j;
         loop {
@@ -549,6 +549,10 @@ struct Cx<'a> {
     cap_tables: HashMap<String, bool>,
     /// frame name -> its `Pubkey` fields, the keys that can own it
     frame_keys: HashMap<String, Vec<String>>,
+    /// frame name -> field name -> the field's type, when it is one name (`USDC`, `u64`)
+    frame_fields: HashMap<String, HashMap<String, String>>,
+    /// `ticker USDC = 6;`: money units and their decimals (SHI002)
+    tickers: HashMap<String, u8>,
     /// every cap_table account, for the checks that guard money (src/guard.rs)
     tables: Vec<guard::Table>,
     rust_structs: HashSet<String>,
@@ -576,6 +580,8 @@ impl<'a> Cx<'a> {
             on_god_frames: HashSet::new(),
             cap_tables: HashMap::new(),
             frame_keys: HashMap::new(),
+            frame_fields: HashMap::new(),
+            tickers: HashMap::new(),
             tables: vec![],
             rust_structs: HashSet::new(),
             uses_bps: false,
@@ -702,6 +708,20 @@ impl<'a> Cx<'a> {
                         }
                     }
                     if let (Some(n), Some(g)) = (ident_str(b.get(1)), group_of(b.get(2), Delimiter::Brace)) {
+                        let mut types = HashMap::new();
+                        for f in split_fields(&inner(g)) {
+                            let (_, rest) = take_attrs(&f);
+                            let rest = strip_vis(&rest);
+                            if let (Some(field), true, Some(ty), 3) = (
+                                ident_str(rest.first()),
+                                is_punct(rest.get(1), ':'),
+                                ident_str(rest.get(2)),
+                                rest.len(),
+                            ) {
+                                types.insert(field, ty);
+                            }
+                        }
+                        self.frame_fields.insert(n.clone(), types);
                         let keys = split_fields(&inner(g))
                             .iter()
                             .filter_map(|f| {
@@ -746,6 +766,25 @@ impl<'a> Cx<'a> {
                         self.rust_structs.insert(n);
                     }
                 }
+                "ticker" => match (ident_str(b.get(1)), is_punct(b.get(2), '='), b.get(3)) {
+                    (Some(n), true, Some(TokenTree::Literal(l))) => match l.to_string().parse::<u8>() {
+                        Ok(d) if d <= 18 => {
+                            self.tickers.insert(n, d);
+                        }
+                        _ => self.err_at(
+                            l.span(),
+                            l.to_string().len(),
+                            "a ticker's decimals are a whole number from 0 to 18.",
+                            "USDC is 6, SOL is 9, ETH is 18",
+                        ),
+                    },
+                    _ => self.err_at(
+                        b[0].span(),
+                        6,
+                        "a ticker reads like `ticker USDC = 6;`: a name and its decimals.",
+                        "everything gets a ticker",
+                    ),
+                },
                 "type_shi" | "type" => {
                     if is_ident(b.get(1), "Bps") {
                         self.declares_bps = true;
@@ -823,6 +862,17 @@ impl<'a> Cx<'a> {
                 "cap_table" => crate_items.push_str(cap_out.get(&idx).map(|s| s.as_str()).unwrap_or("")),
                 "cope" => {}
                 "type_shi" => crate_items.push_str(&self.gen_alias(it, "type")),
+                "ticker" => {
+                    if let Some(n) = ident_str(b.get(1)) {
+                        if let Some(d) = self.tickers.get(&n) {
+                            crate_items.push_str(&format!(
+                                "/// ticker {n}: an amount of {n} in its smallest unit ({d} decimals).\n\
+                                 pub type {n} = u64;\n\
+                                 pub const {n}_DECIMALS: u8 = {d};\n"
+                            ));
+                        }
+                    }
+                }
                 "deadass" => crate_items.push_str(&self.gen_alias(it, "const")),
                 "const" if it.has_attr("on_god") => crate_items.push_str(&self.gen_alias(it, "const")),
                 "lock_in" | "ape" => {
@@ -1374,6 +1424,40 @@ impl<'a> Cx<'a> {
                 "who's in the room? add `cap_table ... { }`",
             ),
             _ => {}
+        }
+        // SHI002: money units, checked on the .shi as written
+        if !self.tickers.is_empty() {
+            let accounts = self
+                .tables
+                .iter()
+                .find(|t| t.name == cap)
+                .map(|t| {
+                    t.accounts
+                        .iter()
+                        .filter_map(|a| a.frame.clone().map(|f| (a.name.clone(), f)))
+                        .collect()
+                })
+                .unwrap_or_default();
+            let locals = ps
+                .iter()
+                .skip(1)
+                .filter_map(
+                    |p| match (ident_str(p.first()), is_punct(p.get(1), ':'), ident_str(p.get(2))) {
+                        (Some(n), true, Some(ty)) if p.len() == 3 && self.tickers.contains_key(&ty) => Some((n, ty)),
+                        _ => None,
+                    },
+                )
+                .collect();
+            let mut units = guard::Units {
+                tickers: &self.tickers,
+                frame_fields: &self.frame_fields,
+                accounts,
+                locals,
+            };
+            let mut found = vec![];
+            units.check(&inner(&body), &mut found);
+            found.sort_by_key(|d| (d.line, d.col));
+            self.diags.extend(found);
         }
         let mut fx = FnCx {
             name: name.clone(),

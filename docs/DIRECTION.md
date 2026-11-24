@@ -59,8 +59,8 @@ explained (`typeshi explain`), and every explanation's examples are tests.
 ## The order
 
 1. **Owners on Solana.** Done: `SHI001`, `public`, `typeshi explain`, tested pages.
-2. **Units.** Money types (asset and decimals; prices with base and quote). `SHI002`
-   refuses mixing them; the Rust typeshi writes uses zero-cost newtypes, so rustc agrees.
+2. **Units.** Done: `ticker USDC = 6;`, and `SHI002` refuses adding, comparing or writing
+   two different units. Next: check conversions against a declared price.
 3. **The rest of Solana's gaps**, by money lost: unverified accounts in sysvar reads
    (Wormhole, about $326M), unchecked raw accounts (Crema, Texture), unchecked CPI targets
    (Loopscale).

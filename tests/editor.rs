@@ -53,6 +53,7 @@ fn grammar_knows_the_slang() {
         "cope",
         "type_shi",
         "deadass",
+        "ticker",
         // fns, types, values, flow
         "lock_in",
         "ape",
@@ -73,6 +74,7 @@ fn grammar_knows_the_slang() {
         "rent_free",
         "golden_parachute",
         "graduate",
+        "public",
         "exit_liquidity",
         "cabal",
         "anon",
