@@ -1144,6 +1144,8 @@ impl<'a> Cx<'a> {
             let mut is_init = false;
             let mut public = false;
             let mut binds: Vec<String> = vec![];
+            let mut constraints: Vec<String> = vec![];
+            let mut reinit: Option<Span> = None;
             for a in attrs.chunks(2) {
                 let g = match a.get(1) {
                     Some(TokenTree::Group(g)) => g,
@@ -1164,8 +1166,12 @@ impl<'a> Cx<'a> {
                                 public = true;
                                 continue;
                             }
-                            if matches!(first.as_str(), "has_one" | "constraint" | "seeds" | "address") {
+                            if matches!(first.as_str(), "has_one" | "constraint" | "seeds" | "address" | "owner") {
                                 guard::idents(&arg[1..], &mut binds);
+                            }
+                            constraints.push(first.clone());
+                            if first == "init_if_needed" {
+                                reinit = arg.first().map(|t| t.span());
                             }
                             match first.as_str() {
                                 "rent_free" | "init" | "init_if_needed" | "zero" => {
@@ -1250,6 +1256,9 @@ impl<'a> Cx<'a> {
                     writes: false,
                     public,
                     binds: binds.clone(),
+                    kind: guard::Kind::Typed,
+                    constraints: constraints.clone(),
+                    reinit,
                 });
                 self.hint(&rest, &mut fh);
                 h.append(&mut fh);
@@ -1286,6 +1295,9 @@ impl<'a> Cx<'a> {
                 writes: field_writes && !is_init,
                 public,
                 binds: binds.clone(),
+                kind: guard::Kind::of(&ty),
+                constraints: constraints.clone(),
+                reinit,
             });
             // #[on_god] accounts are written once, at init
             if !is_init {

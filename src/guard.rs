@@ -22,8 +22,51 @@ pub struct Account {
     pub writes: bool,
     /// Marked `public`: anyone may write it, on purpose.
     pub public: bool,
-    /// Every name its `has_one`, `constraint`, `seeds` and `address` mention.
+    /// Every name its `has_one`, `constraint`, `seeds`, `address` and `owner` mention.
     pub binds: Vec<String>,
+    /// What kind of account it is, as far as the checks care.
+    pub kind: Kind,
+    /// The words of its `#[account(...)]`: `mut`, `seeds`, `address`, `owner`, `init_if_needed`...
+    pub constraints: Vec<String>,
+    /// Where `init_if_needed` was written, if it was.
+    pub reinit: Option<Span>,
+}
+
+/// The kinds of account the checks tell apart.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum Kind {
+    /// `Account<T>`, `Signer`, `SystemAccount`, `Program<T>`, `Sysvar<T>`...: Anchor checks what it is.
+    Typed,
+    /// `UncheckedAccount` or `AccountInfo`: Anchor checks nothing.
+    Raw,
+    /// `Program` with no program named: any executable passes.
+    AnyProgram,
+}
+
+impl Kind {
+    /// The kind of a cap_table field's type, as written in the `.shi`.
+    pub fn of(ty: &[TokenTree]) -> Kind {
+        let first = match ty.first() {
+            Some(TokenTree::Ident(i)) => i.to_string(),
+            _ => return Kind::Typed,
+        };
+        match first.as_str() {
+            "UncheckedAccount" | "AccountInfo" => Kind::Raw,
+            // `Program` alone, or `Program<'info>` with no program type after the lifetime
+            "Program" => {
+                let named = ty
+                    .iter()
+                    .skip(1)
+                    .any(|t| matches!(t, TokenTree::Ident(i) if i != "info"));
+                if named {
+                    Kind::Typed
+                } else {
+                    Kind::AnyProgram
+                }
+            }
+            _ => Kind::Typed,
+        }
+    }
 }
 
 #[derive(Clone, Debug)]
@@ -50,6 +93,21 @@ pub const CHECKS: &[Check] = &[
         code: "SHI002",
         title: "two different money units in one sum, comparison or write",
         doc: include_str!("../docs/checks/SHI002.md"),
+    },
+    Check {
+        code: "SHI003",
+        title: "an unchecked account nothing checks",
+        doc: include_str!("../docs/checks/SHI003.md"),
+    },
+    Check {
+        code: "SHI004",
+        title: "a program to call that can be any program",
+        doc: include_str!("../docs/checks/SHI004.md"),
+    },
+    Check {
+        code: "SHI005",
+        title: "init_if_needed lets a second call reset an account",
+        doc: include_str!("../docs/checks/SHI005.md"),
     },
 ];
 
@@ -186,11 +244,81 @@ fn unbound_owner(t: &Table, frame_keys: &HashMap<String, Vec<String>>, out: &mut
     }
 }
 
+/// SHI003 and SHI004: accounts Anchor checks nothing about. A raw account must be pinned by `owner`,
+/// `address`, `seeds` or a `constraint`; a program to call must be named, or pinned by `address`.
+fn unchecked(t: &Table, out: &mut Vec<Diag>) {
+    for a in &t.accounts {
+        let has = |c: &str| a.constraints.iter().any(|x| x == c);
+        let pinned = has("owner") || has("address") || has("seeds") || has("constraint");
+        let (line, col) = at(a.span);
+        let width = a.name.chars().count();
+        let program = a.kind == Kind::AnyProgram || (a.kind == Kind::Raw && a.name.ends_with("program"));
+        if program && !has("address") {
+            out.push(
+                Diag::error(
+                    format!(
+                        "`{}` can be any program, and whatever it does or returns is trusted.",
+                        a.name
+                    ),
+                    line,
+                    col,
+                    width,
+                    "a program the attacker wrote passes here",
+                )
+                .with_code("SHI004")
+                .with_help(
+                    "name the program (`Program<Token>`, `Program<System>`), or pin it: `address = <program id>`",
+                ),
+            );
+        } else if a.kind == Kind::Raw && !pinned {
+            out.push(
+                Diag::error(
+                    format!("nothing checks what `{}` is: it's an unchecked account.", a.name),
+                    line,
+                    col,
+                    width,
+                    "any account passes here, a fake one too",
+                )
+                .with_code("SHI003")
+                .with_help(
+                    "give it a type (`Account<T>`, `Sysvar<T>`, `Program<T>`) or pin it with `address = ...`, \
+                     `owner = ...` or `seeds = [...]`. a `/// CHECK:` comment checks nothing",
+                ),
+            );
+        }
+    }
+}
+
+/// SHI005: `init_if_needed` creates the account on the first call and accepts it as it is on every
+/// later one, so a handler that writes it from scratch resets whatever was there.
+fn reinit(t: &Table, out: &mut Vec<Diag>) {
+    for a in &t.accounts {
+        if let Some(span) = a.reinit {
+            let (line, col) = at(span);
+            out.push(
+                Diag::error(
+                    format!("`init_if_needed` lets a second call reset `{}`.", a.name),
+                    line,
+                    col,
+                    "init_if_needed".len(),
+                    "on a later call the account already holds state",
+                )
+                .with_code("SHI005")
+                .with_help(
+                    "create it with `rent_free` in its own instruction, and write it with `mut` everywhere else",
+                ),
+            );
+        }
+    }
+}
+
 /// Every money check over every cap_table.
 pub fn check(tables: &[Table], frame_keys: &HashMap<String, Vec<String>>) -> Vec<Diag> {
     let mut out = vec![];
     for t in tables {
         unbound_owner(t, frame_keys, &mut out);
+        unchecked(t, &mut out);
+        reinit(t, &mut out);
     }
     out
 }
