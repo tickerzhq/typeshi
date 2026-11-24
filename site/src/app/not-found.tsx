@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import Doors from "@/components/Doors";
 import Footer from "@/components/Footer";
 import PageHead from "@/components/PageHead";
+import { Arrow } from "@/components/SecHead";
+import { PAGES } from "@/lib/pages";
 import s from "./not-found.module.css";
 
 export const metadata: Metadata = { title: "404" };
@@ -24,10 +25,26 @@ export default function NotFound() {
         </PageHead>
         <div className={s.actions}>
           <Link href="/" className="button">
-            back home <span aria-hidden="true">→</span>
+            Back home <span aria-hidden="true">→</span>
           </Link>
         </div>
-        <Doors label="or try one of these" />
+        <nav aria-label="or try one of these">
+          <ul className="rows">
+            {PAGES.map((p) => (
+              <li key={p.href}>
+                <Link href={p.href} className="row">
+                  <span className="row-text">
+                    <span>{p.label}</span>
+                    <small>{p.line}</small>
+                  </span>
+                  <span className="row-go">
+                    <Arrow />
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </nav>
       </div>
       <Footer />
     </>

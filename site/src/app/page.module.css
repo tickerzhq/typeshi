@@ -1,17 +1,36 @@
-/* The home, in five beats of different weight: a loud hero, the compiler on a lit stage, a banded
-   statement with three proofs, the doors out, a quiet close. DESIGN.md, "The home", has the why. */
+/* The home on tickerz.com's system, in the order the best language sites use (typescriptlang.org, bun.sh, gleam.run):
+   the claim and the install on the left, the compiler's proof on the right, four reasons, then the compiler and
+   hairline sections of cards and rows. DESIGN.md, "Structure", has the why. */
 
-/* --- hero ----------------------------------------------------------------------------------- */
+/* --- hero: on the 12 columns from 1100px, the claim on 1 to 6 and the proof on 7 to 12; stacked below ------- */
 .hero {
-  padding-block: var(--space-3xl) var(--space-xl);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-xl) var(--size-gap);
+  padding-block: var(--space-2xl) 0;
+}
+.claim,
+.proof {
+  min-width: 0;
+}
+@media (min-width: 1100px) {
+  .hero {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    align-items: center;
+  }
+  .claim {
+    grid-column: 1 / 7;
+  }
+  .proof {
+    grid-column: 7 / 13;
+  }
 }
 .h1 {
   margin: 0;
   /* Tickerz sets its headlines light: weight 400 at -0.03em */
   font: var(--weight-regular) var(--step-display) / var(--leading-display) var(--font-sans);
   letter-spacing: -0.03em;
-  /* One line at normal text sizes. With large system text on a small phone it wraps between words
-     instead of pushing the page sideways (WCAG 1.4.10, reflow). */
+  /* With large system text on a small phone it wraps between words instead of pushing the page sideways. */
   text-wrap: balance;
 }
 /* fn is the one word of code in the line, so it is set as code, in the brand teal. */
@@ -23,215 +42,19 @@
   color: var(--accent-text);
 }
 .lede {
-  margin: var(--space-m) 0 0;
-  max-width: 34em;
+  margin: var(--space-s) 0 0;
+  max-width: 26em;
   font-size: var(--step-lede);
   line-height: var(--leading-body);
   color: var(--text-secondary);
 }
-.lede code {
-  color: var(--state-error);
-  font-weight: var(--weight-medium);
-}
-.ctas {
-  margin-top: var(--space-l);
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-xs) var(--space-s);
-}
-.ctaNote {
-  font-size: var(--step-small);
-  color: var(--text-tertiary);
-}
 
-/* --- the stage: the real compiler, on the ground, no light behind it (Tickerz: no glows) ---------- */
-.stage {
-  position: relative;
-  isolation: isolate;
-}
-
-/* --- the band: one statement, three proofs ----------------------------------------------------- */
-.band {
-  margin-top: var(--space-3xl);
-  padding-block: var(--space-3xl);
-  background: var(--surface-raised);
-  border-block: 1px solid var(--border-default);
-}
-/* Two tones, after Linear: the claim in full ink, the rest of the sentence quieter. */
-.statement {
-  margin: 0;
-  max-width: 26em;
-  font: var(--weight-bold) var(--step-title) / var(--leading-heading) var(--font-sans);
-  letter-spacing: -0.035em;
-}
-.statement span {
-  color: var(--text-tertiary);
-}
-.proofs {
-  list-style: none;
-  margin: var(--space-2xl) 0 0;
-  padding: 0;
-  --grid-min: 20rem;
-  --grid-gap: var(--space-xl) var(--space-l);
-}
-/* Each proof spans four rows of the list (subgrid), so headings, lines, panels and links line up. */
-.proof {
-  display: grid;
-  grid-row: span 4;
-  grid-template-rows: subgrid;
-  row-gap: var(--space-xs);
-  min-width: 0;
-}
-.h3 {
-  margin: 0;
-  font: var(--weight-heavy) var(--step-subhead) / var(--leading-snug) var(--font-sans);
-  letter-spacing: -0.025em;
-}
-.h3 code {
-  font-size: 0.92em;
-  letter-spacing: -0.03em;
-}
-.term {
-  margin: var(--space-2xs) 0 0;
-  min-width: 0;
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-md);
-  background: var(--surface-terminal);
-  overflow: hidden;
-}
-.term figcaption {
-  padding: var(--space-2xs) var(--space-xs);
-  border-bottom: 1px solid var(--border-default);
-  font: var(--weight-medium) var(--step-label) / 1.4 var(--font-mono);
-  color: var(--text-tertiary);
-}
-.term pre,
-.strikes {
-  margin: 0;
-  padding: var(--space-xs);
-  font: var(--weight-regular) var(--step-code) / var(--leading-code) var(--font-mono);
-  overflow-x: auto;
-}
-.term pre > span {
-  display: block;
-}
-.ngmi {
-  color: var(--state-error);
-}
-.verdictBad,
-.verdictGood {
-  margin-top: var(--space-2xs);
-  font-weight: var(--weight-bold);
-}
-.verdictBad {
-  color: var(--state-error);
-}
-.verdictGood {
-  color: var(--accent-text);
-}
-.pair {
-  margin-bottom: var(--space-2xs);
-}
-.pair > span {
-  display: block;
-}
-.shi {
-  color: var(--syntax-slang);
-}
-.rs {
-  color: var(--text-primary);
-}
-.rs > span {
-  color: var(--text-tertiary);
-}
-/* The escalation, as heat: each failure in a row moves from warning amber to error red. */
-.strikes {
-  list-style: none;
-  display: grid;
-  gap: var(--space-3xs);
-}
-.strikes li {
-  display: grid;
-  grid-template-columns: 4.5ch minmax(0, 1fr);
-  column-gap: var(--space-2xs);
-  color: var(--state-warning);
-}
-.strikes li[data-strike="2"] {
-  color: color-mix(in oklch, var(--state-error) 25%, var(--state-warning));
-}
-.strikes li[data-strike="3"] {
-  color: color-mix(in oklch, var(--state-error) 50%, var(--state-warning));
-}
-.strikes li[data-strike="4"] {
-  color: color-mix(in oklch, var(--state-error) 75%, var(--state-warning));
-}
-.strikes li[data-strike="5"] {
-  color: var(--state-error);
-  font-weight: var(--weight-bold);
-}
-.strike {
-  color: var(--text-tertiary);
-  font-weight: var(--weight-regular);
-  font-variant-numeric: tabular-nums;
-}
-.more {
-  justify-self: start;
-  align-self: start;
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2xs);
-  min-height: var(--size-control);
-  font: var(--weight-medium) var(--step-small) / 1 var(--font-sans);
-  color: var(--text-primary);
-  text-decoration: none;
-}
-.more span {
-  color: var(--text-tertiary);
-  transition:
-    color var(--dur-hover) var(--ease-out),
-    translate var(--dur-hover) var(--ease-out);
-}
-.more:hover span {
-  color: var(--accent-text);
-  translate: var(--space-3xs) 0;
-}
-
-/* --- dyor: the doors out ----------------------------------------------------------------------- */
-.dyor {
-  padding-top: var(--space-3xl);
-}
-.h2 {
-  margin: 0 0 var(--space-l);
-  font: var(--weight-heavy) var(--step-title) / var(--leading-heading) var(--font-sans);
-  letter-spacing: -0.04em;
-}
-.h2 span {
-  color: var(--text-tertiary);
-  font-weight: var(--weight-bold);
-}
-
-/* --- the close ---------------------------------------------------------------------------------- */
-.close {
-  padding-top: var(--space-3xl);
-}
-.closeH {
-  margin: 0;
-  font: var(--weight-heavy) var(--step-heading) / var(--leading-heading) var(--font-sans);
-  letter-spacing: -0.05em;
-}
-.closeRow {
-  margin-top: var(--space-l);
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-s);
-}
+/* The install line, as bun.sh puts it in the hero: the command and a copy button in one pill-cornered box. */
 .install {
-  flex: 0 1 36rem;
-  min-width: 0;
+  margin-top: var(--space-l);
   display: flex;
   align-items: stretch;
+  max-width: 34rem;
   min-height: var(--size-cta);
   border: 1px solid var(--border-strong);
   border-radius: var(--radius-md);
@@ -269,15 +92,139 @@
 .copy:hover {
   background: var(--overlay-hover);
 }
-.then {
-  margin: var(--space-xs) 0 0;
-  font-size: var(--step-small);
-  color: var(--text-tertiary);
+.actions {
+  margin-top: var(--space-s);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
 }
-.then code {
-  color: var(--text-secondary);
+@media (max-width: 599px) {
+  .actions {
+    flex-direction: column;
+  }
+  .actions :global(.button) {
+    justify-content: center;
+  }
 }
 
+/* --- why typeshi: four reasons, each an icon tile (the menu's), a name and one line. Four across from 1100px,
+   two from 600px, one on a phone ----------------------------------------------------------------------------- */
+.pillars {
+  list-style: none;
+  margin: var(--space-l) 0 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-l) var(--size-gap);
+}
+.pillars li {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-2xs);
+  min-width: 0;
+}
+@media (min-width: 600px) {
+  .pillars {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (min-width: 1100px) {
+  .pillars {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+.tile {
+  display: grid;
+  place-items: center;
+  width: var(--size-target);
+  height: var(--size-target);
+  margin-bottom: var(--space-2xs);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  background: var(--surface-raised);
+  color: var(--accent-text);
+}
+.tile svg {
+  width: 20px;
+  height: 20px;
+}
+.pillarH {
+  margin: 0;
+  font: var(--weight-medium) var(--step-lede) / 1.25 var(--font-sans);
+  letter-spacing: -0.01em;
+}
+.pillarP {
+  margin: 0;
+  color: var(--text-secondary);
+}
+.more {
+  margin-top: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2xs);
+  min-height: var(--size-control);
+  font: var(--weight-medium) var(--step-small) / 1 var(--font-sans);
+  color: var(--text-primary);
+  text-decoration: none;
+}
+.more span {
+  color: var(--text-tertiary);
+  transition:
+    color var(--dur-hover) var(--ease-out),
+    translate var(--dur-hover) var(--ease-out);
+}
+.more:hover span {
+  color: var(--accent-text);
+  translate: var(--space-3xs) 0;
+}
+
+/* --- the playground: the real compiler, on the ground, no light behind it (Tickerz: no glows) ------------- */
+.stage {
+  margin-top: var(--space-l);
+  position: relative;
+  isolation: isolate;
+}
+
+/* --- exploit cards: the check and the year, the name, the loss in big numbers -------------------------------- */
+.top {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-xs);
+  font: var(--weight-regular) var(--step-label) / 1.4 var(--font-mono);
+  letter-spacing: 0.02em;
+  color: var(--text-tertiary);
+}
+.code {
+  color: var(--state-error);
+}
+.name {
+  font: var(--weight-medium) var(--step-lede) / 1.25 var(--font-sans);
+}
+.amount {
+  margin-top: auto;
+  padding-top: var(--space-l);
+  font: var(--weight-regular) var(--step-section) / 1 var(--font-sans);
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* --- the checks and the tour, as rows ------------------------------------------------------------------------ */
+.check {
+  grid-template-columns: 7ch minmax(0, 1fr);
+  column-gap: var(--space-s);
+  align-items: baseline;
+}
+.check code {
+  color: var(--state-error);
+}
+.chapter {
+  font: var(--weight-medium) var(--step-lede) / 1.25 var(--font-sans);
+}
+@media (max-width: 599px) {
+  .check {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
 @media (pointer: coarse) {
   .more {
     min-height: var(--size-target);

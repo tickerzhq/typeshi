@@ -17,25 +17,43 @@ code sample on the site comes from the real compiler or the repo (`scripts/sync.
 
 ## The home
 
-Short on purpose: five beats of different weight, then the footer. Everything longer has its own page.
+Short on purpose, in the order the best language sites use, on tickerz.com's structure (see "Structure" below).
 
-1. **Hero.** `lock in fn.` in Geist at weight 400 and -0.03em, as Tickerz sets its headlines, at the display step, with `fn` set as code in the brand teal (Bun sets
-   its one word, *fast*, in its one color). One lede: what it is for (code that moves money), the claim
-   with its number (the bugs behind about $469M of exploits don't compile, added up by `sync.mjs` from
-   `docs/exploits`), and the punchline, `rug!()` in error red. One button.
-2. **The stage.** The real playground, full width, right under the headline, on the plain ground, no light behind it
-   (Linear puts its real product there; Tickerz allows no glows). Nothing under it: the playground speaks for itself.
-3. **The band.** A raised band (Gleam and Deno use bands for rhythm) with a two-tone statement (Linear's:
-   the claim in full ink, the rest quieter) and three proofs (Roc's three, Gleam's claim beside its
-   sample). Each proof is a claim, real compiler output and one link out: the biggest exploit in
-   `docs/exploits` refused with its check (red, linking to `/exploits`), lines of
-   `gm_counter` beside the Rust the compiler writes for them (teal; `sync.mjs` fails the build if the
-   compiler stops writing any of them), and the escalation, colored from amber to red as the failures
-   pile up.
-4. **dyor.** Four doors in a hairline grid (Tailwind's and Geist's framed cells): tour, playground,
-   opinions, keywords, each with its real count in its color.
-5. **The close.** "still here? lock in." (Gleam ends on a joke and the one action), the button again,
-   and the install command.
+1. **Hero, split.** On the 12 columns from 1100px: the claim on columns 1 to 6, the proof on 7 to 12
+   (typescriptlang.org's editor beside its claim, bun.sh's benchmark beside its own). `lock in fn.` in Geist at
+   weight 400 and -0.03em, `fn` set as code in the brand teal. One line under it: what it is and the number
+   (about $469M, added up by `sync.mjs` from `docs/exploits`). The install command with a copy button in the hero
+   (bun.sh), then two pills: the tour and the playground. Stacked full width under 600px.
+2. **The proof card** (`HeroProof`): one terminal card with tabs along the top (typescriptlang.org's "Editor
+   Checks, Auto-complete, Interfaces, JSX"): the biggest exploit refused, the units exploit refused, gm_counter's
+   lines beside the Rust they become, and the escalation. Every line is the compiler's output at build time.
+3. **Why typeshi.** Four reasons, one line each, with an icon tile (rust-lang.org's "Why Rust?", typescriptlang.org's
+   three columns): exploits don't compile, money has units, plain Anchor out, it has opinions.
+4. **Playground**, then **Exploits** (cards), **The checks** and **Tour** (hairline rows), each section's heading a
+   link to its page. No closing section: the install is already in the hero.
+
+The home is held to about 500 words of prose (rust-lang.org 516, ziglang.org 430, gleam.run 575, measured live Nov
+24 2026); the playground's code is the rest.
+
+## Structure
+
+The site mirrors tickerz.com's information system, measured live at 390 and 1440 (Nov 24 2026):
+
+- **Frame and grid.** A 1440px frame, 48px gutter (16px at 900 and under), 4 columns on a phone, 8 from 600px,
+  12 from 1100px, 16px apart. Layout changes only at 600, 900 and 1100 (`globals.css`).
+- **Bar.** The mark, the five pages as plain words (the current one with a 1px line under it), GitHub and the
+  theme. At 900 and under the words go into a full-screen menu: each page with a 44px icon tile and one line,
+  the rest in two columns, two pills at the bottom (`SiteHeader`). Pages and their lines live in `src/lib/pages.ts`,
+  which the bar, the menu, the footer and the side list all read.
+- **Sections** (`.sec`, `SecHead`): a hairline, then a 32px heading that links to its page with an arrow, and
+  one line under it.
+- **Cards** (`.cards`, `.card`): 12px corners, the strong line, the panel ground; four across from 1100px, two
+  from 600px, and one sideways row that snaps on a phone, each card 78% wide so the next one shows.
+- **Rows** (`.rows`, `.row`): hairlines between, a name and one line, a circled arrow at the end.
+- **Reading pages** (`ReadingFrame`): from 1100px the site's groups on columns 1 to 3, the page on 4 to 9,
+  "On this page" on 10 to 12, both sides held in view. Below 1100px the page alone.
+- **Footer**: a hairline, the groups under 12px mono labels (four across, two on a phone), the legal line.
+- **Icons**: Lucide outlines (ISC), 24 grid, 1.75 stroke, in the text's color or the brand teal on a tile.
 
 Before Nov 22 2026 the home also held every banned move, three error transcripts, the escalation, the
 error codes, the confessions, the keyword table and how it works: 5,879 px at 1440 and 8,412 px on a
@@ -47,7 +65,7 @@ tailwindcss.com, Geist and linear.app, is in the pull request that made the chan
 ## The mark
 
 The mark is the header's `fn` tile: `fn` in Geist Mono Bold, dark (`text-on-accent`) on a brand-teal tile
-(`accent-fill`) with corners a sixth of its side, before the mono name (`.tile` in `site.module.css`).
+(`accent-fill`) with corners a sixth of its side, before the mono name (`.tile` in `SiteHeader.module.css`).
 Every site in the research leads with a mark the eye can find. Since Nov 22 2026 it is also every icon
 and the corner of every share card (below), so a tab, a home screen and a link preview all show the
 same tile. `brand/README.md` has the rules for using it.
@@ -109,7 +127,7 @@ home's.
 | `/opinions` | banned moves (each with a try-it link), three real error transcripts, the escalation, codes 0x1 to 0x6, the confessions |
 | `/keywords` | the keyword table with search, and how the compiler works |
 | `/built` | how it's built: from `.shi` to the screen, the stack with versions read at build, the design system, the checks, the open files |
-| any other path | our own 404 (`not-found.tsx`): the site's header, tokens and theme, and the four doors |
+| any other path | our own 404 (`not-found.tsx`): the site's header, tokens and theme, and every page as a row |
 
 ## Tokens
 
@@ -196,9 +214,9 @@ for their job:
 | `--step-body` | 16 | body text |
 | `--step-input` | 16 | every field you type in or pick from on a touch screen, and the keyword search everywhere |
 | `--step-lede` | 17 to 19 | the lede, the name in the header |
-| `--step-subhead` | 20 to 24 | the proofs and doors on the home, sections on a page |
+| `--step-subhead` | 20 to 24 | sections on a page |
 | `--step-title` | 30 to 46 | section headings, the statement, lesson titles |
-| `--step-heading` | 38 to 64 | page headings, the doors' counts |
+| `--step-heading` | 38 to 64 | page headings |
 | `--step-display` | 60 to 132 | lock in fn., one line from 320 px up |
 
 Headings use `text-wrap: balance`; paragraphs and list items use `text-wrap: pretty` (Firefox falls back
@@ -267,8 +285,7 @@ Nothing is colored for decoration. A new color needs a job first.
 
 ## Components and states
 
-- `PageHead` (the top of `/tour`, `/opinions`, `/keywords` and the 404), `Doors` (the four ways into the
-  site, with counts from `content.json`), `Footer` (every reading page; not the playground or a lesson,
+- `PageHead` (the top of `/tour`, `/opinions`, `/keywords` and the 404), `SecHead`, `HeroProof`, `Icon`, `SiteHeader`, `ReadingFrame`, `Footer` (every reading page; not the playground or a lesson,
   which fill the screen) and the global `.button` (the brand-teal pill, the primary action, and `data-quiet` for a second
   way in).
 - One tabs primitive (`src/components/Tabs.tsx`) for the playground and the lesson, after the WAI-ARIA
@@ -324,6 +341,11 @@ Rust it becomes, the banned moves, the fixed error codes, a whole program and th
   Names break after an underscore (`golden_` / `parachute`, `src/lib/wbr.tsx`), the home's doors stack
   their number above the name, and the skip link hides by its own height, since its edge showed over the
   header. The site's home is https://typeshi.tickerz.com.
+- **Nov 24 2026, tickerz.com's structure**: the site now follows tickerz.com's grid, bar, phone menu, sections,
+  cards, rows, docs frame and footer (see "Structure"), and the home takes the best language sites' order: a split
+  hero with the install and a tabbed proof card, four reasons with icons, then sections that lead to their pages.
+  The doors and the closing section are gone. Fixed: on a phone the home's tour button and the menu's actions
+  wrapped to two lines, and the header pushed the page sideways at 320px with 200% text.
 - **Nov 22 2026, no zoom on a phone**: the site scrolled sideways on a phone because iOS Safari zoomed in
   when you tapped the editor (12.6 px) or the example picker (14 px). On a touch screen every field is now
   `--step-input`, a new token at 16 px; a mouse keeps the old sizes. Fixed on the way: at 320 px on a touch

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Footer from "@/components/Footer";
+import ReadingFrame from "@/components/ReadingFrame";
 import PageHead from "@/components/PageHead";
 import content from "@/generated/content.json";
 import { fontKB, npm, PAGES, tokenCount, wasmGzipKB, wasmKB } from "@/lib/built";
@@ -120,7 +121,8 @@ const OPEN = [
 export default function BuiltPage() {
   return (
     <>
-      <div className={`wrap ${s.page}`}>
+      <ReadingFrame here="/built" toc={[["flow-h", "From .shi to the screen"], ["stack-h", "The stack"], ["system-h", "The design system"], ["checks-h", "What keeps it honest"], ["open-h", "For robots"]]}>
+        <div className={s.page}>
         <PageHead title="how it's built.">
           one Rust crate, compiled twice: once for your terminal, once for this tab. no server, no accounts, no cap.
           here&apos;s the whole stack, ser.
@@ -249,7 +251,8 @@ export default function BuiltPage() {
             ))}
           </ul>
         </section>
-      </div>
+        </div>
+      </ReadingFrame>
       <Footer />
     </>
   );

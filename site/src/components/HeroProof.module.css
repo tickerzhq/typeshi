@@ -1,0 +1,80 @@
+/* The hero's code card: typescriptlang.org's tabs along the top of the editor, on tickerz.com's card (12px corner,
+   the strong line, the terminal ground). The selected tab is full text with a 1px line under it, as the bar's are. */
+.card {
+  min-width: 0;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  background: var(--surface-terminal);
+  overflow: hidden;
+}
+.tabs {
+  display: flex;
+  overflow-x: auto;
+  scrollbar-width: none;
+  border-bottom: 1px solid var(--border-default);
+  background: var(--surface-raised);
+}
+.tab {
+  position: relative;
+  flex: none;
+  min-height: var(--size-target);
+  padding: 0 var(--space-s);
+  border: 0;
+  background: transparent;
+  color: var(--text-secondary);
+  font: var(--weight-medium) var(--step-small) / 1 var(--font-sans);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color var(--dur-hover) var(--ease-out);
+}
+.tab:hover,
+.tab[aria-selected="true"] {
+  color: var(--text-primary);
+}
+.tab[aria-selected="true"]::after {
+  content: "";
+  position: absolute;
+  inset: auto var(--space-s) -1px;
+  height: 1px;
+  background: var(--text-primary);
+}
+.panel {
+  padding: var(--space-s);
+  min-height: 15rem;
+}
+.caption {
+  margin: 0 0 var(--space-xs);
+  font: var(--weight-regular) var(--step-label) / 1.4 var(--font-mono);
+  color: var(--text-tertiary);
+}
+.pre {
+  margin: 0;
+  font: var(--weight-regular) var(--step-code) / var(--leading-code) var(--font-mono);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.pre > span {
+  display: block;
+  color: var(--text-primary);
+}
+.pre > [data-tone="err"],
+.pre > [data-tone="bad"] {
+  color: var(--state-error);
+}
+.pre > [data-tone="shi"] {
+  color: var(--syntax-slang);
+}
+.pre > [data-tone="warn"] {
+  color: var(--state-warning);
+}
+.pre > [data-tone="dim"] {
+  color: var(--text-tertiary);
+}
+.pre > [data-tone="good"] {
+  color: var(--accent-text);
+}
+.pre > [data-tone="bad"],
+.pre > [data-tone="good"] {
+  margin-top: var(--space-2xs);
+  font-weight: var(--weight-bold);
+}

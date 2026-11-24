@@ -1,59 +1,87 @@
+/* tickerz.com's footer (v2-foot): 72px above it, a hairline, the columns 32px under it, labels in 12px mono in the
+   second text tone, links in the reading face. Four across, two on a phone; every link 44px tall on a touch screen. */
 .footer {
   margin-top: var(--space-3xl);
+  padding-bottom: var(--space-xl);
+}
+.cols {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-l) var(--size-gap);
+  padding-top: var(--space-l);
   border-top: 1px solid var(--border-default);
-  font-size: var(--step-small);
+}
+.group {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-2xs);
+}
+.label {
+  margin-bottom: var(--space-2xs);
+  font: var(--weight-regular) var(--step-label) / 1.4 var(--font-mono);
+  letter-spacing: 0.02em;
   color: var(--text-secondary);
 }
-.in {
-  display: grid;
-  gap: var(--space-l);
-  padding-block: var(--space-xl);
+.group a {
+  color: var(--text-primary);
+  text-decoration: none;
+  transition: color var(--dur-hover) var(--ease-out);
 }
-.top,
-.bottom {
+.group a:hover {
+  color: var(--text-secondary);
+}
+.legal {
   display: flex;
   flex-wrap: wrap;
-  justify-content: space-between;
   align-items: baseline;
-  gap: var(--space-s) var(--space-xl);
+  gap: var(--space-2xs) var(--space-l);
+  margin-top: var(--space-xl);
+  padding-top: var(--space-s);
+  border-top: 1px solid var(--border-default);
+  font: var(--weight-regular) var(--step-label) / 1.5 var(--font-mono);
+  letter-spacing: 0.02em;
+  color: var(--text-secondary);
 }
-.mark {
-  margin: 0;
-  font: var(--weight-bold) var(--step-lede) / 1 var(--font-mono);
+.legal a {
+  color: var(--text-primary);
+}
+.word {
+  font: var(--weight-bold) var(--step-small) / 1 var(--font-mono);
   letter-spacing: -0.02em;
   color: var(--text-primary);
 }
-.mark span {
+.word span {
   margin-left: var(--space-2xs);
-  font: var(--weight-regular) var(--step-small) / 1 var(--font-sans);
-  letter-spacing: 0;
+  font-weight: var(--weight-regular);
   color: var(--text-tertiary);
 }
-.links {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-3xs) var(--space-m);
-}
-.links a {
-  display: inline-flex;
-  align-items: center;
-  text-decoration: none;
-  color: var(--text-secondary);
-  transition: color var(--dur-hover) var(--ease-out);
-}
-.links a:hover {
-  color: var(--text-primary);
-}
-.bottom p {
-  margin: 0;
-  max-width: 70ch;
-}
 .moon {
+  margin-left: auto;
   color: var(--text-tertiary);
 }
 
+@media (max-width: 900px) {
+  .footer {
+    margin-top: var(--space-2xl);
+  }
+  .cols {
+    /* two across, one when large system text makes a word wider than half the screen */
+    grid-template-columns: repeat(auto-fit, minmax(min(9rem, 100%), 1fr));
+    gap: var(--space-m) var(--size-gap);
+  }
+  .group {
+    gap: 0;
+  }
+  .moon {
+    margin-left: 0;
+  }
+}
 @media (pointer: coarse) {
-  .links a {
+  .group a,
+  .legal a {
+    display: inline-flex;
+    align-items: center;
     min-height: var(--size-target);
   }
 }
