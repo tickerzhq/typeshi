@@ -118,6 +118,11 @@ pub const CHECKS: &[Check] = &[
         title: "money that comes from nowhere or goes nowhere",
         doc: include_str!("../docs/checks/SHI006.md"),
     },
+    Check {
+        code: "SHI007",
+        title: "a conversion that comes out in the wrong unit or off by a power of ten",
+        doc: include_str!("../docs/checks/SHI007.md"),
+    },
 ];
 
 /// The check with this code, any case (`shi001` works).
@@ -340,6 +345,10 @@ pub fn check(tables: &[Table], frame_keys: &HashMap<String, Vec<String>>) -> Vec
 pub struct Units<'a> {
     /// ticker -> decimals
     pub tickers: &'a HashMap<String, u8>,
+    /// price ticker -> (quote, base)
+    pub prices: &'a HashMap<String, (String, String)>,
+    /// (frame, field) marked `#[iou]`: owed to the program, so it counts against its balances
+    pub owed: &'a HashSet<(String, String)>,
     /// frame -> field -> type
     pub frame_fields: &'a HashMap<String, HashMap<String, String>>,
     /// account name in this instruction's cap_table -> its frame
@@ -411,7 +420,357 @@ fn splits(op: &str) -> bool {
     joins(op) || matches!(op, "," | ";" | "&&" | "||" | "=>" | "->")
 }
 
+/// What a number means: which assets, to which power, and how many decimals its smallest unit
+/// has. `scale` is the power of ten one raw unit is worth: USDC (6 decimals) is 10^-6 USDC.
+#[derive(Clone, PartialEq, Debug, Default)]
+struct Dim {
+    units: BTreeMap<String, i32>,
+    scale: i32,
+}
+
+impl Dim {
+    fn combine(&self, other: &Dim, k: i32) -> Dim {
+        let mut units = self.units.clone();
+        for (u, e) in &other.units {
+            *units.entry(u.clone()).or_insert(0) += e * k;
+        }
+        units.retain(|_, e| *e != 0);
+        Dim {
+            units,
+            scale: self.scale + other.scale * k,
+        }
+    }
+}
+
+/// `USDC`, `USDC per SOL`, `SOL² per USDC`.
+fn show_units(u: &BTreeMap<String, i32>) -> String {
+    let pow = |n: i32| match n {
+        1 => String::new(),
+        2 => "²".into(),
+        3 => "³".into(),
+        n => format!("^{n}"),
+    };
+    let side = |pos: bool| {
+        u.iter()
+            .filter(|(_, e)| (**e > 0) == pos)
+            .map(|(n, e)| format!("{n}{}", pow(e.abs())))
+            .collect::<Vec<_>>()
+            .join("·")
+    };
+    match (side(true), side(false)) {
+        (n, d) if n.is_empty() && d.is_empty() => "a plain number".into(),
+        (n, d) if d.is_empty() => n,
+        (n, d) if n.is_empty() => format!("1 per {d}"),
+        (n, d) => format!("{n} per {d}"),
+    }
+}
+
+const WIDEN: [&str; 2] = ["u128", "i128"];
+const INTS: [&str; 8] = ["u8", "u16", "u32", "u64", "u128", "i32", "i64", "i128"];
+
+fn is_ident(t: Option<&TokenTree>, s: &str) -> bool {
+    matches!(t, Some(TokenTree::Ident(i)) if i == s)
+}
+
+fn is_punct_at(t: &[TokenTree], i: usize, c: char) -> bool {
+    matches!(t.get(i), Some(TokenTree::Punct(p)) if p.as_char() == c)
+}
+
+/// Whether a number is scaled anywhere in `t`: `*`, `/`, `.pow()`, `.checked_mul()` and the like.
+fn scales(t: &[TokenTree]) -> bool {
+    t.iter().any(|x| match x {
+        TokenTree::Punct(p) => matches!(p.as_char(), '*' | '/'),
+        TokenTree::Ident(i) => matches!(
+            i.to_string().as_str(),
+            "pow"
+                | "checked_mul"
+                | "checked_div"
+                | "saturating_mul"
+                | "saturating_div"
+                | "wrapping_mul"
+                | "wrapping_div"
+        ),
+        TokenTree::Group(g) => scales(&g.stream().into_iter().collect::<Vec<_>>()),
+        TokenTree::Literal(_) => false,
+    })
+}
+
+/// The power of ten a whole-number literal is (`1_000_000` is 6), if it is one.
+fn ten_power(lit: &str) -> Option<i32> {
+    let digits: String = lit
+        .chars()
+        .filter(|c| *c != '_')
+        .take_while(|c| c.is_ascii_digit())
+        .collect();
+    let rest = &lit.replace('_', "")[digits.len()..];
+    if !(rest.is_empty() || INTS.contains(&rest)) {
+        return None;
+    }
+    let mut chars = digits.chars();
+    (chars.next() == Some('1') && chars.all(|c| c == '0')).then(|| digits.len() as i32 - 1)
+}
+
 impl Units<'_> {
+    /// An amount ticker is its asset; a price ticker is quote per base. Either way, `scale` is minus
+    /// its decimals.
+    fn dim_of(&self, ticker: &str) -> Dim {
+        let d = self.tickers.get(ticker).copied().unwrap_or(0) as i32;
+        let mut units = BTreeMap::new();
+        match self.prices.get(ticker) {
+            Some((q, b)) => {
+                *units.entry(q.clone()).or_insert(0) += 1;
+                *units.entry(b.clone()).or_insert(0) -= 1;
+                units.retain(|_, e: &mut i32| *e != 0);
+            }
+            None => {
+                units.insert(ticker.to_string(), 1);
+            }
+        }
+        Dim { units, scale: -d }
+    }
+
+    /// A whole number built from literals and `USDC_DECIMALS`-style constants with `+` and `-`,
+    /// as in `10u128.pow(SOL_DECIMALS as u32 + 2)`.
+    fn whole(&self, t: &[TokenTree]) -> Option<i32> {
+        let mut total = 0i32;
+        let mut sign = 1;
+        let mut i = 0;
+        while i < t.len() {
+            match &t[i] {
+                TokenTree::Punct(p) if p.as_char() == '+' => sign = 1,
+                TokenTree::Punct(p) if p.as_char() == '-' => sign = -1,
+                TokenTree::Literal(l) => {
+                    let s = l.to_string().replace('_', "");
+                    let digits: String = s.chars().take_while(|c| c.is_ascii_digit()).collect();
+                    total += sign * digits.parse::<i32>().ok()?;
+                }
+                TokenTree::Ident(id) if id == "as" => i += 1,
+                TokenTree::Ident(id) => {
+                    let name = id.to_string();
+                    let ticker = name.strip_suffix("_DECIMALS")?;
+                    total += sign * *self.tickers.get(ticker)? as i32;
+                }
+                TokenTree::Group(g) if g.delimiter() == Delimiter::Parenthesis => {
+                    total += sign * self.whole(&g.stream().into_iter().collect::<Vec<_>>())?;
+                }
+                _ => return None,
+            }
+            i += 1;
+        }
+        Some(total)
+    }
+
+    /// What an expression's result means, if every number in it is known: typed amounts and prices,
+    /// powers of ten, and `*`, `/`, `+`, `-` between them. Anything else (an untyped `u64`, a
+    /// call, a `2`) makes it unknown, and nothing is checked.
+    fn dim(&self, t: &[TokenTree]) -> Option<Dim> {
+        // sums: every term must mean the same thing
+        let mut terms: Vec<&[TokenTree]> = vec![];
+        let mut from = 0;
+        for i in 0..t.len() {
+            if let TokenTree::Punct(p) = &t[i] {
+                let binary = i > from && !matches!(t.get(i - 1), Some(TokenTree::Punct(_)));
+                if matches!(p.as_char(), '+' | '-') && p.spacing() == Spacing::Alone && binary {
+                    terms.push(&t[from..i]);
+                    from = i + 1;
+                }
+            }
+        }
+        terms.push(&t[from..]);
+        let first = self.term_dim(terms[0])?;
+        for term in &terms[1..] {
+            if self.term_dim(term)? != first {
+                return None;
+            }
+        }
+        Some(first)
+    }
+
+    fn term_dim(&self, t: &[TokenTree]) -> Option<Dim> {
+        let mut out: Option<Dim> = None;
+        let mut op = '*';
+        let mut from = 0;
+        let mut i = 0;
+        while i <= t.len() {
+            let at_op = match t.get(i) {
+                Some(TokenTree::Punct(p))
+                    if matches!(p.as_char(), '*' | '/' | '%') && p.spacing() == Spacing::Alone =>
+                {
+                    Some(p.as_char())
+                }
+                None => Some('*'),
+                _ => None,
+            };
+            if let Some(next) = at_op {
+                if next == '%' {
+                    return None;
+                }
+                let f = self.factor_dim(&t[from..i])?;
+                out = Some(match (out, op) {
+                    (None, _) => f,
+                    (Some(a), '/') => a.combine(&f, -1),
+                    (Some(a), _) => a.combine(&f, 1),
+                });
+                op = next;
+                from = i + 1;
+            }
+            i += 1;
+        }
+        out
+    }
+
+    fn factor_dim(&self, t: &[TokenTree]) -> Option<Dim> {
+        let n = t.len();
+        if n == 0 {
+            return None;
+        }
+        // `?` and the unwraps don't change a number
+        if is_punct_at(t, n - 1, '?') {
+            return self.factor_dim(&t[..n - 1]);
+        }
+        if n >= 3 && is_punct_at(t, n - 3, '.') && matches!(&t[n - 1], TokenTree::Group(_)) {
+            let method = match &t[n - 2] {
+                TokenTree::Ident(m) => m.to_string(),
+                _ => String::new(),
+            };
+            let recv = &t[..n - 3];
+            let arg = match &t[n - 1] {
+                TokenTree::Group(g) => g.stream().into_iter().collect::<Vec<_>>(),
+                _ => vec![],
+            };
+            return match method.as_str() {
+                "unwrap" | "expect" | "ok_or" | "ok_or_else" | "unwrap_or" | "into" | "try_into"
+                | "unwrap_or_default" => self.factor_dim(recv),
+                "checked_mul" | "saturating_mul" | "wrapping_mul" => {
+                    Some(self.factor_dim(recv)?.combine(&self.dim(&arg)?, 1))
+                }
+                "checked_div" | "saturating_div" | "wrapping_div" => {
+                    Some(self.factor_dim(recv)?.combine(&self.dim(&arg)?, -1))
+                }
+                "checked_add" | "checked_sub" | "saturating_add" | "saturating_sub" | "wrapping_add"
+                | "wrapping_sub" => {
+                    let a = self.factor_dim(recv)?;
+                    (self.dim(&arg)? == a).then_some(a)
+                }
+                // 10u128.pow(9) is 10^9
+                "pow" if matches!(recv, [TokenTree::Literal(l)] if ten_power(&l.to_string()) == Some(1)) => Some(Dim {
+                    units: BTreeMap::new(),
+                    scale: -self.whole(&arg)?,
+                }),
+                _ => None,
+            };
+        }
+        // `x as u128` widens and means the same; `x as u64` on a bare amount is SHI002's way of
+        // saying "converting on purpose", so it is unknown. Around arithmetic it is just the width.
+        if n >= 3 && is_ident(t.get(n - 2), "as") {
+            let ty = match &t[n - 1] {
+                TokenTree::Ident(i) => i.to_string(),
+                _ => return None,
+            };
+            let inner = &t[..n - 2];
+            return if WIDEN.contains(&ty.as_str()) || (INTS.contains(&ty.as_str()) && scales(inner)) {
+                self.factor_dim(inner)
+            } else {
+                None
+            };
+        }
+        match t {
+            [TokenTree::Group(g)] if g.delimiter() == Delimiter::Parenthesis => {
+                self.dim(&g.stream().into_iter().collect::<Vec<_>>())
+            }
+            [TokenTree::Literal(l)] => ten_power(&l.to_string()).map(|k| Dim {
+                units: BTreeMap::new(),
+                scale: -k,
+            }),
+            [TokenTree::Ident(m), TokenTree::Punct(b), TokenTree::Group(g)]
+                if m == "per_my_last_email" && b.as_char() == '!' =>
+            {
+                self.dim(&g.stream().into_iter().collect::<Vec<_>>())
+            }
+            _ => {
+                let mut found = vec![];
+                self.refs(t, &mut found);
+                let simple = matches!(t.len(), 1 | 3 | 7);
+                match found.as_slice() {
+                    [v] if simple => Some(self.dim_of(&v.ticker)),
+                    _ => None,
+                }
+            }
+        }
+    }
+
+    /// SHI007: a write or comparison where one side converts with `*` or `/`, and the two sides
+    /// don't mean the same thing.
+    fn conversion(
+        &self,
+        left: &[TokenTree],
+        right: &[TokenTree],
+        span: Span,
+        width: usize,
+        writes: bool,
+        out: &mut Vec<Diag>,
+    ) {
+        let side = |s: &[TokenTree]| -> Option<(Dim, String)> {
+            if scales(s) {
+                self.dim(s).map(|d| (d, String::new()))
+            } else {
+                self.unit_of(s).map(|v| (self.dim_of(&v.ticker), v.shown))
+            }
+        };
+        let (Some(l), Some(r)) = (side(left), side(right)) else {
+            return;
+        };
+        // name the plain side; the converted side is what's wrong
+        let ((want, shown), (got, _)) = if l.1.is_empty() { (r, l) } else { (l, r) };
+        if want == got || shown.is_empty() {
+            return;
+        }
+        let target = show_units(&want.units);
+        let (line, col) = at(span);
+        let verb = if writes { "gets" } else { "is compared with" };
+        if want.units != got.units {
+            out.push(
+                Diag::error(
+                    format!("`{shown}` is {target}, but it {verb} {}.", show_units(&got.units)),
+                    line,
+                    col,
+                    width,
+                    format!("this works out to {}", show_units(&got.units)),
+                )
+                .with_code("SHI007")
+                .with_help(
+                    "an amount times a price in QUOTE per BASE is QUOTE, and an amount over that price is BASE: \
+                     check what you multiply and what you divide",
+                ),
+            );
+            return;
+        }
+        let (dw, dg) = (-want.scale, -got.scale);
+        let k = (dg - dw).unsigned_abs();
+        let factor = group_thousands(&10u128.pow(k.min(38)).to_string());
+        let (how, fix) = if dg > dw {
+            ("too big", format!("divide by {factor} more"))
+        } else {
+            ("too small", format!("multiply by {factor} more"))
+        };
+        let msg = if writes {
+            format!("`{shown}` comes out {factor}x {how}: this has {dg} decimals of {target}, and `{shown}` has {dw}.")
+        } else {
+            format!(
+                "this compares `{shown}` ({dw} decimals of {target}) with a conversion that has {dg}: off by {factor}x."
+            )
+        };
+        let fix = if writes {
+            fix
+        } else {
+            format!("{fix} on the converted side")
+        };
+        out.push(Diag::error(msg, line, col, width, fix).with_code("SHI007").with_help(
+            "decimals add when you multiply and subtract when you divide: an amount with 9 times a price \
+                 with 8 has 17, so divide by 10 to the ones you don't keep",
+        ));
+    }
+
     fn field_ticker(&self, account: &str, field: &str) -> Option<String> {
         let frame = self.accounts.get(account)?;
         let ty = self.frame_fields.get(frame)?.get(field)?;
@@ -545,6 +904,14 @@ impl Units<'_> {
             if op.start <= left_from || op.end >= right_to {
                 continue; // unary minus and the like
             }
+            let (ls, rs) = (&t[left_from..op.start], &t[op.end..right_to]);
+            if scales(ls) || scales(rs) {
+                let writes = matches!(op.text.as_str(), "=" | "+=" | "-=");
+                if !matches!(op.text.as_str(), "+" | "-") {
+                    self.conversion(ls, rs, op.span, op.text.chars().count(), writes, out);
+                }
+                continue;
+            }
             let (Some(a), Some(b)) = (
                 self.unit_of(&t[left_from..op.start]),
                 self.unit_of(&t[op.end..right_to]),
@@ -580,7 +947,16 @@ impl Units<'_> {
             else {
                 continue;
             };
-            if let (Some(a), Some(b)) = (self.unit_of(&args[..comma]), self.unit_of(&args[comma + 1..])) {
+            if scales(&args[comma + 1..]) {
+                self.conversion(
+                    &args[..comma],
+                    &args[comma + 1..],
+                    m.span(),
+                    m.to_string().len(),
+                    true,
+                    out,
+                );
+            } else if let (Some(a), Some(b)) = (self.unit_of(&args[..comma]), self.unit_of(&args[comma + 1..])) {
                 if a.ticker != b.ticker {
                     self.mismatch(&a, &b, m.span(), m.to_string().len(), "this adds", out);
                 }
@@ -852,6 +1228,22 @@ impl Units<'_> {
         }
     }
 
+    /// A change to `acc.field` as the books see it: money owed to the program (`#[iou]`) counts
+    /// against its balances, so a loan going out is debt up and money out, and adds up.
+    fn signed(&self, acc: &str, field: &str, l: Linear) -> Linear {
+        let owed = self
+            .accounts
+            .get(acc)
+            .map(|frame| self.owed.contains(&(frame.clone(), field.to_string())))
+            .unwrap_or(false);
+        if !owed {
+            return l;
+        }
+        let mut out = Linear::new();
+        add_into(&mut out, &l, -1);
+        out
+    }
+
     /// The ticker of `acc.field` (or `ctx.accounts.acc.field`, or `per_my_last_email!(acc.field)`).
     fn target(&self, t: &[TokenTree]) -> Option<(String, String, String)> {
         let l = self.term(t);
@@ -1003,12 +1395,12 @@ impl Units<'_> {
             };
         match m {
             "number_go_up" | "aura_farm" => {
-                if let Some((_, _, ticker)) = parts.first().and_then(|p| self.target(p)) {
+                if let Some((acc, field, ticker)) = parts.first().and_then(|p| self.target(p)) {
                     let by = parts
                         .get(1)
                         .map(|p| self.linear(p))
                         .unwrap_or_else(|| Linear::from([("1".into(), 1)]));
-                    note(ticker, Some(by), None, f, steps);
+                    note(ticker, Some(self.signed(&acc, &field, by)), None, f, steps);
                 }
             }
             "mark_to_market" => {
@@ -1025,10 +1417,10 @@ impl Units<'_> {
                 match rhs.get(&me).copied() {
                     Some(1) => {
                         rhs.remove(&me);
-                        note(ticker, Some(rhs), None, f, steps);
+                        note(ticker, Some(self.signed(&acc, &field, rhs)), None, f, steps);
                     }
                     None if account(&acc).map(|a| a.created).unwrap_or(false) => {
-                        note(ticker, Some(rhs), None, f, steps)
+                        note(ticker, Some(self.signed(&acc, &field, rhs)), None, f, steps)
                     }
                     _ => {
                         f.unknown.insert(ticker);

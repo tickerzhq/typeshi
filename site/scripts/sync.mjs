@@ -54,6 +54,7 @@ const examples = [
   { id: "gm_counter", title: "gm counter", blurb: "what `typeshi new` gives you. counts gms, farms aura.", source: starter },
   { id: "print_feed", title: "print feed", blurb: "an append-only feed. prints are forever.", file: "examples/trenches/programs/print_feed/src/lib.shi" },
   { id: "vault", title: "vault", blurb: "a USDC vault with a fee. every instruction's money adds up (SHI006).", file: "examples/trenches/programs/vault/src/lib.shi" },
+  { id: "lend", title: "lend", blurb: "borrow USDC against SOL: a price, a health check and debts, every conversion checked (SHI007).", file: "examples/trenches/programs/lend/src/lib.shi" },
   { id: "degen_desk", title: "degen desk", blurb: "every keyword in one program. a toy. do not run a desk on it.", file: "examples/trenches/programs/degen_desk/src/lib.shi" },
   { id: "open_vault", title: "open vault", blurb: "anyone can drain it. typeshi refuses (SHI001).", file: "tests/fixtures/open_vault.shi" },
   { id: "mixed_units", title: "mixed units", blurb: "1 SOL credits 1,000 USDC. typeshi refuses (SHI002).", file: "tests/fixtures/mixed_units.shi" },
@@ -82,6 +83,7 @@ for (const [id, rs] of [
   ["print_feed", "examples/trenches/programs/print_feed/src/lib.rs"],
   ["degen_desk", "examples/trenches/programs/degen_desk/src/lib.rs"],
   ["vault", "examples/trenches/programs/vault/src/lib.rs"],
+  ["lend", "examples/trenches/programs/lend/src/lib.rs"],
 ]) {
   const ex = examples.find((e) => e.id === id);
   const live = compile(ex.source).rust.trim();
@@ -313,7 +315,13 @@ const exploits = readdirSync(join(repo, "docs/exploits"))
       rendered: hit.rendered.trimEnd(),
     };
   })
-  .map((e) => ({ ...e, usdM: Number(e.lost.match(/\$([\d.]+)M/)?.[1] ?? 0) }))
+  .map((e) => {
+    // "$52.8M", "about $230K borrowed ...", "1,027 SOL cashed out": the first amount is the loss
+    const usd = e.lost.match(/\$([\d.,]+)([MK])/);
+    const usdM = usd ? Number(usd[1].replaceAll(",", "")) / (usd[2] === "K" ? 1000 : 1) : 0;
+    const amount = usd ? usd[0] : (e.lost.match(/[\d,]+ SOL/)?.[0] ?? e.lost);
+    return { ...e, usdM, amount };
+  })
   // Biggest loss first; one counted in SOL alone goes last.
   .sort((a, b) => b.usdM - a.usdM || b.date.localeCompare(a.date));
 for (const e of exploits) e.tryCode = await deflate(read(`docs/exploits/${e.id}.shi`));

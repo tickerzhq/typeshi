@@ -134,6 +134,16 @@
    "diags": []
   },
   {
+   "id": "lend",
+   "title": "lend",
+   "blurb": "borrow USDC against SOL: a price, a health check and debts, every conversion checked (SHI007).",
+   "path": "examples/trenches/programs/lend/src/lib.shi",
+   "source": "// lend.shi: borrow USDC against SOL, written in typeshi.\n// amounts have units, prices say what they are a price of, debts are marked as owed,\n// and every conversion and every instruction's money is checked when it compiles.\n\ngm!(\"4sXn4Bx5sScKDDR5Cmj46vXiinV5sUQfocz3TgxKhPVh\");\n\nstealth_launch lend {\n    ticker USDC = 6;\n    ticker SOL = 9;\n    /// 8 decimals of USDC per whole SOL, as most price feeds give it.\n    ticker SOL_USDC = 8 USDC / SOL;\n\n    /// the most you can borrow against your collateral: 75%.\n    deadass MAX_LTV_BPS: u64 = 7_500;\n\n    /// the market: who sets the price, and the price.\n    frame Market {\n        cabal: Pubkey,\n        price: SOL_USDC,\n    }\n\n    /// one borrower: the SOL they put up, and the USDC they owe.\n    frame Loan {\n        owner: Pubkey,\n        collateral: SOL,\n        #[iou]\n        debt: USDC,\n    }\n\n    cap_table SetPrice {\n        #[account(mut, has_one = cabal, seeds = [b\"market\"], bump)]\n        market: Account<Market>,\n        cabal,\n    }\n\n    cap_table Open {\n        #[account(rent_free, payer = owner, space = 8 + Loan::INIT_SPACE,\n                  seeds = [b\"loan\", owner.key().as_ref()], bump)]\n        loan: Account<Loan>,\n        #[account(mut)]\n        owner: Signer,\n        system_program,\n    }\n\n    cap_table Deposit {\n        #[account(mut, has_one = owner, seeds = [b\"loan\", owner.key().as_ref()], bump)]\n        loan: Account<Loan>,\n        #[account(mut)]\n        from: Account<anchor_spl::token::TokenAccount>,\n        #[account(mut, constraint = sol_vault.owner == pool.key())]\n        sol_vault: Account<anchor_spl::token::TokenAccount>,\n        /// CHECK: the pool's signer, a PDA that holds no data\n        #[account(seeds = [b\"pool\"], bump)]\n        pool: UncheckedAccount,\n        owner: Signer,\n        token_program,\n    }\n\n    cap_table Borrow {\n        #[account(seeds = [b\"market\"], bump)]\n        market: Account<Market>,\n        #[account(mut, has_one = owner, seeds = [b\"loan\", owner.key().as_ref()], bump)]\n        loan: Account<Loan>,\n        #[account(mut)]\n        to: Account<anchor_spl::token::TokenAccount>,\n        #[account(mut, constraint = usdc_vault.owner == pool.key())]\n        usdc_vault: Account<anchor_spl::token::TokenAccount>,\n        /// CHECK: the pool's signer, a PDA that holds no data\n        #[account(seeds = [b\"pool\"], bump)]\n        pool: UncheckedAccount,\n        owner: Signer,\n        token_program,\n    }\n\n    cap_table Repay {\n        #[account(mut, has_one = owner, seeds = [b\"loan\", owner.key().as_ref()], bump)]\n        loan: Account<Loan>,\n        #[account(mut)]\n        from: Account<anchor_spl::token::TokenAccount>,\n        #[account(mut, constraint = usdc_vault.owner == pool.key())]\n        usdc_vault: Account<anchor_spl::token::TokenAccount>,\n        /// CHECK: the pool's signer, a PDA that holds no data\n        #[account(seeds = [b\"pool\"], bump)]\n        pool: UncheckedAccount,\n        owner: Signer,\n        token_program,\n    }\n\n    lock_in fn set_price(ctx, price: SOL_USDC) -> W {\n        trust_me_bro!(price mogs 0, \"a price of zero is a rug\");\n        mark_to_market!(market.price = price);\n        were_so_back!()\n    }\n\n    lock_in fn open(ctx) -> W {\n        mark_to_market!(loan.owner = per_my_last_email!(owner).key());\n        mark_to_market!(loan.collateral = 0);\n        mark_to_market!(loan.debt = 0);\n        were_so_back!()\n    }\n\n    // not financial advice\n    lock_in fn deposit(ctx, amount: SOL) -> W {\n        send_it!(from => sol_vault, amount, owner);\n        number_go_up!(loan.collateral, amount);\n        were_so_back!()\n    }\n\n    /// the collateral, priced in USDC: SOL (9 decimals) times SOL_USDC (8) is 17 decimals,\n    /// so divide by 10^11 for USDC (6). typeshi checks that arithmetic (SHI007).\n    // not financial advice\n    lock_in fn borrow(ctx, amount: USDC) -> W {\n        let value: USDC = ((per_my_last_email!(loan.collateral) as u128)\n            * (per_my_last_email!(market.price) as u128)\n            / 10u128.pow(SOL_DECIMALS as u32 + SOL_USDC_DECIMALS as u32 - USDC_DECIMALS as u32)) as u64;\n        let max: USDC = bps!(value, MAX_LTV_BPS);\n        trust_me_bro!(per_my_last_email!(loan.debt) + amount <= max, \"that's more than your collateral covers\");\n        number_go_up!(loan.debt, amount);\n        send_it!(usdc_vault => to, amount, pool);\n        were_so_back!()\n    }\n\n    // not financial advice\n    lock_in fn repay(ctx, amount: USDC) -> W {\n        trust_me_bro!(amount <= per_my_last_email!(loan.debt), \"you don't owe that much\");\n        send_it!(from => usdc_vault, amount, owner);\n        mark_to_market!(loan.debt = per_my_last_email!(loan.debt) - amount);\n        were_so_back!()\n    }\n}\n",
+   "ok": true,
+   "rustLines": 223,
+   "diags": []
+  },
+  {
    "id": "degen_desk",
    "title": "degen desk",
    "blurb": "every keyword in one program. a toy. do not run a desk on it.",
@@ -374,6 +384,16 @@
    "lesson": null
   },
   {
+   "shi": "`ticker SOL_USDC = 8 USDC / SOL;`",
+   "rust": "a price: 8 decimals of USDC per whole SOL, a `u64`. A conversion that comes out in the wrong unit or decimals fails with SHI007",
+   "lesson": null
+  },
+  {
+   "shi": "`#[iou]` (on a frame field)",
+   "rust": "nothing in the Rust: this balance is money owed to the program, so SHI006 counts it the other way",
+   "lesson": null
+  },
+  {
    "shi": "`#[on_god]`",
    "rust": "immutable: any `mut` on that account fails to compile",
    "lesson": "on-god"
@@ -563,6 +583,7 @@
    "tokenmaxx",
    "vc_backed",
    "printer_go_brrr",
+   "iou",
    "rent_free",
    "golden_parachute",
    "graduate",
@@ -1188,6 +1209,7 @@
    "program": "gm!(\"7PxhmDuhhe394QJgKyW1P7Ce4dPCfFPN2yKq4KCCj7Vj\");\n\nstealth_launch bridge {\n    cap_table VerifySignatures {\n        /// CHECK: \"the instructions sysvar\"\n        instruction_sysvar: UncheckedAccount,\n        anon,\n    }\n\n    ape fn verify_signatures(ctx) -> W {\n        let data = ctx.accounts.instruction_sysvar.try_borrow_data()?;\n        trust_me_bro!(data.len() > 0, \"no signatures to verify\");\n        were_so_back!()\n    }\n}",
    "rendered": "error[SHI003]: nothing checks what `instruction_sysvar` is: it's an unchecked account.\n  --> lib.shi:13:9\n   |\n13 |         instruction_sysvar: UncheckedAccount,\n   |         ^^^^^^^^^^^^^^^^^^ any account passes here, a fake one too\n   = help: give it a type (`Account<T>`, `Sysvar<T>`, `Program<T>`) or pin it with `address = ...`, `owner = ...` or `seeds = [...]`. a `/// CHECK:` comment checks nothing",
    "usdM": 320,
+   "amount": "$320M",
    "tryCode": "dVJhb9owEP2eX_GK9gEkQlJAQku1ThNjYkObmNqVj5HjHNgl2Kl9IURT__sUYAypmmXJ8t2753fvHEWgQ1lYzQlW1u2ULSiIIuSCKcEwHg7DuN1trLCeE9wO434cx6hnj_M-RGYrxrvRMP7eQqQiuU3wMP8ax6M24G3lJCVQzKVPomhb5VT4rfYkK6e5GUi7ixx5Ek6q6KXSchsKI4rGax_adciKwvqsKxTMQm5b2loJTrAnp9dN6vXGCK4ceTgSOVgRtPHsKsnaGg_f-L1wYOVstVEQBkJKWxmGZhjakzsJp7wPb4_1p6fIoRTe05FTO9jaQJgcO22YctROlCXlmD3OUWtWMJaVNhtkpLTJoXkQBJvdTbczWR7U7nOlFI3ej39-2yya1e1yMqVxvpyuvyx_DJvFy3gxnT5Pnp47vbsg8EyiYJUWojJSIXM63xB-BwAgRZmyyArC09GAh3_9nwDtiqII0_lsukjQ-Y8hnQv4Kpmecgl-mbMnn05e9S9oYaw53V6D4yFKwtq8HUdX8qGH8B6rK2EFcfu7BD5A8mFwnoQfvNUwYNekmXXO1mlb0e19vLvQsKs8pztKM2dvum16UJDp9nCPuI-Osbj6FmzP4lpv_zLU5Cj1Ns2E3N50e-eGXoM_"
   },
   {
@@ -1203,6 +1225,7 @@
    "program": "gm!(\"7PxhmDuhhe394QJgKyW1P7Ce4dPCfFPN2yKq4KCCj7Vj\");\n\nstealth_launch bridge {\n    ticker WETH = 18;\n\n    frame Bridged {\n        owner: Pubkey,\n        weth: WETH,\n    }\n\n    cap_table Deposit {\n        #[account(mut, has_one = owner, seeds = [b\"bridged\", owner.key().as_ref()], bump)]\n        bridged: Account<Bridged>,\n        owner: Signer,\n    }\n\n    // not financial advice\n    lock_in fn deposit(ctx, amount: WETH) -> W {\n        number_go_up!(bridged.weth, amount);\n        were_so_back!()\n    }\n}",
    "rendered": "error[SHI006]: `deposit` creates `amount` WETH out of nothing: balances go up by more than comes in.\n  --> lib.shi:25:16\n   |\n25 |     lock_in fn deposit(ctx, amount: WETH) -> W {\n   |                ^^^^^^^ balances change by amount, money in or out is 0\n   = help: take it in with `send_it!(from => vault, amount, payer)`, move it from another balance, or mark the fn `#[printer_go_brrr]` if it mints on purpose",
    "usdM": 80,
+   "amount": "$80M",
    "tryCode": "XVLfT9swEH7PX3F0e0iktCltWVk60EYBsaGhIqbxgFDkOJfaS2Jn9oU2mvjfJyeBoeXxu_P36xJFgPu61JJiuG1SSXB7ZmS2RfAvSKDBpgLScHZzBmvBpApBKrjTpcwktSsggWBZhVBJS6zAEHZGEqFya9TWaIUMvCiCjBHGMJvOZuPp4Xi2dFipLcXAUt0QvD-efncYF8iLGO6uvk6nHxxgdWM4xiCIahtHUYWZbKoJ11X0uTN8KVVUG02a63I8ZBkbrLWh8Xx6xOeLo8U0Z3NHthPMKUKJOeknNJBhra0kqBkJ4AYzSZhB2jWQwcWPK9hJEs4gsUKqLTDVumi-C06GKZujAUnAWVliBjtmgYHSY10HIVjdFcSIGC_QQCWVo9873tzoCpQm0bNmkGpj9A6z7kmJKnODipkCCTLTTjxvWx34o-VmL6rzRgicf1zcfttet_eHm-UaF9lmnV9ubmbt9e_F9Xr9a_nz1yhYeZ4lZCWJpGSN4mLIBn88AACSna97Z-gEDo9XXgfnxp30bGihX3Wf3ik0MWyatMA2fIV3SCLuSHrsuWfhrE6IpSXC-dDyP6Z3D4xz3Sjyq4ZCEMwmWiGc9BIhWMTMwgk8pKPhGKOwn00KbP1gwmxiMPeDxxDSpqqDx1fqYT-GL73CpyHHafh_jju5dWJvPUeRuwnkUjHFJSuBZU-SYzcrNS8SqSBXL7-Nz2kfAqucTF9AAONTuH8TVDVViibZ6qSpD_zB28Q19vIwWL0p0mBidZIyXhz4wWDs2fsL"
   },
   {
@@ -1218,6 +1241,7 @@
    "program": "gm!(\"7PxhmDuhhe394QJgKyW1P7Ce4dPCfFPN2yKq4KCCj7Vj\");\n\nstealth_launch cashio {\n    frame Bank {\n        authority: Pubkey,\n        collateral_mint: Pubkey,\n        cash_supply: u64,\n    }\n\n    frame Collateral {\n        mint: Pubkey,\n        value: u64,\n    }\n\n    cap_table PrintCash {\n        #[account(mut)]\n        bank: Account<Bank>,\n        collateral: Account<Collateral>,\n        ser,\n    }\n\n    lock_in fn print_cash(ctx, amount: u64) -> W {\n        trust_me_bro!(per_my_last_email!(collateral.value) >= amount, \"not enough collateral\");\n        number_go_up!(bank.cash_supply, amount);\n        were_so_back!()\n    }\n}",
    "rendered": "error[SHI001]: anyone can write `bank`: nothing checks `bank.authority`.\n  --> lib.shi:24:9\n   |\n24 |         bank: Account<Bank>,\n   |         ^^^^ `bank` has an owner and `PrintCash` never asks for it\n   = help: add the owner as a signer and `has_one = authority`, tie `bank` to an account that is checked (`has_one = <that account>`), or mark it `public` if anyone may write it",
    "usdM": 52.8,
+   "amount": "$52.8M",
    "tryCode": "bZJvb9MwEMbf51NcBxKp1DalKwwCTIIiBEygIiT2AiHr4lxjL44d7Mu6CO27I7fdGsTyLvfnud895ywDummN05zDCoPSLskyKJEph8V8sZjOT6eL0xgzLnAOj58tZi--xH-pSNY5fP_4aT5_GgPBdV5SDoq5DXmWbbfbmSTPup5J12SFcVUmdyOm2LZTbaUuyfIULZo-6BA1tgo5B1YE0hmDTB7NkwAopessB9iSJ7B0TR5YUwnsKmJFfgLBAYJUqC24DWywpmNXiyFQCbGt33MD2hJary1TCYGxMCSdtgG2mhVYx0rbCgpS2pYRp5klSdWM0pOz9Y1q3ndK0enL5bfP1UV_-XR9tqJluV5tPqy_LvqL38uL1erq7MfVyfhVkgQmNKyEwc5KBXsD4E8CALDx2BC8Q1sfAvHDjpXzmvsc1l1RUz-5Tx09EY22_EABBiVC17amz6F7vtxnbpPBtNW9xmDmw2rXaDr6X0diK3aOwToaGF_NQOrRz4PtadPx-Nd9vEBb5_B2n3sddz5_aLFjyRF0UBjI_8NinKyFtrCx-2uK6EAq-WYC2ESZHf4YpudwOYBk3wUWDYnCu1HakhdNLwwGFtSgNqP0CDTbuTCG8zcHxQmcWMdA1nWVGpDHa9_p264pyIvKia4dpXH12eA0d2yDhviuRXCiQFmP0vFhxdvkLw"
   },
   {
@@ -1233,6 +1257,7 @@
    "program": "gm!(\"7PxhmDuhhe394QJgKyW1P7Ce4dPCfFPN2yKq4KCCj7Vj\");\n\nstealth_launch clmm {\n    frame Position {\n        owner: Pubkey,\n        fees_owed: u64,\n    }\n\n    cap_table ClaimFees {\n        #[account(mut, has_one = owner)]\n        position: Account<Position>,\n        /// CHECK: \"the pool's tick\"\n        tick: UncheckedAccount,\n        owner: Signer,\n    }\n\n    lock_in fn claim_fees(ctx) -> W {\n        let data = ctx.accounts.tick.try_borrow_data()?;\n        let fee_growth = u64::from_le_bytes(data[8..16].try_into().unwrap());\n        mark_to_market!(position.fees_owed = fee_growth);\n        were_so_back!()\n    }\n}",
    "rendered": "error[SHI003]: nothing checks what `tick` is: it's an unchecked account.\n  --> lib.shi:20:9\n   |\n20 |         tick: UncheckedAccount,\n   |         ^^^^ any account passes here, a fake one too\n   = help: give it a type (`Account<T>`, `Sysvar<T>`, `Program<T>`) or pin it with `address = ...`, `owner = ...` or `seeds = [...]`. a `/// CHECK:` comment checks nothing",
    "usdM": 8.8,
+   "amount": "$8.8M",
    "tryCode": "XVJha9swEP3uX3HNBrMhttM0NJm7dAxvoVvYyChbP5QiFPkcq7YlTzrXCaP_fShx03b6cuhx9-69u4tjwG1TaUkJpAZrDgupuBLoxTFknDCB8Wg8DkfTcDR2WKUtJcDXuiV4O4tm3x0oChRlAtdXX0ejMwdY3RqBCRREjU3iuOu6SGipMrRlJHQdE4oidszxaBqPJrHVFVc8zDCXYWM0aaGrUDhBYaUt2nA2q0Opwl6s69EVnBKgAqExemN4DQZ5Bo2RAi3kRtfAgaQogQuhW0UgCRQ-oIEHNDKXmA3B6j0DJ-KiRAMNtxYz4JDzEkErBK4yEBWXNWaQI1qgghN0aLAnQ24UZpHnbeoTfzBdbYv6c1sUePZ-8vPbZrm7OV1NU5xkqzRfrH6Md8s_k2Wa3k9_3w-CC8-zhLyiglW8VaIAUdU1_PUAAHLDa4SVtpKkVj3onu4UmgRW7brE3fAIO3VMd5gl0J5PDvijtw-CN4z4ukJInZWF8_HM9-a2n5BftzSEglvmnM8PjYK7Y2LTa0ng06Hgw5O6y2cZcRxDevUlXSYw2G9H6-qd3W9icExyvwR-qf3lYNbTDf-3eC03Cs0rK5UWJZMKcnVYC3O2fUHbAMJLuHlhq0JyJ8xhDoK2Ue_RRq53RGbH1toY3TGX4wcfL14V5ohsY3RHBczdOJPEXRSrkK13hNZ3RbezKDo9v9tzSUXaD6JWdYY3fhA8s9XclIw0cxHpxH8aYnTcF8xftHtR6Y6MWc3WXJQnftBP4dH7Bw"
   },
   {
@@ -1248,6 +1273,7 @@
    "program": "gm!(\"7PxhmDuhhe394QJgKyW1P7Ce4dPCfFPN2yKq4KCCj7Vj\");\n\nstealth_launch lender {\n    frame Loan {\n        borrower: Pubkey,\n        collateral_value: u64,\n    }\n\n    cap_table PriceCollateral {\n        #[account(mut, has_one = borrower)]\n        loan: Account<Loan>,\n        /// CHECK: \"the RateX program\"\n        rate_program: UncheckedAccount,\n        borrower: Signer,\n    }\n\n    lock_in fn price_collateral(ctx, quoted: u64) -> W {\n        probably_nothing!(\"priced by {}\", ctx.accounts.rate_program.key());\n        mark_to_market!(loan.collateral_value = quoted);\n        were_so_back!()\n    }\n}",
    "rendered": "error[SHI004]: `rate_program` can be any program, and whatever it does or returns is trusted.\n  --> lib.shi:20:9\n   |\n20 |         rate_program: UncheckedAccount,\n   |         ^^^^^^^^^^^^ a program the attacker wrote passes here\n   = help: name the program (`Program<Token>`, `Program<System>`), or pin it: `address = <program id>`",
    "usdM": 5.8,
+   "amount": "$5.8M",
    "tryCode": "bVJdb9NAEHz3r9gEHmwptUNIW3BpJWSoCikoUEGRELLW503s5nzr3q2bRFX_O3LiJuXDD3fS7N7szKyjCGhVay4lhkvm2inU5EUR5CgUw2g4OjwYjg9GRy2m2UkMmHEj8PwwfPUJfI1CFiwpviNLedC2qYLUIoariw_D4bgFHDdWUQyFSO3iKMo0z0P9OC1UXEU1O3Gbs2IrVLXPlgVKDFIQ1JbnFisocwc820BfUejHY8FB4ygHYahtqQgU640w1LAkS2BYtqooBzbAhqBGKQbgGBBczTyjfDfFkjTWUA5ooDSzlinfEoeeN696fv94uiqqd01R0MvX4y8f55P19YvpcULjfJrMzqefR-vJ7XiSJDfH32_6wYnnOSHUUqQaG6MK0GRysnDvAQDMLFYEl4ymA9ovY2t5STaGaZMtaD3YVfbe0jvUDcXQHI235QdvcymsU8FME0xb0ck-jD3_s5-oFDdG_KqRARTo0jaV093g4NeuVzOaGN5u-9-0Qs_2cqIoguTifTKJof_PXvq7NotCaYfG8M102-hIB__xfVXODdk_jGlWi7Q0MDPbdaT7LHwlqwHcNiyUbxIJ4OAMrp84ri1nmOl1aliK0sx7fn9DkkO2hvuH_gCUrMIuFRc-FRwuaO0HwcmOq0K7SIXT9ibp-W1C4d-LgdNOz5OH7d-YOk4zVIueH3TmHrzf"
   },
   {
@@ -1263,7 +1289,24 @@
    "program": "gm!(\"7PxhmDuhhe394QJgKyW1P7Ce4dPCfFPN2yKq4KCCj7Vj\");\n\nstealth_launch market {\n    ticker CBETH_ETH = 18;\n    ticker CBETH_USD = 8;\n\n    frame Market {\n        admin: Pubkey,\n        cbeth_price: CBETH_USD,\n    }\n\n    cap_table SetPrice {\n        #[account(mut, has_one = admin)]\n        market: Account<Market>,\n        admin: Signer,\n    }\n\n    lock_in fn set_price(ctx, cbeth_eth: CBETH_ETH) -> W {\n        mark_to_market!(market.cbeth_price = cbeth_eth);\n        were_so_back!()\n    }\n}",
    "rendered": "error[SHI002]: this writes `cbeth_eth` (CBETH_ETH) into `market.cbeth_price` (CBETH_USD).\n  --> lib.shi:26:44\n   |\n26 |         mark_to_market!(market.cbeth_price = cbeth_eth);\n   |                                            ^ 8 decimals against 18: off by 10,000,000,000x\n   = help: convert one with a price first, or write `as u64` if you are converting on purpose",
    "usdM": 1.78,
+   "amount": "$1.78M",
    "tryCode": "ZZFRb9owFIXf8ytuu0kDKSEhZYWFUWmlrdiqTkx068M0RY5zwW4cm9o3AjT1v08mqGVbXqKcc3Pud-w4BtyulZGUwZ0xeoNKQcdouGQOQ5AaFkbJUtJuDCQQHKsRaumIVRjCxkoi1H6Mdmt0QnaDOIaSEWaQJul5lKRR_73XlHGUwdt-bzi6A7OEgpVQYkHe4wJ5lcFi9jlJUi8401iOGQiitcvieGlsU_fqA19vKWOKa7mOtoOziBdIIjKWcYWR1FyWqClyTV0zu4vT5HzkEzeCUbZv0E5C47Dcf1u2AV5c38_i6_sZ4JYLpldeJgTmWuudg--LK1hbyTEEZ1oVNsy1WgmMgBWmId-wn4LUjpCVvuhBTsM0SYDpEpR8amTJyFgHZEy1p-BGKUZomeoFwao-6ZwO51tRXzVC4NmHwbcvq9vdQ38-nOKgnE-XN_Ov6e72aXA7nT4OfzyedsdB4DcqErlijeYCamYrJPgdAACQ5BVamF5e389yjz6B_mj8v-VbTmA0DvbW0vrbvjsO8g8ra6kzmDdFhbvwRd5fRL4_j-w1rvWf20DO1jmxQiEskOZ-8ij2zU_GuWk0deqGQhDM5UYjTNp93V8vg22zDD614x9bwIvwX8CFXGm0fwEow6tcalhqcEgtbIfTNjzQI4ns9ZS6EF3AwxGi35yTyVuCk0777h01h8lrUnf88uMGLebO5AXj1Umne0B6Dv4A"
+  },
+  {
+   "id": "morpho-paxg",
+   "name": "Morpho PAXG/USDC market",
+   "note": "on Ethereum, an oracle setting; the same mistake, written in typeshi",
+   "date": "2024-10-13",
+   "lost": "about $230K borrowed against $350 of PAXG",
+   "check": "SHI007",
+   "checkTitle": "a conversion that comes out in the wrong unit or off by a power of ten",
+   "source": "https://blog.verichains.io/p/morpho-protocol-market-oracle-price",
+   "what": "the market's oracle was set up as if PAXG had 8 decimals instead of 18 and USDC 8 instead of 6, which priced PAXG 10^12 times too high, so $350 of collateral borrowed $230K.",
+   "program": "gm!(\"7PxhmDuhhe394QJgKyW1P7Ce4dPCfFPN2yKq4KCCj7Vj\");\n\nstealth_launch market {\n    ticker USDC = 6;\n    ticker PAXG = 18;\n    ticker PAXG_USDC = 8 USDC / PAXG;\n\n    frame Market {\n        admin: Pubkey,\n        price: PAXG_USDC,\n    }\n\n    frame Position {\n        owner: Pubkey,\n        collateral: PAXG,\n    }\n\n    cap_table CanBorrow {\n        #[account(seeds = [b\"market\"], bump)]\n        market: Account<Market>,\n        #[account(has_one = owner, seeds = [b\"position\", owner.key().as_ref()], bump)]\n        position: Account<Position>,\n        owner: Signer,\n    }\n\n    ape fn can_borrow(ctx, amount: USDC) -> W {\n        let value: USDC = per_my_last_email!(position.collateral) * per_my_last_email!(market.price) / 100_000_000;\n        trust_me_bro!(amount <= value, \"not enough collateral\");\n        were_so_back!()\n    }\n}",
+   "rendered": "error[SHI007]: `value` comes out 1,000,000,000,000x too big: this has 18 decimals of USDC, and `value` has 6.\n  --> lib.shi:34:25\n   |\n34 |         let value: USDC = per_my_last_email!(position.collateral) * per_my_last_email!(market.price) / 100_000_000;\n   |                         ^ divide by 1,000,000,000,000 more\n   = help: decimals add when you multiply and subtract when you divide: an amount with 9 times a price with 8 has 17, so divide by 10 to the ones you don't keep",
+   "usdM": 0.23,
+   "amount": "$230K",
+   "tryCode": "bVJtb9MwEP7eX_GsIJGgtEm7wUpKkaC8T6CiiRcJQeQ419o0sYPt0FWI_44Sr2vQiJQvd-fn7S6OQVd1qaVL8U6bWmisnn55FX-8fL5ExcyWHAKt8MIJMtRUEZiCNoyXBEvOSbWZwwmCZRWhktaxLUXYGekcKUgFt6_JChkO4hgFc5RimkzPRpNkNDlta6W2LgXLdeNwd3qaXCDXxugdFWAbJpV1uHv6IIFed8raJ1wQ36a4fP0mSc7bgtWN4ZRCOFfbNI7zUm_Gv8hILlqEsdRxHVedvVFttNNclyPvbuTNjGojObVYO8Fc2lnyA_fswe-O2dYzmhrMQno9EKzADAVxWbHSohVMrGjlTmZgqkAX5azfeBhhJyQX6EgLjzNJvk-mcLIiC6c1hNyICFbfuOe6LJkjw8pjQl1g48FgU50Ew_PVlaieN0LQ6aOzD283F_vPk9X5ks6K1XL9cvV-ur_4eXaxXP44__RjGM4Hg1ZQ6URWskZxcVj37wEAOMm3ZLz4BR7O-8VO7wKT2a1qdj0_8w_jrjgfdGNr057Iuz5J-7GikirFqsm3tI9uyl006RHUd_70oVbaSie16oHpnSJzG-wYnUf8B4yzOnMsLwlLpp51yfYQ73xlnOtGucASFRYLfM2HPqnhtwh5U9Xht5tp30jx1L957N0-if4DJ5jNtCIsvOgIPfz62tkw8s3xlvZBOGY2M7QOwtu8hwdH5kM4Pe7rcC7lpuXrR8BqwlqBM5X50wq4u4rAqhYq7XYZYvQEn3vBlOTwi5UNpYcjqclk1T4rmXUZVUyWJ8FB1_i4gRD3_zfpkxt3aw8RY5IkWeL_-Q2nM411WUVZbvRJ4OXh8cLriDBU2oGUbjait_L21A8AOzKUWZ3ljG9PgvA6gz-Dvw"
   },
   {
    "id": "candy-machine",
@@ -1278,6 +1321,7 @@
    "program": "gm!(\"7PxhmDuhhe394QJgKyW1P7Ce4dPCfFPN2yKq4KCCj7Vj\");\n\nstealth_launch candy {\n    frame Machine {\n        authority: Pubkey,\n        price: u64,\n    }\n\n    cap_table Initialize {\n        #[account(init_if_needed, payer = ser, space = 8 + Machine::INIT_SPACE,\n                  seeds = [b\"machine\", ser.key().as_ref()], bump)]\n        machine: Account<Machine>,\n        ser,\n        system_program,\n    }\n\n    lock_in fn initialize(ctx, price: u64) -> W {\n        mark_to_market!(machine.authority = per_my_last_email!(ser).key());\n        mark_to_market!(machine.price = price);\n        were_so_back!()\n    }\n}",
    "rendered": "error[SHI005]: `init_if_needed` lets a second call reset `machine`.\n  --> lib.shi:17:19\n   |\n17 |         #[account(init_if_needed, payer = ser, space = 8 + Machine::INIT_SPACE,\n   |                   ^^^^^^^^^^^^^^ on a later call the account already holds state\n   = help: create it with `rent_free` in its own instruction, and write it with `mut` everywhere else",
    "usdM": 0,
+   "amount": "1,027 SOL",
    "tryCode": "hVLBbtNAEL37KybhgC2c2EkDAZdUQgFEKC1BRfRQVavJelK7tnfN7pjGoP472sRNwom9jP08--a954kioE1d6pwTuCDGuqQNzFGlLVygzHJF8GvkRRGkyJTAOB6PB_FoEE8cVmrLCZyEk2kM1a7bQmowV5SGMArj8RSuvn4BiTajFHTD7pbMSBYJXH1axPFLB1jdGEkJZMy1TaLoXquyGUqMam3ZRtKpGXT8rv8hQ06AM4La6DuDFaCUVDOl7kE3ii1whgwPZAiwNIRpC7nKOccy_-20WQ2oAJlRFmTA0IPRTIBPNp5bsIwOUSmw1gXkbGHdqNSCb6jWxk1btY4lVynVpFJSDIYsoZEZmWDoeXdVz-9Pl5uset9kGZ28mXz7fHfeXo-W0zlN0uV8_XF5OW7Pf07O5_P76Y_7fnDqeZYJS85EiY2SGWztwx8PAGBtsKL9j9lh7mDDmTY5twksm1VBbbj_VJvcZdu8muywR29bJNaCcVUSLPa5HBE-u-mS9F1sIl8LRZS65GpsycAMLJkQbI2SYAav4cWTqiRZXC6-i6vlu_mHg4rDsUSphRncrPpd1v3QkQ0Lav1giFYYWvvBbQirpqqD2z1F153Au52yt93As8MUp-nw0lqmSnQr8o_5UstC5ArW6mgrfMmb8CiuAAZncH2USYWmEKyFq8Q9vxM03IcPM6jJiKoVJVoWVGFe9nzrdmFrLjj9L9d2vONx9ajfbbKwWqxQFj0_6Mw8en8B"
   }
  ],
@@ -1290,7 +1334,8 @@
    "SHI003",
    "SHI004",
    "SHI005",
-   "SHI006"
+   "SHI006",
+   "SHI007"
   ]
  },
  "checkTitles": {
@@ -1299,6 +1344,7 @@
   "SHI003": "an unchecked account nothing checks",
   "SHI004": "a program to call that can be any program",
   "SHI005": "init_if_needed lets a second call reset an account",
-  "SHI006": "money that comes from nowhere or goes nowhere"
+  "SHI006": "money that comes from nowhere or goes nowhere",
+  "SHI007": "a conversion that comes out in the wrong unit or off by a power of ten"
  }
 }

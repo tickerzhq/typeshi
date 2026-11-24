@@ -65,7 +65,8 @@ explained (`typeshi explain`), and every explanation's examples are tests.
 
 1. **Owners on Solana.** Done: `SHI001`, `public`, `typeshi explain`, tested pages.
 2. **Units.** Done: `ticker USDC = 6;`, and `SHI002` refuses adding, comparing or writing
-   two different units. Next: check conversions against a declared price.
+   two different units. Prices too (2026-11-24): `ticker SOL_USDC = 8 USDC / SOL;`, and
+   `SHI007` follows every `*` and `/` to the unit and decimals a conversion comes out in.
 3. **The rest of Solana's gaps.** Done (2026-11-24): `SHI003` unchecked raw accounts
    (Wormhole, Crema), `SHI004` program accounts the caller picks (Loopscale), `SHI005`
    `init_if_needed`.
@@ -73,8 +74,8 @@ explained (`typeshi explain`), and every explanation's examples are tests.
    signer seeds typeshi writes) as the way money comes in and goes out, and
    `#[printer_go_brrr]` for an instruction that mints on purpose. Each way through a
    `bull`/`bear` is checked on its own, and the error names the one that doesn't add up.
-   Next: loops and `match`, and telling a price ticker from a balance one.
-5. **The proof.** Done (2026-11-24): `docs/exploits` holds seven real incidents rewritten in
+   `#[iou]` marks money owed, so lending adds up. Next: loops and `match`.
+5. **The proof.** Done (2026-11-24): `docs/exploits` holds eight real incidents rewritten in
    typeshi, about $469M and 1,027 SOL of losses, each refused with the check that would have
    stopped it. `cargo test` and the site build both fail if one ever compiles. Shown at
    [typeshi.tickerz.com/exploits](https://typeshi.tickerz.com/exploits).

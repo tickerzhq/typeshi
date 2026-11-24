@@ -75,7 +75,7 @@
       "patterns": [
         {
           "name": "keyword.other.attribute.typeshi",
-          "match": "\\b(on_god|tokenmaxx|vc_backed|printer_go_brrr)\\b"
+          "match": "\\b(on_god|tokenmaxx|vc_backed|printer_go_brrr|iou)\\b"
         },
         {
           "name": "keyword.other.constraint.typeshi",

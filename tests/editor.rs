@@ -71,6 +71,7 @@ fn grammar_knows_the_slang() {
         "on_god",
         "tokenmaxx",
         "vc_backed",
+        "iou",
         "rent_free",
         "golden_parachute",
         "graduate",

@@ -727,3 +727,143 @@ fn rejoining_equals_leaves_strings_alone() {
     );
     assert!(o.rust.contains("x == 1"), "{}", o.rust);
 }
+
+/// A SOL/USDC market with a price ticker and a borrower who owes USDC.
+fn market(body: &str) -> String {
+    format!(
+        "{ID}
+        stealth_launch m {{
+            ticker USDC = 6;
+            ticker SOL = 9;
+            ticker SOL_USDC = 8 USDC / SOL;
+            frame Market {{ cabal: Pubkey, price: SOL_USDC, cap: USDC }}
+            cap_table Quote {{
+                #[account(has_one = cabal)]
+                market: Account<Market>,
+                cabal,
+            }}
+            ape fn quote(ctx, amount: SOL) -> W {{
+                {body}
+                were_so_back!()
+            }}
+        }}"
+    )
+}
+
+fn shi007(d: &[Diag]) -> Vec<&Diag> {
+    d.iter().filter(|x| x.code == Some("SHI007")).collect()
+}
+
+#[test]
+fn a_price_ticker_is_a_u64_that_says_what_it_prices() {
+    let o = ok(&market(""));
+    assert!(
+        has(&o.rust, "/// ticker SOL_USDC: a price, USDC per SOL (8 decimals)."),
+        "{}",
+        o.rust
+    );
+    assert!(
+        has(&o.rust, "#[allow(non_camel_case_types)] pub type SOL_USDC = u64;"),
+        "{}",
+        o.rust
+    );
+    assert!(has(&o.rust, "pub const SOL_USDC_DECIMALS: u8 = 8;"), "{}", o.rust);
+}
+
+#[test]
+fn a_price_needs_quote_per_base() {
+    let d = ngmi(&market("").replace("ticker SOL_USDC = 8 USDC / SOL;", "ticker SOL_USDC = 8 USDC SOL;"));
+    assert!(errors(&d).iter().any(|e| e.contains("quote per base")), "{d:?}");
+}
+
+#[test]
+fn a_conversion_with_the_right_power_of_ten_passes() {
+    ok(&market(
+        "let v: USDC = amount * per_my_last_email!(market.price) / 100_000_000_000;",
+    ));
+    ok(&market(
+        "let v: USDC = ((amount as u128) * (per_my_last_email!(market.price) as u128) \
+         / 10u128.pow(SOL_DECIMALS as u32 + SOL_USDC_DECIMALS as u32 - USDC_DECIMALS as u32)) as u64;",
+    ));
+    ok(&market(
+        "let v: USDC = amount.checked_mul(per_my_last_email!(market.price)).unwrap() / 100_000_000_000;",
+    ));
+}
+
+#[test]
+fn a_conversion_off_by_a_power_of_ten_is_refused_with_the_fix() {
+    let d = ngmi(&market(
+        "let v: USDC = amount * per_my_last_email!(market.price) / 1_000_000_000;",
+    ));
+    let e = shi007(&d);
+    assert_eq!(e.len(), 1, "{d:?}");
+    assert!(e[0].msg.contains("`v` comes out 100x too big"), "{}", e[0].msg);
+    assert_eq!(e[0].label, "divide by 100 more");
+    let d = ngmi(&market(
+        "let v: USDC = amount * per_my_last_email!(market.price) / 100_000_000_000_000;",
+    ));
+    assert!(shi007(&d)[0].msg.contains("1,000x too small"), "{d:?}");
+}
+
+#[test]
+fn dividing_by_a_price_instead_of_multiplying_is_the_wrong_asset() {
+    let d = ngmi(&market("let v: USDC = amount / per_my_last_email!(market.price);"));
+    assert!(
+        shi007(&d)[0].msg.contains("is USDC, but it gets SOL² per USDC"),
+        "{d:?}"
+    );
+}
+
+#[test]
+fn a_comparison_with_a_conversion_is_checked_too() {
+    let d = ngmi(&market(
+        "trust_me_bro!(amount * per_my_last_email!(market.price) <= per_my_last_email!(market.cap), \"cap\");",
+    ));
+    assert!(shi007(&d)[0].msg.contains("this compares `market.cap`"), "{d:?}");
+}
+
+#[test]
+fn an_untyped_number_makes_a_conversion_unknown_not_wrong() {
+    ok(&market("let r: u64 = 3; let v: USDC = amount * r / 1_000_000_000;"));
+    ok(&market("let v: USDC = amount * 2 / 1_000;"));
+}
+
+#[test]
+fn iou_marks_money_owed_so_a_loan_adds_up() {
+    let lend = |borrow: &str| {
+        format!(
+            "{ID}
+            stealth_launch l {{
+                ticker USDC = 6;
+                frame Loan {{ owner: Pubkey, #[iou] debt: USDC }}
+                cap_table Borrow {{
+                    #[account(mut, has_one = owner, seeds = [b\"loan\", owner.key().as_ref()], bump)]
+                    loan: Account<Loan>,
+                    #[account(mut)]
+                    to: Account<anchor_spl::token::TokenAccount>,
+                    #[account(mut)]
+                    pool_tokens: Account<anchor_spl::token::TokenAccount>,
+                    /// CHECK: the pool's signer
+                    #[account(seeds = [b\"pool\"], bump)]
+                    pool: UncheckedAccount,
+                    owner: Signer,
+                    token_program,
+                }}
+                // not financial advice
+                lock_in fn borrow(ctx, amount: USDC) -> W {{
+                    {borrow}
+                    send_it!(pool_tokens => to, amount, pool);
+                    were_so_back!()
+                }}
+            }}"
+        )
+    };
+    let o = ok(&lend("number_go_up!(loan.debt, amount);"));
+    assert!(
+        !o.rust.contains("iou"),
+        "#[iou] is typeshi's word, not Rust's: {}",
+        o.rust
+    );
+    let d = ngmi(&lend(""));
+    assert!(shi006(&d)[0].msg.contains("pays out `amount` USDC"), "{d:?}");
+}

@@ -9,7 +9,7 @@
 [![license: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![try it: in your browser](https://img.shields.io/badge/try%20it-in%20your%20browser-b6f259.svg)](https://typeshi.tickerz.com/play)
 
-**lock in fn.** A language for code that moves money. Slang over Rust that compiles to plain Solana programs (Anchor 1.2), and refuses to compile the bugs that drain them: an account anyone can write, USDC added to SOL, a deposit that credits money that never arrived. Each is a compile error with the fix and the exploit it prevents. Seven real exploits, about $469M of losses, are rewritten in typeshi in [`docs/exploits`](docs/exploits), and the build fails if the compiler ever accepts one. `rug!()` is still a compile error too.
+**lock in fn.** A language for code that moves money. Slang over Rust that compiles to plain Solana programs (Anchor 1.2), and refuses to compile the bugs that drain them: an account anyone can write, USDC added to SOL, a price conversion off by a power of ten, a deposit that credits money that never arrived. Each is a compile error with the fix and the exploit it prevents. Eight real exploits, about $469M of losses, are rewritten in typeshi in [`docs/exploits`](docs/exploits), and the build fails if the compiler ever accepts one. `rug!()` is still a compile error too.
 
 **[Try it in your browser](https://typeshi.tickerz.com/play)** · **[Take the tour](https://typeshi.tickerz.com/tour)** (25 lessons, no install) · [Keywords](#keywords) · [Contributing](CONTRIBUTING.md)
 
@@ -76,7 +76,7 @@ pub mod gm_counter {
 }
 ```
 
-The generated `.rs` is committed next to every example [`.shi`](examples/trenches/programs/print_feed/src/lib.shi), so you can read what every keyword does, and CI compiles all of it against the real Anchor 1.2 crates. Don't edit it. Nobody can edit it. [`vault.shi`](examples/trenches/programs/vault/src/lib.shi) is a USDC vault with a fee, where every instruction's money adds up.
+The generated `.rs` is committed next to every example [`.shi`](examples/trenches/programs/print_feed/src/lib.shi), so you can read what every keyword does, and CI compiles all of it against the real Anchor 1.2 crates. Don't edit it. Nobody can edit it. [`vault.shi`](examples/trenches/programs/vault/src/lib.shi) is a USDC vault with a fee, where every instruction's money adds up, and [`lend.shi`](examples/trenches/programs/lend/src/lib.shi) lends USDC against SOL with a price, a health check and debts.
 
 ## Checks that guard money
 
@@ -99,8 +99,9 @@ error[SHI001]: anyone can write `vault`: `vault.cabal` is never checked against 
 | [`SHI004`](docs/checks/SHI004.md) | calling a program the caller picked: a bare `Program`, or a `*_program` account with no `address` | Loopscale, about $5.8M (2025, recovered) |
 | [`SHI005`](docs/checks/SHI005.md) | `init_if_needed`, which lets a second call reset an account | Candy Machine v1, 1,027 SOL (2022) |
 | [`SHI006`](docs/checks/SHI006.md) | money from nowhere or into nowhere: balances that go up by more than comes in, or a payout that lowers no balance | Qubit, about $80M (2022) |
+| [`SHI007`](docs/checks/SHI007.md) | a conversion that comes out in the wrong unit or off by a power of ten: SOL times a price divided by 10^9 instead of 10^11, or divided by a price it should multiply by | Morpho PAXG/USDC, about $230K (2024), off by 10^12 |
 
-Give each money unit a name with `ticker USDC = 6;` (a plain `u64` in the Rust, so it costs nothing at run time) and typeshi tracks it through fields, params, sums and writes, then checks that every instruction's balances move by exactly what comes in through `send_it!`, minus what goes out, plus what is minted. That is the guarantee Move gives Sui and Aptos coins, for the balances a Solana program keeps. `typeshi explain SHI001` prints a check's page: what it catches, the fix, what it has cost and what it doesn't catch. Every example on those pages is a test. When anyone really may write an account (a deposit, a public counter), mark it `public` and typeshi lets it through, on purpose.
+Give each money unit a name with `ticker USDC = 6;` (a plain `u64` in the Rust, so it costs nothing at run time) and typeshi tracks it through fields, params, sums and writes, then checks that every instruction's balances move by exactly what comes in through `send_it!`, minus what goes out, plus what is minted. That is the guarantee Move gives Sui and Aptos coins, for the balances a Solana program keeps. Prices say what they are a price of (`ticker SOL_USDC = 8 USDC / SOL;`), so every `*` and `/` in a conversion is followed through to its unit and its decimals, and a debt marked `#[iou]` counts as money owed, so a loan adds up. `typeshi explain SHI001` prints a check's page: what it catches, the fix, what it has cost and what it doesn't catch. Every example on those pages is a test. When anyone really may write an account (a deposit, a public counter), mark it `public` and typeshi lets it through, on purpose.
 
 ## The compiler has opinions
 
@@ -193,6 +194,8 @@ Also: every successful build prints a fake market cap that is down since you sta
 | `cope { Name = "message" }` | your own codes in `enum Cope` |
 | `type_shi X = T;` / `deadass X: T = v;` | `pub type` / `pub const` |
 | `ticker USDC = 6;` | a money unit: `pub type USDC = u64;` and `USDC_DECIMALS`. Mixing two units fails with SHI002 |
+| `ticker SOL_USDC = 8 USDC / SOL;` | a price: 8 decimals of USDC per whole SOL, a `u64`. A conversion that comes out in the wrong unit or decimals fails with SHI007 |
+| `#[iou]` (on a frame field) | nothing in the Rust: this balance is money owed to the program, so SHI006 counts it the other way |
 | `#[on_god]` | immutable: any `mut` on that account fails to compile |
 | `this_is_fine!();` | the program's panic handler (behind the `custom-panic` feature) |
 | `lock_in fn` / `ape fn` / `few_understand fn` | an instruction that writes (or it fails to compile) / any instruction / a private helper |

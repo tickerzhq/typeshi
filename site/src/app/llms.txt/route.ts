@@ -42,7 +42,7 @@ export function GET() {
     "",
     "## Checks that guard money (stable codes; `typeshi explain <code>` prints the page)",
     "",
-    "Name each money unit with `ticker USDC = 6;` and give balances and amounts that type. Move tokens with `send_it!(from => to, amount, authority)`, so the compiler can check that balances change by exactly what comes in and goes out.",
+    "Name each money unit with `ticker USDC = 6;` and give balances and amounts that type. Name prices with what they price: `ticker SOL_USDC = 8 USDC / SOL;` (8 decimals of USDC per whole SOL), so conversions are checked for unit and decimals. Mark money owed to the program `#[iou]` on its frame field. Move tokens with `send_it!(from => to, amount, authority)`, so the compiler can check that balances change by exactly what comes in and goes out.",
     "",
     ...Object.entries(content.checkTitles).map(
       ([code, title]) => `- [${code}](https://github.com/tickerzhq/typeshi/blob/main/docs/checks/${code}.md): ${title}`,
