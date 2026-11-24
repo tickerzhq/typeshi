@@ -20,18 +20,11 @@ export type TokenVar =
   | "gray-855"
   | "gray-880"
   | "gray-890"
-  | "lime-70"
-  | "lime-110"
-  | "lime-480"
-  | "lime-700"
-  | "lime-800"
   | "red-200"
   | "red-290"
   | "red-460"
   | "amber-150"
   | "amber-470"
-  | "violet-210"
-  | "violet-500"
   | "sand-160"
   | "sand-500"
   | "orange-200"
@@ -42,6 +35,31 @@ export type TokenVar =
   | "teal-500"
   | "mint-140"
   | "mint-500"
+  | "petrol-terminal"
+  | "petrol-sunk"
+  | "petrol-ground"
+  | "petrol-panel"
+  | "petrol-panel-2"
+  | "petrol-line"
+  | "petrol-line-strong"
+  | "petrol-mute"
+  | "petrol-text-2"
+  | "petrol-text"
+  | "petrol-brand"
+  | "petrol-brand-hover"
+  | "petrol-brand-deep"
+  | "petrol-down"
+  | "paper-ground"
+  | "paper-panel"
+  | "paper-panel-2"
+  | "paper-sunk"
+  | "paper-line"
+  | "paper-line-strong"
+  | "paper-mute"
+  | "paper-text-2"
+  | "paper-text"
+  | "paper-brand"
+  | "paper-down"
   | "surface-page"
   | "surface-raised"
   | "surface-sunk"
@@ -96,6 +114,7 @@ export type TokenVar =
   | "weight-medium"
   | "weight-bold"
   | "weight-heavy"
+  | "weight-mark"
   | "space-3xs"
   | "space-2xs"
   | "space-xs"
@@ -127,74 +146,74 @@ export const v = (name: TokenVar) => `var(--${name})` as const;
 /** Semantic colors as sRGB hex, per theme, for places CSS variables can't reach (the share cards, the icons). */
 export const colors = {
   "dark": {
-    "surface-page": "#090a0c",
-    "surface-raised": "#101013",
-    "surface-sunk": "#050607",
-    "surface-terminal": "#040405",
-    "text-primary": "#eeeef0",
-    "text-secondary": "#b2b4b9",
-    "text-tertiary": "#87898f",
-    "text-on-accent": "#11190a",
-    "text-on-accent-soft": "#27321c",
-    "text-on-state": "#090a0c",
-    "border-default": "#212326",
-    "border-strong": "#34353a",
-    "accent-text": "#b6f259",
-    "accent-fill": "#b6f259",
-    "accent-fill-hover": "#c7fd7a",
-    "accent-selection": "#b6f25940",
-    "state-error": "#ff6b65",
+    "surface-page": "#060e0f",
+    "surface-raised": "#0c1718",
+    "surface-sunk": "#040a0b",
+    "surface-terminal": "#030808",
+    "text-primary": "#eaf2f1",
+    "text-secondary": "#a8b8b8",
+    "text-tertiary": "#839797",
+    "text-on-accent": "#060e0f",
+    "text-on-accent-soft": "#0a3535",
+    "text-on-state": "#060e0f",
+    "border-default": "#1b2829",
+    "border-strong": "#304143",
+    "accent-text": "#41d3ce",
+    "accent-fill": "#41d3ce",
+    "accent-fill-hover": "#71e4df",
+    "accent-selection": "#41d3ce40",
+    "state-error": "#fd736d",
     "state-warning": "#f8c655",
-    "syntax-keyword": "#c4acf2",
+    "syntax-keyword": "#eaf2f1",
     "syntax-string": "#edc388",
     "syntax-number": "#fba587",
     "syntax-type": "#98daea",
     "syntax-function": "#b5e3d9",
     "syntax-macro": "#97e4c2",
-    "syntax-slang": "#b6f259",
-    "syntax-comment": "#87898f",
+    "syntax-slang": "#41d3ce",
+    "syntax-comment": "#839797",
     "overlay-subtle": "#ffffff08",
     "overlay-hover": "#ffffff0d",
     "overlay-chip": "#ffffff0f",
     "overlay-strong": "#ffffff14",
-    "contrast-text": "#cfd1d5",
-    "contrast-border": "#87898f",
+    "contrast-text": "#eaf2f1",
+    "contrast-border": "#839797",
     "contrast-error": "#f8a49d"
   },
   "light": {
-    "surface-page": "#ffffff",
-    "surface-raised": "#f9fafb",
-    "surface-sunk": "#f6f7f9",
-    "surface-terminal": "#f2f3f5",
-    "text-primary": "#191a1d",
-    "text-secondary": "#505259",
-    "text-tertiary": "#696c73",
-    "text-on-accent": "#11190a",
-    "text-on-accent-soft": "#27321c",
-    "text-on-state": "#ffffff",
-    "border-default": "#e3e4e7",
-    "border-strong": "#cfd1d5",
-    "accent-text": "#3f7b04",
-    "accent-fill": "#b6f259",
-    "accent-fill-hover": "#c7fd7a",
-    "accent-selection": "#3f7b0433",
-    "state-error": "#c92324",
-    "state-warning": "#945f0e",
-    "syntax-keyword": "#7444b4",
+    "surface-page": "#f1f6f6",
+    "surface-raised": "#fafcfc",
+    "surface-sunk": "#ecf1f1",
+    "surface-terminal": "#e4ebeb",
+    "text-primary": "#07191d",
+    "text-secondary": "#48595c",
+    "text-tertiary": "#596a6b",
+    "text-on-accent": "#060e0f",
+    "text-on-accent-soft": "#0a3535",
+    "text-on-state": "#f1f6f6",
+    "border-default": "#d7e0e0",
+    "border-strong": "#b4c1c1",
+    "accent-text": "#006c6e",
+    "accent-fill": "#41d3ce",
+    "accent-fill-hover": "#71e4df",
+    "accent-selection": "#006c6e33",
+    "state-error": "#be3313",
+    "state-warning": "#895916",
+    "syntax-keyword": "#07191d",
     "syntax-string": "#875814",
     "syntax-number": "#b0451a",
     "syntax-type": "#046f87",
     "syntax-function": "#1b7269",
     "syntax-macro": "#117555",
-    "syntax-slang": "#3f7b04",
-    "syntax-comment": "#696c73",
+    "syntax-slang": "#006c6e",
+    "syntax-comment": "#596a6b",
     "overlay-subtle": "#00000006",
     "overlay-hover": "#0000000a",
     "overlay-chip": "#0000000d",
     "overlay-strong": "#00000012",
-    "contrast-text": "#34353a",
-    "contrast-border": "#696c73",
-    "contrast-error": "#c92324"
+    "contrast-text": "#07191d",
+    "contrast-border": "#596a6b",
+    "contrast-error": "#be3313"
   }
 } as const;
 

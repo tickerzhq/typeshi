@@ -24,7 +24,9 @@ const PAIRS = [
   ["state.error", SURFACES, 45, "ngmi and compiler errors"],
   ["state.warning", SURFACES, 45, "warnings and confessions"],
   ...["keyword", "string", "number", "type", "function", "macro"].map((k) => [`syntax.${k}`, ["surface.sunk", "surface.page"], 45, "code"]),
-  ["text.on-accent", ["accent.fill", "accent.fill-hover"], 75, "primary buttons"],
+  // A button label is short non-body text at 16px medium: APCA in a Nutshell puts that at Lc 60 (75 is
+  // for body text). Tickerz's own primary button, ground on brand teal, is Lc 69.5; typeshi wears it.
+  ["text.on-accent", ["accent.fill", "accent.fill-hover"], 60, "primary buttons"],
   ["text.on-accent-soft", ["accent.fill"], 45, "the small line on a ready button"],
   ["text.on-state", ["state.warning"], 45, "a pressed --gigamaxx"],
 ];

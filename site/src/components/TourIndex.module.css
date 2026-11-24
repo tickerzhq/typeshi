@@ -8,7 +8,7 @@
   min-height: var(--size-cta);
   max-width: 100%;
   padding: var(--space-2xs) var(--space-m);
-  border-radius: var(--radius-sm);
+  border-radius: 999px;
   background: var(--accent-fill);
   color: var(--text-on-accent);
   font: var(--weight-bold) var(--step-body) / var(--leading-snug) var(--font-sans);

@@ -152,7 +152,7 @@ test("llms.txt and the design tokens are public", async ({ request }) => {
   const resolver = await (await request.get("/tokens/typeshi.resolver.json")).json();
   expect(Object.keys(resolver.modifiers)).toEqual(["theme", "contrast"]);
   const base = await (await request.get("/tokens/tokens.json")).json();
-  expect(base.color.accent.fill.$value).toBe("{palette.lime.110}");
+  expect(base.color.accent.fill.$value).toBe("{palette.petrol.brand}");
 });
 
 test("the 404 is the site's own page, in the site's colors, whatever the system says", async ({ browser }) => {
