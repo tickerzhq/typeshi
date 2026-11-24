@@ -164,6 +164,23 @@
    ]
   },
   {
+   "id": "mixed_units",
+   "title": "mixed units",
+   "blurb": "1 SOL credits 1,000 USDC. typeshi refuses (SHI002).",
+   "path": "tests/fixtures/mixed_units.shi",
+   "source": "// one SOL deposited credits 1,000 USDC: `amount` is SOL, `vault.usdc` is USDC.\n// typeshi refuses it (SHI002). run `typeshi explain SHI002`.\n\ngm!(\"7PxhmDuhhe394QJgKyW1P7Ce4dPCfFPN2yKq4KCCj7Vj\");\n\nstealth_launch vault {\n    ticker USDC = 6;\n    ticker SOL = 9;\n\n    frame Vault {\n        cabal: Pubkey,\n        usdc: USDC,\n    }\n\n    cap_table Deposit {\n        #[account(mut, has_one = cabal)]\n        vault: Account<Vault>,\n        cabal,\n    }\n\n    lock_in fn deposit(ctx, amount: SOL) -> W {\n        mark_to_market!(vault.usdc = per_my_last_email!(vault.usdc) + amount);\n        were_so_back!()\n    }\n}\n",
+   "ok": false,
+   "rustLines": 0,
+   "diags": [
+    {
+     "severity": "error",
+     "message": "this adds `vault.usdc` (USDC) and `amount` (SOL).",
+     "label": "6 decimals against 9: off by 1,000x",
+     "rendered": "error[SHI002]: this adds `vault.usdc` (USDC) and `amount` (SOL).\n  --> lib.shi:22:69\n   |\n22 |         mark_to_market!(vault.usdc = per_my_last_email!(vault.usdc) + amount);\n   |                                                                     ^ 6 decimals against 9: off by 1,000x\n   = help: convert one with a price first, or write `as u64` if you are converting on purpose\n\n"
+    }
+   ]
+  },
+  {
    "id": "rug",
    "title": "rug",
    "blurb": "a banned move. it does not compile.",
@@ -336,6 +353,11 @@
    "lesson": null
   },
   {
+   "shi": "`ticker USDC = 6;`",
+   "rust": "a money unit: `pub type USDC = u64;` and `USDC_DECIMALS`. Mixing two units fails with SHI002",
+   "lesson": null
+  },
+  {
    "shi": "`#[on_god]`",
    "rust": "immutable: any `mut` on that account fails to compile",
    "lesson": "on-god"
@@ -399,6 +421,11 @@
    "shi": "`rent_free` / `golden_parachute = x` / `graduate = n`",
    "rust": "`init` / `close = x` / `realloc = n`",
    "lesson": "rent-free"
+  },
+  {
+   "shi": "`public` (in `#[account(...)]`)",
+   "rust": "nothing: anyone may write this account, on purpose. Without it, an owned account no signer is tied to fails with SHI001",
+   "lesson": null
   },
   {
    "shi": "`per_my_last_email!(feed.n)` / `mark_to_market!(feed.n = v)`",
@@ -510,7 +537,8 @@
    "vc_backed",
    "rent_free",
    "golden_parachute",
-   "graduate"
+   "graduate",
+   "public"
   ],
   "accounts": [
    "ser",
@@ -532,6 +560,7 @@
    "alpha_leak",
    "type_shi",
    "deadass",
+   "ticker",
    "lock_in",
    "ape",
    "few_understand"

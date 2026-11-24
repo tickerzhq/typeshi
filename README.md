@@ -94,8 +94,9 @@ error[SHI001]: anyone can write `vault`: `vault.cabal` is never checked against 
 | code | refuses | the bug class has cost |
 |---|---|---|
 | [`SHI001`](docs/checks/SHI001.md) | an instruction that can write an account with an owner (`cabal: Pubkey`, `authority: Pubkey`, ...) when nothing ties it to a signer, directly or through another account | Cashio, $52.8M (2022) |
+| [`SHI002`](docs/checks/SHI002.md) | adding, subtracting, comparing or writing two different money units: USDC into SOL (off by 1,000x), a cbETH/ETH ratio where a cbETH/USD price belongs | Moonwell, $1.78M (2026) |
 
-`typeshi explain SHI001` prints the page: what it catches, the fix, what it has cost and what it doesn't catch. Every example on those pages is a test. When anyone really may write an account (a deposit, a public counter), mark it `public` and typeshi lets it through, on purpose.
+Give each money unit a name with `ticker USDC = 6;` (a plain `u64` in the Rust, so it costs nothing at run time) and typeshi tracks it through fields, params, sums and writes. `typeshi explain SHI001` prints a check's page: what it catches, the fix, what it has cost and what it doesn't catch. Every example on those pages is a test. When anyone really may write an account (a deposit, a public counter), mark it `public` and typeshi lets it through, on purpose.
 
 ## The compiler has opinions
 
@@ -187,6 +188,7 @@ Also: every successful build prints a fake market cap that is down since you sta
 | `alpha_leak Name { }` | an event, `#[event]` |
 | `cope { Name = "message" }` | your own codes in `enum Cope` |
 | `type_shi X = T;` / `deadass X: T = v;` | `pub type` / `pub const` |
+| `ticker USDC = 6;` | a money unit: `pub type USDC = u64;` and `USDC_DECIMALS`. Mixing two units fails with SHI002 |
 | `#[on_god]` | immutable: any `mut` on that account fails to compile |
 | `this_is_fine!();` | the program's panic handler (behind the `custom-panic` feature) |
 | `lock_in fn` / `ape fn` / `few_understand fn` | an instruction that writes (or it fails to compile) / any instruction / a private helper |

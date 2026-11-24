@@ -79,7 +79,7 @@
         },
         {
           "name": "keyword.other.constraint.typeshi",
-          "match": "\\b(rent_free|golden_parachute|graduate)\\b"
+          "match": "\\b(rent_free|golden_parachute|graduate|public)\\b"
         },
         {
           "name": "variable.language.typeshi",
@@ -177,7 +177,7 @@
           }
         },
         {
-          "match": "\\b(type_shi|deadass)\\s+([A-Za-z_][A-Za-z0-9_]*)",
+          "match": "\\b(type_shi|deadass|ticker)\\s+([A-Za-z_][A-Za-z0-9_]*)",
           "captures": {
             "1": {
               "name": "keyword.declaration.typeshi"

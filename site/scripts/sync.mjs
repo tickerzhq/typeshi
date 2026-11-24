@@ -54,6 +54,7 @@ const examples = [
   { id: "print_feed", title: "print feed", blurb: "an append-only feed. prints are forever.", file: "examples/trenches/programs/print_feed/src/lib.shi" },
   { id: "degen_desk", title: "degen desk", blurb: "every keyword in one program. a toy. do not run a desk on it.", file: "examples/trenches/programs/degen_desk/src/lib.shi" },
   { id: "open_vault", title: "open vault", blurb: "anyone can drain it. typeshi refuses (SHI001).", file: "tests/fixtures/open_vault.shi" },
+  { id: "mixed_units", title: "mixed units", blurb: "1 SOL credits 1,000 USDC. typeshi refuses (SHI002).", file: "tests/fixtures/mixed_units.shi" },
   { id: "rug", title: "rug", blurb: "a banned move. it does not compile.", file: "tests/fixtures/rug.shi" },
   { id: "edit_a_print", title: "edit a print", blurb: "#[on_god] means immutable. nobody can edit it.", file: "tests/fixtures/edit_a_print.shi" },
   { id: "no_disclaimer", title: "no disclaimer", blurb: "moves money without saying `// not financial advice`.", file: "tests/fixtures/no_disclaimer.shi" },
@@ -158,7 +159,7 @@ const editor = {
   macros: words("support.function.macro.typeshi"),
   attributes: [...words("keyword.other.attribute.typeshi"), ...words("keyword.other.constraint.typeshi")],
   accounts: words("variable.language.typeshi"),
-  control: ["bull", "bear", "mogs", "cuz", "cope", "stealth_launch", "frame", "term_sheet", "cap_table", "alpha_leak", "type_shi", "deadass", "lock_in", "ape", "few_understand"],
+  control: ["bull", "bear", "mogs", "cuz", "cope", "stealth_launch", "frame", "term_sheet", "cap_table", "alpha_leak", "type_shi", "deadass", "ticker", "lock_in", "ape", "few_understand"],
   values: ["diamond_hands", "paper_hands", "W", "ebitda", "L", "wen_moon"],
 };
 // The grammar and the compiler must agree on what's banned.
