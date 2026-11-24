@@ -37,6 +37,7 @@ npm run wasm        # rebuild the browser compiler, then sync
 
 - `fmt, clippy, test`: `cargo fmt --all --check`, `cargo clippy --locked --all-targets -- -D warnings`, `cargo test --locked`.
 - `msrv (1.85)`: `cargo check --locked --all-targets` on Rust 1.85, so no newer language or library features.
+- `anchor (1.2)`: `cargo check --locked --manifest-path examples/trenches/Cargo.toml`, so the Rust typeshi writes for every example compiles against the real Anchor 1.2 crates. A new macro belongs in an example.
 - `site (wasm, build, e2e)`: `cargo test --locked --manifest-path site/wasm/Cargo.toml`, then in `site/`: `npm ci`, `npm run typecheck`, `npm test`, `npm run build`, `npm run e2e`.
 
 Every cargo step uses `--locked`, so commit `Cargo.lock` (and `site/wasm/Cargo.lock`) with any dependency change.

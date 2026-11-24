@@ -61,6 +61,10 @@ fn has(haystack: &str, needle: &str) -> bool {
     tight(haystack).contains(&tight(needle))
 }
 
+fn syn_ok(rust: &str) -> bool {
+    syn::parse_file(rust).is_ok()
+}
+
 fn squash(s: &str) -> String {
     s.split_whitespace().collect::<Vec<_>>().join(" ")
 }
@@ -696,4 +700,30 @@ fn printer_go_brrr_on_a_fn_mints_on_purpose() {
         !o.rust.contains("printer_go_brrr"),
         "the attribute is typeshi's, not Rust's"
     );
+}
+
+#[test]
+fn a_constraint_keeps_its_double_equals() {
+    // prettyplease prints attribute tokens with a space after every `=`; typeshi joins them back
+    let o = ok(&program("").replace(
+        "#[account(mut)]\n                thing: Account<Thing>,",
+        "#[account(mut, constraint = thing.key == ser.key() && thing.n != 0, \
+         constraint = match thing.n { 0 => false, _ => true })]\n                thing: Account<Thing>,",
+    ));
+    assert!(o.rust.contains("thing.key == ser.key()"), "{}", o.rust);
+    assert!(has(&o.rust, "0 => false"), "{}", o.rust);
+    assert!(!o.rust.contains("= =") && !o.rust.contains("= >"), "{}", o.rust);
+    // and it still parses as Rust
+    assert!(syn_ok(&o.rust), "{}", o.rust);
+}
+
+#[test]
+fn rejoining_equals_leaves_strings_alone() {
+    let o = ok(&program("trust_me_bro!(x == 1, \"x = = 1 is not rust\");"));
+    assert!(
+        o.rust.contains("x = = 1 is not rust"),
+        "a message is the user's words: {}",
+        o.rust
+    );
+    assert!(o.rust.contains("x == 1"), "{}", o.rust);
 }

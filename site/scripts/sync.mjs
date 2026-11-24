@@ -53,6 +53,7 @@ const starter = starterRaw
 const examples = [
   { id: "gm_counter", title: "gm counter", blurb: "what `typeshi new` gives you. counts gms, farms aura.", source: starter },
   { id: "print_feed", title: "print feed", blurb: "an append-only feed. prints are forever.", file: "examples/trenches/programs/print_feed/src/lib.shi" },
+  { id: "vault", title: "vault", blurb: "a USDC vault with a fee. every instruction's money adds up (SHI006).", file: "examples/trenches/programs/vault/src/lib.shi" },
   { id: "degen_desk", title: "degen desk", blurb: "every keyword in one program. a toy. do not run a desk on it.", file: "examples/trenches/programs/degen_desk/src/lib.shi" },
   { id: "open_vault", title: "open vault", blurb: "anyone can drain it. typeshi refuses (SHI001).", file: "tests/fixtures/open_vault.shi" },
   { id: "mixed_units", title: "mixed units", blurb: "1 SOL credits 1,000 USDC. typeshi refuses (SHI002).", file: "tests/fixtures/mixed_units.shi" },
@@ -80,6 +81,7 @@ const examples = [
 for (const [id, rs] of [
   ["print_feed", "examples/trenches/programs/print_feed/src/lib.rs"],
   ["degen_desk", "examples/trenches/programs/degen_desk/src/lib.rs"],
+  ["vault", "examples/trenches/programs/vault/src/lib.rs"],
 ]) {
   const ex = examples.find((e) => e.id === id);
   const live = compile(ex.source).rust.trim();
