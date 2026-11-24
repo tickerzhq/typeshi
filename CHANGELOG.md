@@ -40,7 +40,6 @@ Six checks refuse the bug classes that have drained real programs. Each error na
 
 - [typeshi.tickerz.com](https://typeshi.tickerz.com) runs the real compiler as WebAssembly: a playground, a 25-lesson tour in five chapters, and shared programs that unfurl with their own card.
 - The compiler's wasm URL carries its hash, so a new deploy never runs the old compiler from cache.
-- Vercel Web Analytics and Speed Insights load in production (they had never loaded: the build did not see the `VERCEL` variable).
 - Runs on design tokens with light and dark themes; nothing scrolls sideways on a phone, and no field zooms the page on a touch screen.
 
 ### Project
