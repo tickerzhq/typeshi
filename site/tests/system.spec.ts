@@ -1,6 +1,7 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, type Page, test } from "@playwright/test";
 import content from "../src/generated/content.json" with { type: "json" };
+import { WASM_URL } from "../src/generated/wasm";
 
 const PAGES = ["/", "/play", "/tour", "/tour/cap-table", "/opinions", "/keywords", "/built", "/tour/1"];
 /** The pages that run the compiler; wait for its first verdict there. */
@@ -123,6 +124,25 @@ test("the tour slides between lessons and lands on the next one", async ({ page 
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("frame");
   await page.getByRole("link", { name: /back/ }).click();
   await expect(page).toHaveURL(/\/tour\/gm$/);
+});
+
+// The compiler's URL carries a hash of its bytes, so a deploy is a new URL. Before, it was always
+// /typeshi.wasm, cached for an hour, and a returning visitor ran the previous compiler.
+test("the playground loads the compiler by its content hash, and the bare URL is never kept", async ({ page, request }) => {
+  const asked: string[] = [];
+  page.context().on("request", (r) => {
+    if (r.url().includes("typeshi.wasm")) asked.push(new URL(r.url()).pathname + new URL(r.url()).search);
+  });
+  await page.goto("/play");
+  await expect(page.getByText("compiles", { exact: true })).toBeVisible();
+  expect(asked).toContain(WASM_URL);
+  expect(asked.filter((u) => u !== WASM_URL), "nothing loads the bare URL").toEqual([]);
+
+  const hashed = await request.get(WASM_URL);
+  expect(hashed.headers()["cache-control"]).toContain("immutable");
+  expect(hashed.headers()["content-type"]).toBe("application/wasm");
+  const bare = await request.get("/typeshi.wasm");
+  expect(bare.headers()["cache-control"]).toContain("max-age=0");
 });
 
 test("llms.txt and the design tokens are public", async ({ request }) => {
