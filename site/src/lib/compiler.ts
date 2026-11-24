@@ -1,6 +1,7 @@
 // One compiler per page. Prefers a Web Worker; falls back to the main thread if the
 // browser won't start one (some privacy modes, old Safari).
 import type { CompileResult } from "./types";
+import { WASM_URL } from "@/generated/wasm";
 
 type Pending = { resolve: (v: unknown) => void; reject: (e: Error) => void };
 
@@ -36,7 +37,7 @@ class Compiler {
 
   private mainThread() {
     this.direct ??= import("../wasm/typeshi_wasm.js").then(async (m) => {
-      await m.default({ module_or_path: "/typeshi.wasm" });
+      await m.default({ module_or_path: WASM_URL });
       return m;
     });
     return this.direct;

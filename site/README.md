@@ -26,4 +26,4 @@ The README's playground picture (`brand/playground-*.png`) is the real site: `BA
 
 ## Deploy
 
-Vercel, root directory `site`. Static pages, no server code. The wasm is served with long edge caching (see `next.config.ts`).
+Vercel, root directory `site`. Static pages, no server code. The site loads the compiler as `/typeshi.wasm?v=<hash of its bytes>` (`src/generated/wasm.ts`, written by `scripts/sync.mjs`), so every build is a new URL: that one is cached for a year, and the bare `/typeshi.wasm` is never kept (see `next.config.ts`). Before, a visitor who came back within the hour ran the previous compiler.

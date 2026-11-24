@@ -1,8 +1,10 @@
 /// <reference lib="webworker" />
 // The real typeshi compiler, off the main thread so typing never waits on it.
 import init, { transpile, escalation } from "../wasm/typeshi_wasm.js";
+import { WASM_URL } from "../generated/wasm";
 
-const ready = init({ module_or_path: "/typeshi.wasm" });
+// Content-addressed: a deploy is a new URL, so a cached old compiler never runs.
+const ready = init({ module_or_path: WASM_URL });
 
 type Req =
   | { id: number; kind: "compile"; src: string; strip: boolean }
