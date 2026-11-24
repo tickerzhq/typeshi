@@ -243,7 +243,7 @@ test("every page has its own share card, its own title, and a large-image card f
 
 test("/built is linked from the footer and names what the site really ships", async ({ page }) => {
   await page.goto("/tour");
-  await page.getByRole("navigation", { name: "footer" }).getByRole("link", { name: "how it's built" }).click();
+  await page.getByRole("navigation", { name: "footer" }).getByRole("link", { name: "How it's built" }).click();
   await expect(page).toHaveURL(/\/built$/);
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("how it's built.");
   await expect(page.getByText(`typeshi v${content.version}`)).toBeVisible();

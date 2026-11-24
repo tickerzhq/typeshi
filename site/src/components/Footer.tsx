@@ -1,33 +1,37 @@
-import Link from "next/link";
+import { GROUPS } from "@/lib/pages";
 import s from "./Footer.module.css";
 
-/** The foot of every reading page (not the playground or a lesson, which fill the screen). */
+/**
+ * The foot of every reading page, as tickerz.com's: a hairline, the site's groups of links under a small mono label
+ * (four across, two on a phone), then the legal line. The groups are the side list of every reading page too
+ * (src/lib/pages.ts), so the two never disagree.
+ */
 export default function Footer() {
   return (
-    <footer className={s.footer}>
-      <div className={`wrap ${s.in}`}>
-        <div className={s.top}>
-          <p className={s.mark}>
-            typeshi <span>lock in fn.</span>
-          </p>
-          <nav aria-label="footer" className={s.links}>
-            <Link href="/tour">tour</Link>
-            <Link href="/play">playground</Link>
-            <Link href="/exploits">exploits</Link>
-            <Link href="/opinions">opinions</Link>
-            <Link href="/keywords">keywords</Link>
-            <Link href="/built">how it&apos;s built</Link>
-            <a href="/llms.txt">llms.txt</a>
-            <a href="https://github.com/tickerzhq/typeshi">github</a>
-          </nav>
-        </div>
-        <div className={s.bottom}>
-          <p>
-            MIT · not affiliated with TypeScript or Microsoft · not financial advice · made by{" "}
-            <a href="https://tickerz.com">Tickerz</a>
-          </p>
-          <p className={s.moon}>wen moon? soon™</p>
-        </div>
+    <footer className={`wrap ${s.footer}`}>
+      <nav aria-label="footer" className={s.cols}>
+        {GROUPS.map((g) => (
+          <div key={g.label} className={s.group}>
+            <span className={s.label}>{g.label}</span>
+            {g.links.map(([href, label]) => (
+              <a key={href} href={href}>
+                {label}
+              </a>
+            ))}
+          </div>
+        ))}
+      </nav>
+      <div className={s.legal}>
+        <span className={s.word}>
+          typeshi <span>lock in fn.</span>
+        </span>
+        <span>MIT</span>
+        <span>Not affiliated with TypeScript or Microsoft</span>
+        <span>Not financial advice</span>
+        <span>
+          A <a href="https://tickerz.com">Tickerz</a> project
+        </span>
+        <span className={s.moon}>wen moon? soon™</span>
       </div>
     </footer>
   );

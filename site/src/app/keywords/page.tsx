@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Footer from "@/components/Footer";
+import ReadingFrame from "@/components/ReadingFrame";
 import Keywords from "@/components/Keywords";
 import PageHead from "@/components/PageHead";
 import content from "@/generated/content.json";
@@ -15,11 +16,13 @@ export const metadata: Metadata = pageMeta({
 export default function KeywordsPage() {
   return (
     <>
-      <div className="wrap">
+      <ReadingFrame here="/keywords" toc={[["words", "Every word"], ["how-h", "How it works"]]}>
         <PageHead title="keywords.">
           Every word, and the Rust or Anchor it becomes.
         </PageHead>
-        <Keywords rows={content.keywords} />
+        <div id="words">
+          <Keywords rows={content.keywords} />
+        </div>
 
         <section className={s.how} aria-labelledby="how-h">
           <h2 id="how-h" className={s.h2}>
@@ -54,7 +57,7 @@ export default function KeywordsPage() {
             say.
           </p>
         </section>
-      </div>
+      </ReadingFrame>
       <Footer />
     </>
   );

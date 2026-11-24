@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Footer from "@/components/Footer";
+import ReadingFrame from "@/components/ReadingFrame";
 import Inline from "@/components/Inline";
 import PageHead from "@/components/PageHead";
 import content from "@/generated/content.json";
@@ -21,7 +22,7 @@ const showcase = ["no_disclaimer", "edit_a_print", "warnings"].map((id) => examp
 export default function OpinionsPage() {
   return (
     <>
-      <div className="wrap">
+      <ReadingFrame here="/opinions" toc={[["banned-h", "Banned moves"], ["says-h", "What it says"], ["escalate-h", "Fail again"], ["codes-h", "Codes 0x1 to 0x6"], ["confess-h", "Confessions"]]}>
         <PageHead title="the compiler has opinions.">
           Banned moves don&apos;t compile. Each one is a real error at a real line.
         </PageHead>
@@ -113,7 +114,7 @@ export default function OpinionsPage() {
             <Inline text={content.confessions} />
           </p>
         </section>
-      </div>
+      </ReadingFrame>
       <Footer />
     </>
   );
