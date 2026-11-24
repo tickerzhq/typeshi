@@ -1,0 +1,130 @@
+// lend.shi: borrow USDC against SOL, written in typeshi.
+// amounts have units, prices say what they are a price of, debts are marked as owed,
+// and every conversion and every instruction's money is checked when it compiles.
+
+gm!("4sXn4Bx5sScKDDR5Cmj46vXiinV5sUQfocz3TgxKhPVh");
+
+stealth_launch lend {
+    ticker USDC = 6;
+    ticker SOL = 9;
+    /// 8 decimals of USDC per whole SOL, as most price feeds give it.
+    ticker SOL_USDC = 8 USDC / SOL;
+
+    /// the most you can borrow against your collateral: 75%.
+    deadass MAX_LTV_BPS: u64 = 7_500;
+
+    /// the market: who sets the price, and the price.
+    frame Market {
+        cabal: Pubkey,
+        price: SOL_USDC,
+    }
+
+    /// one borrower: the SOL they put up, and the USDC they owe.
+    frame Loan {
+        owner: Pubkey,
+        collateral: SOL,
+        #[iou]
+        debt: USDC,
+    }
+
+    cap_table SetPrice {
+        #[account(mut, has_one = cabal, seeds = [b"market"], bump)]
+        market: Account<Market>,
+        cabal,
+    }
+
+    cap_table Open {
+        #[account(rent_free, payer = owner, space = 8 + Loan::INIT_SPACE,
+                  seeds = [b"loan", owner.key().as_ref()], bump)]
+        loan: Account<Loan>,
+        #[account(mut)]
+        owner: Signer,
+        system_program,
+    }
+
+    cap_table Deposit {
+        #[account(mut, has_one = owner, seeds = [b"loan", owner.key().as_ref()], bump)]
+        loan: Account<Loan>,
+        #[account(mut)]
+        from: Account<anchor_spl::token::TokenAccount>,
+        #[account(mut, constraint = sol_vault.owner == pool.key())]
+        sol_vault: Account<anchor_spl::token::TokenAccount>,
+        /// CHECK: the pool's signer, a PDA that holds no data
+        #[account(seeds = [b"pool"], bump)]
+        pool: UncheckedAccount,
+        owner: Signer,
+        token_program,
+    }
+
+    cap_table Borrow {
+        #[account(seeds = [b"market"], bump)]
+        market: Account<Market>,
+        #[account(mut, has_one = owner, seeds = [b"loan", owner.key().as_ref()], bump)]
+        loan: Account<Loan>,
+        #[account(mut)]
+        to: Account<anchor_spl::token::TokenAccount>,
+        #[account(mut, constraint = usdc_vault.owner == pool.key())]
+        usdc_vault: Account<anchor_spl::token::TokenAccount>,
+        /// CHECK: the pool's signer, a PDA that holds no data
+        #[account(seeds = [b"pool"], bump)]
+        pool: UncheckedAccount,
+        owner: Signer,
+        token_program,
+    }
+
+    cap_table Repay {
+        #[account(mut, has_one = owner, seeds = [b"loan", owner.key().as_ref()], bump)]
+        loan: Account<Loan>,
+        #[account(mut)]
+        from: Account<anchor_spl::token::TokenAccount>,
+        #[account(mut, constraint = usdc_vault.owner == pool.key())]
+        usdc_vault: Account<anchor_spl::token::TokenAccount>,
+        /// CHECK: the pool's signer, a PDA that holds no data
+        #[account(seeds = [b"pool"], bump)]
+        pool: UncheckedAccount,
+        owner: Signer,
+        token_program,
+    }
+
+    lock_in fn set_price(ctx, price: SOL_USDC) -> W {
+        trust_me_bro!(price mogs 0, "a price of zero is a rug");
+        mark_to_market!(market.price = price);
+        were_so_back!()
+    }
+
+    lock_in fn open(ctx) -> W {
+        mark_to_market!(loan.owner = per_my_last_email!(owner).key());
+        mark_to_market!(loan.collateral = 0);
+        mark_to_market!(loan.debt = 0);
+        were_so_back!()
+    }
+
+    // not financial advice
+    lock_in fn deposit(ctx, amount: SOL) -> W {
+        send_it!(from => sol_vault, amount, owner);
+        number_go_up!(loan.collateral, amount);
+        were_so_back!()
+    }
+
+    /// the collateral, priced in USDC: SOL (9 decimals) times SOL_USDC (8) is 17 decimals,
+    /// so divide by 10^11 for USDC (6). typeshi checks that arithmetic (SHI007).
+    // not financial advice
+    lock_in fn borrow(ctx, amount: USDC) -> W {
+        let value: USDC = ((per_my_last_email!(loan.collateral) as u128)
+            * (per_my_last_email!(market.price) as u128)
+            / 10u128.pow(SOL_DECIMALS as u32 + SOL_USDC_DECIMALS as u32 - USDC_DECIMALS as u32)) as u64;
+        let max: USDC = bps!(value, MAX_LTV_BPS);
+        trust_me_bro!(per_my_last_email!(loan.debt) + amount <= max, "that's more than your collateral covers");
+        number_go_up!(loan.debt, amount);
+        send_it!(usdc_vault => to, amount, pool);
+        were_so_back!()
+    }
+
+    // not financial advice
+    lock_in fn repay(ctx, amount: USDC) -> W {
+        trust_me_bro!(amount <= per_my_last_email!(loan.debt), "you don't owe that much");
+        send_it!(from => usdc_vault, amount, owner);
+        mark_to_market!(loan.debt = per_my_last_email!(loan.debt) - amount);
+        were_so_back!()
+    }
+}

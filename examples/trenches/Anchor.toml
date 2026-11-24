@@ -8,6 +8,7 @@ skip-lint = false
 print_feed = "7PxhmDuhhe394QJgKyW1P7Ce4dPCfFPN2yKq4KCCj7Vj"
 degen_desk = "7nTB3oS3PmJn5JkDppPbnESpm59zdbBCDPmi53djce6P"
 vault = "BeT1qRvekfsCJfhv4Hg6dftzqm95UabkdhnDXvpbVx7m"
+lend = "4sXn4Bx5sScKDDR5Cmj46vXiinV5sUQfocz3TgxKhPVh"
 
 [provider]
 cluster = "localnet"

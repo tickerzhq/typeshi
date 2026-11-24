@@ -561,6 +561,10 @@ struct Cx<'a> {
     frame_fields: HashMap<String, HashMap<String, String>>,
     /// `ticker USDC = 6;`: money units and their decimals (SHI002)
     tickers: HashMap<String, u8>,
+    /// price ticker -> (quote, base): `ticker SOL_USDC = 8 USDC / SOL;`
+    prices: HashMap<String, (String, String)>,
+    /// (frame, field) marked `#[iou]`: money the program is owed, not money it holds
+    owed: HashSet<(String, String)>,
     /// every cap_table account, for the checks that guard money (src/guard.rs)
     tables: Vec<guard::Table>,
     rust_structs: HashSet<String>,
@@ -590,6 +594,8 @@ impl<'a> Cx<'a> {
             frame_keys: HashMap::new(),
             frame_fields: HashMap::new(),
             tickers: HashMap::new(),
+            prices: HashMap::new(),
+            owed: HashSet::new(),
             tables: vec![],
             rust_structs: HashSet::new(),
             uses_bps: false,
@@ -718,7 +724,7 @@ impl<'a> Cx<'a> {
                     if let (Some(n), Some(g)) = (ident_str(b.get(1)), group_of(b.get(2), Delimiter::Brace)) {
                         let mut types = HashMap::new();
                         for f in split_fields(&inner(g)) {
-                            let (_, rest) = take_attrs(&f);
+                            let (attrs, rest) = take_attrs(&f);
                             let rest = strip_vis(&rest);
                             if let (Some(field), true, Some(ty), 3) = (
                                 ident_str(rest.first()),
@@ -726,6 +732,9 @@ impl<'a> Cx<'a> {
                                 ident_str(rest.get(2)),
                                 rest.len(),
                             ) {
+                                if is_iou(&attrs) {
+                                    self.owed.insert((n.clone(), field.clone()));
+                                }
                                 types.insert(field, ty);
                             }
                         }
@@ -777,6 +786,30 @@ impl<'a> Cx<'a> {
                 "ticker" => match (ident_str(b.get(1)), is_punct(b.get(2), '='), b.get(3)) {
                     (Some(n), true, Some(TokenTree::Literal(l))) => match l.to_string().parse::<u8>() {
                         Ok(d) if d <= 18 => {
+                            // `ticker SOL_USDC = 8 USDC / SOL;` is a price: 8 decimals of USDC per whole SOL
+                            let rest: Vec<&TokenTree> = b[4..].iter().filter(|t| !is_punct(Some(t), ';')).collect();
+                            match rest.as_slice() {
+                                [] => {}
+                                [q, slash, base] if is_punct(Some(slash), '/') => {
+                                    match (ident_str(Some(q)), ident_str(Some(base))) {
+                                        (Some(q), Some(base)) => {
+                                            self.prices.insert(n.clone(), (q, base));
+                                        }
+                                        _ => self.err_at(
+                                            q.span(),
+                                            1,
+                                            "a price reads like `ticker SOL_USDC = 8 USDC / SOL;`: its decimals, then quote per base.",
+                                            "everything gets a ticker",
+                                        ),
+                                    }
+                                }
+                                [first, ..] => self.err_at(
+                                    first.span(),
+                                    1,
+                                    "a price reads like `ticker SOL_USDC = 8 USDC / SOL;`: its decimals, then quote per base.",
+                                    "everything gets a ticker",
+                                ),
+                            }
                             self.tickers.insert(n, d);
                         }
                         _ => self.err_at(
@@ -873,9 +906,19 @@ impl<'a> Cx<'a> {
                 "ticker" => {
                     if let Some(n) = ident_str(b.get(1)) {
                         if let Some(d) = self.tickers.get(&n) {
+                            let what = match self.prices.get(&n) {
+                                Some((q, base)) => format!("a price, {q} per {base}"),
+                                None => format!("an amount of {n} in its smallest unit"),
+                            };
+                            // SOL_USDC is how prices are written; rustc would want SolUsdc
+                            let allow = if n.contains('_') {
+                                "#[allow(non_camel_case_types)]\n"
+                            } else {
+                                ""
+                            };
                             crate_items.push_str(&format!(
-                                "/// ticker {n}: an amount of {n} in its smallest unit ({d} decimals).\n\
-                                 pub type {n} = u64;\n\
+                                "/// ticker {n}: {what} ({d} decimals).\n\
+                                 {allow}pub type {n} = u64;\n\
                                  pub const {n}_DECIMALS: u8 = {d};\n"
                             ));
                         }
@@ -1082,6 +1125,12 @@ impl<'a> Cx<'a> {
         let mut fx = FnCx::item();
         for f in split_fields(&inner(&group)) {
             let (attrs, rest) = take_attrs(&f);
+            // `#[iou]` is typeshi's word for money owed: SHI006 reads it, Rust never sees it
+            let attrs: Vec<TokenTree> = attrs
+                .chunks(2)
+                .filter(|a| !is_iou(a))
+                .flat_map(|a| a.to_vec())
+                .collect();
             let mut rest = strip_vis(&rest);
             if kind == "account" && rest.len() == 3 && is_punct(rest.get(1), ':') {
                 if let Some(real) = ident_str(rest.get(2)).and_then(|t| self.aliases.get(&t).cloned()) {
@@ -1478,6 +1527,8 @@ impl<'a> Cx<'a> {
                 .collect();
             let mut units = guard::Units {
                 tickers: &self.tickers,
+                prices: &self.prices,
+                owed: &self.owed,
                 frame_fields: &self.frame_fields,
                 accounts,
                 locals,
@@ -2216,6 +2267,17 @@ impl<'a> Cx<'a> {
 /// prettyplease 0.3 prints the tokens of an attribute with a space after every `=`, so
 /// `#[account(constraint = a == b)]` comes out as `a = = b`, which Anchor can't parse. `= =` and
 /// `= >` are never Rust, so they are joined back everywhere outside strings, chars and comments.
+/// Whether field attributes include `#[iou]`.
+fn is_iou(attrs: &[TokenTree]) -> bool {
+    attrs.chunks(2).any(|a| match a.get(1) {
+        Some(TokenTree::Group(g)) => {
+            let t = inner(g);
+            t.len() == 1 && is_ident(t.first(), "iou")
+        }
+        _ => false,
+    })
+}
+
 fn rejoin_eq(s: &str) -> String {
     let mut out = String::with_capacity(s.len());
     let mut chars = s.chars().peekable();

@@ -50,6 +50,8 @@ export type Exploit = {
   rendered: string;
   /** Millions of dollars lost, read from `lost`; 0 when it was counted in SOL. */
   usdM: number;
+  /** The loss as the ledger shows it: `$320M`, `$230K`, `1,027 SOL`. */
+  amount: string;
   /** The program, compressed, for a /play#code= link. */
   tryCode: string;
 };
