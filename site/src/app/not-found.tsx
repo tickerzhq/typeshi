@@ -29,16 +29,16 @@ export default function NotFound() {
           </Link>
         </div>
         <nav aria-label="or try one of these">
-          <ul className="rows">
+          <ul className="m-0 list-none border-t border-line p-0">
             {PAGES.map((p) => (
-              <li key={p.href}>
-                <Link href={p.href} className="row">
-                  <span className="row-text">
-                    <span>{p.label}</span>
-                    <small>{p.line}</small>
+              <li key={p.href} className="border-b border-line">
+                <Link href={p.href} className="group grid min-h-11 grid-cols-[minmax(0,1fr)_28px] items-center gap-4 py-5 text-ink no-underline transition-colors hover:bg-hover">
+                  <span className="grid min-w-0 gap-1">
+                    <span className="text-lede leading-[1.3]">{p.label}</span>
+                    <small className="text-small text-ink-2">{p.line}</small>
                   </span>
-                  <span className="row-go">
-                    <Arrow />
+                  <span className="grid size-7 place-items-center rounded-full border border-line-strong text-ink-2 group-hover:text-ink">
+                    <Arrow className="size-3" />
                   </span>
                 </Link>
               </li>

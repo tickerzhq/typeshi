@@ -119,7 +119,7 @@ async function use(page: Page, path: string, width: number, wide: string[]) {
 
   // Every tab: lib.shi and lib.rs in the playground, the terminal and lib.rs in a lesson.
   // (the home's proof card has tabs of its own; these are the editor's)
-  const tabs = page.locator('[role="tab"]:not([id^="proof-tab-"])');
+  const tabs = page.locator('[role="tab"]:not([data-proof] [role="tab"])');
   for (let i = 0; i < (await tabs.count()); i++) {
     await tabs.nth(i).click();
     await fits(page, width, `${path} on the ${await tabs.nth(i).innerText()} tab`, wide);

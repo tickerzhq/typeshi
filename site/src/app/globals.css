@@ -32,6 +32,9 @@
   }
 }
 
+/* The site's own element and class rules sit in Tailwind's base layer (tw.css), so a utility on an element wins over
+   them, as tickerz.com sets it: "Element defaults live in the base layer so a utility on the element wins." */
+@layer base {
 *,
 *::before,
 *::after {
@@ -124,169 +127,6 @@ pre {
   display: grid;
   grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
   column-gap: var(--size-gap);
-}
-
-/* --- a section (Tickerz's tk-sec): a hairline, then a 32px heading that links to its page with an arrow --- */
-.sec {
-  padding-top: var(--space-3xl);
-}
-.sec::before {
-  content: "";
-  display: block;
-  margin-bottom: var(--space-xl);
-  border-top: 1px solid var(--border-default);
-}
-.sec-h {
-  margin: 0;
-  font: var(--weight-heavy) var(--step-section) / 1.1 var(--font-sans);
-  letter-spacing: -0.01em;
-  text-wrap: balance;
-}
-.sec-h a {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-xs);
-  color: inherit;
-  text-decoration: none;
-}
-.sec-h svg {
-  width: 14px;
-  height: 14px;
-  color: var(--text-secondary);
-  transition:
-    color var(--dur-hover) var(--ease-out),
-    translate var(--dur-hover) var(--ease-out);
-}
-.sec-h a:hover svg {
-  color: var(--text-primary);
-  translate: 2px -2px;
-}
-@media (pointer: coarse) {
-  .sec-h a {
-    min-height: var(--size-target);
-  }
-}
-.sec-sub {
-  margin: var(--space-xs) 0 0;
-  max-width: var(--span-6);
-  color: var(--text-secondary);
-}
-@media (max-width: 900px) {
-  .sec {
-    padding-top: var(--space-2xl);
-  }
-  .sec::before {
-    margin-bottom: var(--space-l);
-  }
-}
-
-/* --- a row of cards (Tickerz's tk-cards): four across from 1100px, two from 600px, and on a phone one row
-   that scrolls sideways and snaps, each card most of the screen wide so the next one shows at the edge --- */
-.cards {
-  list-style: none;
-  margin: var(--space-l) 0 0;
-  padding: 0;
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--size-gap);
-}
-.cards > li {
-  display: flex;
-  min-width: 0;
-}
-.card {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2xs);
-  min-width: 0;
-  padding: var(--space-m);
-  border: 1px solid var(--border-strong);
-  border-radius: var(--radius-md);
-  background: var(--surface-raised);
-  color: var(--text-primary);
-  text-decoration: none;
-  transition: border-color var(--dur-hover) var(--ease-out);
-}
-a.card:hover {
-  border-color: var(--text-tertiary);
-}
-@media (min-width: 1100px) {
-  .cards {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-  }
-  .cards[data-three] {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-}
-@media (max-width: 599px) {
-  .cards {
-    display: flex;
-    overflow-x: auto;
-    scroll-snap-type: x mandatory;
-    scroll-padding-inline: var(--gutter);
-    margin-inline: calc(-1 * var(--gutter));
-    padding-inline: var(--gutter);
-    scrollbar-width: none;
-  }
-  .cards::-webkit-scrollbar {
-    display: none;
-  }
-  .cards > li {
-    flex: 0 0 78%;
-    scroll-snap-align: start;
-  }
-}
-
-/* --- a list of rows (Tickerz's research and daily lists): hairlines between, the name, a line, and a circled
-   arrow at the end --- */
-.rows {
-  list-style: none;
-  margin: var(--space-l) 0 0;
-  padding: 0;
-  border-top: 1px solid var(--border-default);
-}
-.rows > li {
-  border-bottom: 1px solid var(--border-default);
-}
-.row {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: center;
-  column-gap: var(--space-s);
-  min-height: var(--size-target);
-  padding-block: var(--space-s);
-  color: var(--text-primary);
-  text-decoration: none;
-}
-.row-text {
-  display: grid;
-  gap: var(--space-3xs);
-  min-width: 0;
-}
-.row-text > small {
-  font-size: var(--step-small);
-  color: var(--text-secondary);
-}
-.row-go {
-  display: grid;
-  place-items: center;
-  width: 32px;
-  height: 32px;
-  border: 1px solid var(--border-strong);
-  border-radius: 999px;
-  color: var(--text-secondary);
-  transition:
-    color var(--dur-hover) var(--ease-out),
-    border-color var(--dur-hover) var(--ease-out);
-}
-.row-go svg {
-  width: 12px;
-  height: 12px;
-}
-.row:hover .row-go {
-  color: var(--text-primary);
-  border-color: var(--text-tertiary);
 }
 
 .num {
@@ -394,11 +234,13 @@ a.card:hover {
   align-items: center;
   gap: var(--cluster-gap, var(--space-2xs));
 }
-/* As many columns as fit, each at least --grid-min wide: no breakpoints. */
-.grid {
+/* As many columns as fit, each at least --grid-min wide: no breakpoints. (Not .grid: that is Tailwind's.) */
+.auto-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(var(--grid-min, 16rem), 100%), 1fr));
   gap: var(--grid-gap, var(--space-m));
+}
+
 }
 
 /* --- motion ------------------------------------------------------------------------------------ */

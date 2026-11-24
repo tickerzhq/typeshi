@@ -1,50 +1,52 @@
 import Link from "next/link";
+import { ArrowUpRight } from "lucide-react";
 
 /** Tickerz's arrow out of a section heading: up and to the right, 14px, in the second text tone. */
-export function Arrow() {
-  return (
-    <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
-      <path d="M4 10 10 4M5 4h5v5" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
+export function Arrow({ className = "size-3.5" }: { className?: string }) {
+  return <ArrowUpRight className={className} strokeWidth={1.75} aria-hidden="true" />;
 }
 
 /**
- * A section's heading, as tickerz.com's home sets them (tk-sec): a hairline above (from .sec), the name of the
- * page it leads to at 32px with the arrow, and one line under it. No href: the name alone.
+ * A section, as tickerz.com's home draws them (tk-sec, tk-rule, tk-h2), with its numbers: 80px of space (48px under
+ * 900px), a hairline, 32px (24px), then the heading at the section step, weight 450, linking to its page with the
+ * arrow 12px after the word, and one line under it. Children follow 40px under the heading block (28px).
  */
-export default function SecHead({
+export default function Section({
   id,
+  title,
   href,
-  children,
   sub,
+  className = "",
+  children,
 }: {
   id: string;
+  title: React.ReactNode;
   href?: string;
-  children: React.ReactNode;
   sub?: React.ReactNode;
+  className?: string;
+  children: React.ReactNode;
 }) {
-  const inner = href ? (
-    href.startsWith("/") ? (
-      <Link href={href}>
-        {children}
-        <Arrow />
-      </Link>
-    ) : (
-      <a href={href}>
-        {children}
-        <Arrow />
-      </a>
-    )
+  const word = href ? (
+    <Link href={href} className="group inline-flex min-h-11 max-w-full flex-wrap items-center gap-x-3 text-inherit no-underline md:min-h-0">
+      {title}
+      <ArrowUpRight
+        className="size-3.5 text-ink-2 transition-[color,translate] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-ink"
+        strokeWidth={1.75}
+        aria-hidden="true"
+      />
+    </Link>
   ) : (
-    children
+    title
   );
   return (
-    <>
-      <h2 id={id} className="sec-h">
-        {inner}
-      </h2>
-      {sub ? <p className="sec-sub">{sub}</p> : null}
-    </>
+    <section id={id} aria-labelledby={`${id}-h`} data-sec="" className={`frame pt-12 md:pt-20 ${className}`}>
+      <div className="border-t border-line pt-6 md:pt-8">
+        <h2 id={`${id}-h`} className="m-0 text-section font-[450] leading-[1.1] tracking-[-0.01em]">
+          {word}
+        </h2>
+        {sub ? <p className="mb-0 mt-3 max-w-(--span-6) text-body text-ink-2">{sub}</p> : null}
+      </div>
+      <div className="mt-7 md:mt-10">{children}</div>
+    </section>
   );
 }

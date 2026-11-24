@@ -8,6 +8,7 @@ import { homeMeta } from "@/lib/meta";
 import { siteUrl } from "@/lib/site";
 import { colors } from "@/lib/tokens";
 import { mono, sans } from "./fonts";
+import "./tw.css";
 import "./tokens.css";
 import "./globals.css";
 

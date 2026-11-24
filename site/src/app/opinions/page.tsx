@@ -69,7 +69,7 @@ export default function OpinionsPage() {
           </div>
         </section>
 
-        <div className={`grid ${s.section} ${s.split}`}>
+        <div className={`auto-grid ${s.section} ${s.split}`}>
           <section aria-labelledby="escalate-h">
             <h2 id="escalate-h" className={s.h2}>
               fail again and it escalates

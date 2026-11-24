@@ -37,7 +37,20 @@ The home is held to about 500 words of prose (rust-lang.org 516, ziglang.org 430
 
 ## Structure
 
-The site mirrors tickerz.com's information system, measured live at 390 and 1440 (Nov 24 2026):
+The site mirrors tickerz.com's information system, measured live at 390 and 1440 (Nov 24 2026), and its stack, read
+from its source: Tailwind 4.3.5, Base UI 1.9.0 and lucide-react 1.78.0, at the same versions.
+
+- **Tailwind on the tokens** (`src/app/tw.css`): the theme is cleared and refilled with names for typeshi's tokens
+  (`bg-raised`, `text-ink-2`, `text-section`, `rounded-card`), so a class can only reach a token. Breakpoints are the
+  grid's only: `sm` 600, `md` 900, `lg` 1100. No preflight: pages still on CSS modules keep their element styles, and
+  `globals.css` sits in the base layer so a utility on an element wins over it, as tickerz.com sets it.
+- **Spacing is Tailwind's 4px step, with tickerz.com's numbers** (`tk-home.css`): a section is 80px, a hairline, 32px,
+  the heading (48 and 24 on a phone), its content 40px under (28); the hero starts 88px under the bar (40); cards are
+  16px apart (12 on a phone) with 16px inside; a row is 20px above and below; actions are 8px apart.
+- **Controls on Base UI**: the phone menu is a Dialog (`src/components/ui/Sheet.tsx`, tickerz.com's), the hero's proof is
+  Tabs with an indicator that slides 300ms on ease out expo (tickerz.com's reveal; no bounce, none for reduced motion).
+- **Checked** by `tests/grid.spec.ts` at 390, 768, 1024 and 1440: every section starts on the gutter, the proof card on
+  column 7, sections are spaced alike in 4px steps, cards in a row are one size, rows are 44px or more.
 
 - **Frame and grid.** A 1440px frame, 48px gutter (16px at 900 and under), 4 columns on a phone, 8 from 600px,
   12 from 1100px, 16px apart. Layout changes only at 600, 900 and 1100 (`globals.css`).
@@ -53,7 +66,7 @@ The site mirrors tickerz.com's information system, measured live at 390 and 1440
 - **Reading pages** (`ReadingFrame`): from 1100px the site's groups on columns 1 to 3, the page on 4 to 9,
   "On this page" on 10 to 12, both sides held in view. Below 1100px the page alone.
 - **Footer**: a hairline, the groups under 12px mono labels (four across, two on a phone), the legal line.
-- **Icons**: Lucide outlines (ISC), 24 grid, 1.75 stroke, in the text's color or the brand teal on a tile.
+- **Icons**: lucide-react (ISC), 1.5 stroke at 20px, in the text's color or the brand teal on a tile.
 
 Before Nov 22 2026 the home also held every banned move, three error transcripts, the escalation, the
 error codes, the confessions, the keyword table and how it works: 5,879 px at 1440 and 8,412 px on a
@@ -341,6 +354,9 @@ Rust it becomes, the banned moves, the fixed error codes, a whole program and th
   Names break after an underscore (`golden_` / `parachute`, `src/lib/wbr.tsx`), the home's doors stack
   their number above the name, and the skip link hides by its own height, since its edge showed over the
   header. The site's home is https://typeshi.tickerz.com.
+- **Nov 24 2026, tickerz.com's stack**: Tailwind 4, Base UI and lucide-react at tickerz.com's versions; the bar, the
+  phone menu, the footer, sections, cards and rows rebuilt with them and with tickerz.com's spacing numbers; a grid
+  audit in the e2e suite. Fixed: the old global `.grid` and link underline sat outside any layer and beat utilities.
 - **Nov 24 2026, tickerz.com's structure**: the site now follows tickerz.com's grid, bar, phone menu, sections,
   cards, rows, docs frame and footer (see "Structure"), and the home takes the best language sites' order: a split
   hero with the install and a tabbed proof card, four reasons with icons, then sections that lead to their pages.
