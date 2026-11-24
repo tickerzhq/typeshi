@@ -27,6 +27,9 @@ body {
   font: var(--weight-regular) var(--step-body) / var(--leading-body) var(--font-sans);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+  /* A word longer than its line (golden_parachute in a lesson title, large system text on a small
+     phone) breaks where it must instead of pushing the page sideways. Normal words never break. */
+  overflow-wrap: break-word;
 }
 
 h1,
@@ -68,10 +71,13 @@ pre {
   background: var(--accent-selection);
 }
 
+/* Hidden above the page by its own height, not a fixed distance: with large system text it is taller
+   than any fixed offset, and its bottom edge showed over the header. */
 .skip {
   position: absolute;
   left: var(--space-xs);
-  top: calc(-1 * var(--size-cta) - var(--space-s));
+  top: 0;
+  translate: 0 calc(-100% - var(--space-s));
   z-index: 100;
   background: var(--accent-fill);
   color: var(--text-on-accent);
@@ -81,7 +87,7 @@ pre {
   text-decoration: none;
 }
 .skip:focus {
-  top: var(--space-xs);
+  translate: 0 var(--space-xs);
 }
 
 .wrap {
@@ -126,15 +132,18 @@ pre {
   align-items: center;
   gap: var(--space-2xs);
   min-height: var(--size-cta);
-  padding: 0 var(--space-m);
+  /* One line at normal text sizes; with large text on a small phone the label wraps inside the
+     button, which never gets wider than its column. */
+  max-width: 100%;
+  padding: var(--space-2xs) var(--space-m);
   border: 1px solid var(--accent-fill);
   border-radius: var(--radius-sm);
   background: var(--accent-fill);
   color: var(--text-on-accent);
-  font: var(--weight-bold) var(--step-body) / 1 var(--font-sans);
+  font: var(--weight-bold) var(--step-body) / var(--leading-snug) var(--font-sans);
   letter-spacing: -0.01em;
   text-decoration: none;
-  white-space: nowrap;
+  text-wrap: balance;
   transition:
     background var(--dur-hover) var(--ease-out),
     border-color var(--dur-hover) var(--ease-out),

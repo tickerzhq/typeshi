@@ -101,3 +101,19 @@
     grid-area: text;
   }
 }
+
+/* With large system text the number goes above the name, so the line beside it isn't squeezed to a
+   word at a time, and the arrow goes (the whole card is the link), so the name has the full line. In
+   em, so it follows the text size: a 320 px phone at default text is 18em wide. */
+@container doors (max-width: 15em) {
+  .door {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      "n"
+      "name"
+      "text";
+  }
+  .arrow {
+    display: none;
+  }
+}

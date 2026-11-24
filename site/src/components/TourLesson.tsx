@@ -9,6 +9,7 @@ import { compiler } from "@/lib/compiler";
 import { SLIDE_KEY } from "@/lib/head";
 import type { CompileResult, EditorWords } from "@/lib/types";
 import type { Lesson } from "@/lib/types-tour";
+import { wbr } from "@/lib/wbr";
 import BootCode from "./BootCode";
 import Prose from "./Prose";
 import { useTabs } from "./Tabs";
@@ -173,7 +174,7 @@ export default function TourLesson({
           <Link href="/tour">tour</Link> · {lesson.chapter} · lesson {lesson.n} of {total}
         </p>
         <h1 id="lesson-title" className={s.title}>
-          {lesson.title}
+          {wbr(lesson.title)}
         </h1>
         <Prose text={lesson.body} className={s.prose} />
 
@@ -209,7 +210,7 @@ export default function TourLesson({
           {prev ? (
             <a href={`/tour/${prev.slug}`} className={s.prev} onClick={slide("nav-back")}>
               <span>← back</span>
-              {prev.title}
+              {wbr(prev.title)}
             </a>
           ) : (
             <span />
@@ -217,7 +218,7 @@ export default function TourLesson({
           {next ? (
             <a href={`/tour/${next.slug}`} className={`${s.next} ${passed ? s.ready : ""}`} onClick={slide("nav-forward")}>
               <span>next →</span>
-              {next.title}
+              {wbr(next.title)}
             </a>
           ) : (
             <Link href="/play" className={`${s.next} ${passed ? s.ready : ""}`}>

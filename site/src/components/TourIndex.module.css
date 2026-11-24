@@ -6,12 +6,14 @@
   display: inline-flex;
   align-items: center;
   min-height: var(--size-cta);
-  padding: 0 var(--space-m);
+  max-width: 100%;
+  padding: var(--space-2xs) var(--space-m);
   border-radius: var(--radius-sm);
   background: var(--accent-fill);
   color: var(--text-on-accent);
-  font: var(--weight-bold) var(--step-body) / 1 var(--font-sans);
+  font: var(--weight-bold) var(--step-body) / var(--leading-snug) var(--font-sans);
   text-decoration: none;
+  text-wrap: balance;
   transition:
     background var(--dur-hover) var(--ease-out),
     transform var(--dur-press) var(--ease-out);
@@ -55,6 +57,7 @@
 }
 .body {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 2px;
   min-width: 0;
 }
@@ -82,6 +85,7 @@
 }
 .chapterTitle {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
   align-items: center;
   gap: var(--space-s);

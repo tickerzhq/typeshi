@@ -73,6 +73,8 @@
   border-radius: var(--radius-sm);
   padding: 0 var(--space-l) 0 var(--space-xs);
   height: var(--size-control);
+  min-width: 0;
+  max-width: 100%;
   cursor: pointer;
 }
 
@@ -268,6 +270,7 @@
   }
   .right {
     flex-basis: 100%;
+    flex-wrap: wrap;
   }
   .right > * {
     flex: 1;

@@ -1,10 +1,10 @@
-/** The address the site claims for itself. typeshi.dev is the name it's built for. */
-export const SITE = "https://typeshi.dev";
+/** The address the site claims for itself: a subdomain of Tickerz, which makes it. */
+export const SITE = "https://typeshi.tickerz.com";
 
 /**
- * The absolute address for links that leave the page (link previews, llms.txt). Until typeshi.dev
- * answers, it's this deploy's own production address, which Vercel sets at build time, so the
- * og:image a chat app fetches exists. NEXT_PUBLIC_SITE_URL overrides both.
+ * The absolute address for links that leave the page (link previews, canonical links, the sitemap,
+ * llms.txt). NEXT_PUBLIC_SITE_URL wins, then the production address Vercel sets at build time, so
+ * a link preview's og:image always points at a deploy that has it.
  */
 export function siteUrl(): string {
   const production = process.env.VERCEL_PROJECT_PRODUCTION_URL;

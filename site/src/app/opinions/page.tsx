@@ -6,6 +6,7 @@ import content from "@/generated/content.json";
 import { pageMeta } from "@/lib/meta";
 import type { Example } from "@/lib/types";
 import s from "./opinions.module.css";
+import { wbr } from "@/lib/wbr";
 
 export const metadata: Metadata = pageMeta({
   path: "/opinions",
@@ -32,7 +33,7 @@ export default function OpinionsPage() {
           <ul className={s.banned}>
             {content.banned.map(([name, why]) => (
               <li key={name}>
-                <code className={s.move}>{name}!</code>
+                <code className={s.move}>{wbr(name)}!</code>
                 <span className={s.why}>{why}</span>
                 <a className={s.try} href={`/play#code=${content.bannedTry[name as keyof typeof content.bannedTry]}`}>
                   try it<span className="visually-hidden">: {name}!</span> <span aria-hidden="true">→</span>
