@@ -505,3 +505,195 @@ fn gigamaxx_examples_still_parse() {
         );
     }
 }
+
+/// A USDC vault: positions, a fee treasury, token accounts in and out, and a vault signer with seeds.
+fn vault(deposit: &str, withdraw: &str) -> String {
+    format!(
+        "{ID}
+        stealth_launch vault {{
+            ticker USDC = 6;
+            frame Position {{ owner: Pubkey, usdc: USDC }}
+            frame Treasury {{ admin: Pubkey, fees: USDC }}
+            cap_table Deposit {{
+                #[account(mut, seeds = [b\"position\", ser.key().as_ref()], bump)]
+                position: Account<Position>,
+                #[account(mut, public, seeds = [b\"treasury\"], bump)]
+                treasury: Account<Treasury>,
+                #[account(mut)]
+                from: Account<anchor_spl::token::TokenAccount>,
+                #[account(mut)]
+                vault_tokens: Account<anchor_spl::token::TokenAccount>,
+                ser,
+                token_program,
+            }}
+            cap_table Withdraw {{
+                #[account(mut, seeds = [b\"position\", ser.key().as_ref()], bump)]
+                position: Account<Position>,
+                #[account(mut)]
+                to: Account<anchor_spl::token::TokenAccount>,
+                #[account(mut)]
+                vault_tokens: Account<anchor_spl::token::TokenAccount>,
+                /// CHECK: the vault's signer
+                #[account(seeds = [b\"vault\"], bump)]
+                vault: UncheckedAccount,
+                ser,
+                token_program,
+            }}
+            // not financial advice
+            lock_in fn deposit(ctx, amount: USDC, fee: USDC) -> W {{
+                {deposit}
+                were_so_back!()
+            }}
+            // not financial advice
+            lock_in fn withdraw(ctx, amount: USDC) -> W {{
+                {withdraw}
+                were_so_back!()
+            }}
+        }}"
+    )
+}
+
+const PAY_OUT: &str = "mark_to_market!(position.usdc = per_my_last_email!(position.usdc) - amount);
+    send_it!(vault_tokens => to, amount, vault);";
+
+fn shi006(d: &[Diag]) -> Vec<&Diag> {
+    d.iter().filter(|x| x.code == Some("SHI006")).collect()
+}
+
+#[test]
+fn send_it_signed_by_the_user_is_a_plain_token_transfer() {
+    let o = ok(&vault(
+        "send_it!(from => vault_tokens, amount, ser); number_go_up!(position.usdc, amount);",
+        PAY_OUT,
+    ));
+    for part in [
+        "anchor_spl::token::transfer(CpiContext::new(anchor_spl::token::ID, anchor_spl::token::Transfer {",
+        "from: ctx.accounts.from.to_account_info(),",
+        "to: ctx.accounts.vault_tokens.to_account_info(),",
+        "authority: ctx.accounts.ser.to_account_info(),",
+    ] {
+        assert!(has(&o.rust, part), "no `{part}` in:\n{}", o.rust);
+    }
+}
+
+#[test]
+fn send_it_signed_by_the_program_writes_its_signer_seeds() {
+    let o = ok(&vault(
+        "send_it!(from => vault_tokens, amount, ser); number_go_up!(position.usdc, amount);",
+        PAY_OUT,
+    ));
+    assert!(
+        has(&o.rust, "CpiContext::new_with_signer(anchor_spl::token::ID,"),
+        "{}",
+        o.rust
+    );
+    assert!(has(&o.rust, "&[&[b\"vault\", &[ctx.bumps.vault]]]"), "{}", o.rust);
+}
+
+#[test]
+fn send_it_needs_a_signer_or_an_account_with_seeds() {
+    let d = ngmi(&vault(
+        "send_it!(from => vault_tokens, amount, vault_tokens); number_go_up!(position.usdc, amount);",
+        PAY_OUT,
+    ));
+    assert!(!errors(&d).is_empty(), "{d:?}");
+}
+
+#[test]
+fn a_deposit_that_takes_nothing_in_is_money_from_nowhere() {
+    let d = ngmi(&vault("number_go_up!(position.usdc, amount);", PAY_OUT));
+    let e = shi006(&d);
+    assert_eq!(e.len(), 1, "{d:?}");
+    assert!(
+        e[0].msg.contains("creates `amount` USDC out of nothing"),
+        "{}",
+        e[0].msg
+    );
+}
+
+#[test]
+fn a_payout_that_lowers_no_balance_is_refused() {
+    let d = ngmi(&vault(
+        "send_it!(from => vault_tokens, amount, ser); number_go_up!(position.usdc, amount);",
+        "send_it!(vault_tokens => to, amount, vault);",
+    ));
+    let e = shi006(&d);
+    assert!(
+        e[0].msg.contains("pays out `amount` USDC and no balance goes down"),
+        "{}",
+        e[0].msg
+    );
+}
+
+#[test]
+fn a_fee_split_across_two_balances_adds_up() {
+    ok(&vault(
+        "send_it!(from => vault_tokens, amount, ser);
+         number_go_up!(position.usdc, amount - fee);
+         number_go_up!(treasury.fees, fee);",
+        PAY_OUT,
+    ));
+}
+
+#[test]
+fn each_way_through_a_branch_is_checked_on_its_own() {
+    // both arms add up, though neither alone matches the code around it
+    ok(&vault(
+        "send_it!(from => vault_tokens, amount, ser);
+         bull fee mogs 0 {
+             number_go_up!(position.usdc, amount - fee);
+             number_go_up!(treasury.fees, fee);
+         } bear {
+             number_go_up!(position.usdc, amount);
+         }",
+        PAY_OUT,
+    ));
+    // one arm forgets the fee: the error names that arm
+    let d = ngmi(&vault(
+        "send_it!(from => vault_tokens, amount, ser);
+         bull fee mogs 0 {
+             number_go_up!(position.usdc, amount - fee);
+         } bear {
+             number_go_up!(position.usdc, amount);
+         }",
+        PAY_OUT,
+    ));
+    let e = shi006(&d);
+    assert_eq!(e.len(), 1, "{d:?}");
+    assert!(e[0].msg.contains("loses track of `fee` USDC"), "{}", e[0].msg);
+    assert!(e[0].label.starts_with("when `fee mogs 0`:"), "{}", e[0].label);
+}
+
+#[test]
+fn a_branch_with_no_bear_still_has_two_ways_through() {
+    let d = ngmi(&vault(
+        "bull fee mogs 0 { send_it!(from => vault_tokens, amount, ser); }
+         number_go_up!(position.usdc, amount);",
+        PAY_OUT,
+    ));
+    let e = shi006(&d);
+    assert!(e[0].label.starts_with("when not `fee mogs 0`:"), "{}", e[0].label);
+}
+
+#[test]
+fn money_moved_in_a_loop_is_not_summed() {
+    ok(&vault(
+        "send_it!(from => vault_tokens, amount, ser);
+         for _ in 0..2 { number_go_up!(position.usdc, amount); }",
+        PAY_OUT,
+    ));
+}
+
+#[test]
+fn printer_go_brrr_on_a_fn_mints_on_purpose() {
+    let src = vault("number_go_up!(position.usdc, amount);", PAY_OUT).replace(
+        "// not financial advice\n            lock_in fn deposit",
+        "// not financial advice\n            #[printer_go_brrr]\n            lock_in fn deposit",
+    );
+    assert!(src.contains("#[printer_go_brrr]"));
+    let o = ok(&src);
+    assert!(
+        !o.rust.contains("printer_go_brrr"),
+        "the attribute is typeshi's, not Rust's"
+    );
+}

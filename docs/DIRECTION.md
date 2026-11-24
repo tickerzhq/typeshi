@@ -71,8 +71,9 @@ explained (`typeshi explain`), and every explanation's examples are tests.
    `init_if_needed`.
 4. **Conservation.** Done (2026-11-24): `SHI006`, with `send_it!` (SPL transfers whose
    signer seeds typeshi writes) as the way money comes in and goes out, and
-   `#[printer_go_brrr]` for an instruction that mints on purpose. Next: follow balances
-   through branches.
+   `#[printer_go_brrr]` for an instruction that mints on purpose. Each way through a
+   `bull`/`bear` is checked on its own, and the error names the one that doesn't add up.
+   Next: loops and `match`, and telling a price ticker from a balance one.
 5. **The proof.** Done (2026-11-24): `docs/exploits` holds seven real incidents rewritten in
    typeshi, about $469M and 1,027 SOL of losses, each refused with the check that would have
    stopped it. `cargo test` and the site build both fail if one ever compiles. Shown at
